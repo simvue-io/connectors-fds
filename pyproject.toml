@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10,<=3.13"
 simvue = "2.0.0a3"
 ukaea-multiparser = "^1.0.2"
 f90nml = "^1.4.3"
