@@ -1,0 +1,21 @@
+[project]
+name = "simvue-integrations-fds"
+version = "0.1.0"
+description = "Connector to allow you to easily add Simvue tracking and monitoring to FDS (Fire Dynamics Simulator) simulations."
+authors = [
+    {name = "Matt Field",email = "matthew.field@ukaea.uk"}
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+simvue = "2.0.0a3"
+ukaea-multiparser = "^1.0.2"
+f90nml = "^1.4.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
