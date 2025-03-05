@@ -1,0 +1,35 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: [ "main", "dev"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  FDS:
+    runs-on: ubuntu-latest
+    container:
+      image: openbcl/fds:6.9.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install poetry
+        run: python3 -m pip install poetry
+      - name: Install dependencies and run tests
+        run: |
+          export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
+          export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
+          poetry install --all-extras
+          poetry run pytest tests/integration/test_fds.py

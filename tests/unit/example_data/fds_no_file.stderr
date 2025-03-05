@@ -1,0 +1,5 @@
+
+ Starting FDS ...
+
+ MPI Process      0 started on ae45bcf69195
+ERROR(102): Input file examples/fds/activate_ventks.fds not found in the current directory.

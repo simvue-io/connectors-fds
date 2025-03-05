@@ -1,0 +1,60 @@
+exclude: '^tests|^examples'
+ci:
+    autofix_prs: false
+    autoupdate_branch: ''
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+          - --select=D,DOC
+          - --exit-non-zero-on-fix
+      - id: ruff-format
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-toml
+      - id: check-yaml
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: trailing-whitespace
+        language: python
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, dev]
+      - id: check-added-large-files
+
+  - repo: https://github.com/conorfalvey/check_pdb_hook
+    rev: 0.0.9
+    hooks:
+      - id: check_pdb_hook
+        pass_filenames: false
+
+  - repo: https://github.com/PyCQA/bandit.git
+    rev: 1.7.7
+    hooks:
+    -   id: bandit
+        args: [-lll, --recursive, clumper]
+
+
+  - repo: https://github.com/jsh9/pydoclint
+    rev: 0.5.10
+    hooks:
+      - id: pydoclint
+        args: [--style=numpy, --allow-init-docstring=True]

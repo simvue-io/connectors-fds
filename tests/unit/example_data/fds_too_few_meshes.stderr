@@ -1,0 +1,12 @@
+
+ Starting FDS ...
+
+ MPI Process      0 started on ae45bcf69195
+ MPI Process      1 started on ae45bcf69195
+
+ Reading FDS input file ...
+
+
+ERROR(112): The number of MPI processes, 2, exceeds the number of meshes, 1 (CHID: supply_exhaust_vents)
+
+ERROR: FDS was improperly set-up - FDS stopped (CHID: supply_exhaust_vents)

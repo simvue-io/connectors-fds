@@ -1664,6 +1664,27 @@ typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"
 plot = ["matplotlib (>=3.10.0,<4.0.0)", "plotly (>=6.0.0,<7.0.0)"]
 
 [[package]]
+name = "simvue-integrations-template"
+version = "0.1.0"
+description = "A template which all new Connectors (integrations which provide Simvue tracking for Non-Python software) should inherit from."
+optional = false
+python-versions = ">=3.10,<3.14"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = []
+develop = false
+
+[package.dependencies]
+simvue = "2.0.0a3"
+ukaea-multiparser = "^1.0.2"
+
+[package.source]
+type = "git"
+url = "https://github.com/simvue-io/integrations-template"
+reference = "HEAD"
+resolved_reference = "453d67c769c1cf6cb98be174b1c5704dca289bcc"
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1954,5 +1975,5 @@ termcolor = ">=2.3,<3.0"
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<3.13"
-content-hash = "4f576d5eb8d7d4f40bc81b324b0d9f9766bbd3252f92105ea348b5bc4d10dce1"
+python-versions = ">=3.10,<=3.13"
+content-hash = "cfe76ecc9a5f6f7bacb5ad3a3853ec043e8c8c58abb10837cf1d5c3319854bc9"

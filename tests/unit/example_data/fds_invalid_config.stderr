@@ -1,0 +1,14 @@
+
+ Starting FDS ...
+
+ MPI Process      0 started on ae45bcf69195
+
+ Reading FDS input file ...
+
+WARNING: DEVC timer is not within any mesh.
+WARNING: DEVC eye_level_visibility is not within any mesh.
+WARNING: DEVC air_temperature is not within any mesh.
+
+ERROR: DEVICE timer does not exist (CHID: supply_exhaust_vents)
+
+ERROR: FDS was improperly set-up - FDS stopped (CHID: supply_exhaust_vents)

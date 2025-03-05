@@ -1,0 +1,485 @@
+TITLE
+ 
+
+FDSVERSION
+FDS-6.9.1-0-g889da6a-release
+
+INPF
+ /workdir/sprinklers_patched.fds
+
+REVISION
+Revisio                                                                                                                                                                                                                                                        
+
+CHID
+ sprinkler
+
+CSVF
+ hrr
+ sprinkler_hrr.csv
+
+CSVF
+ steps
+ sprinkler_steps.csv
+
+CSVF
+ devc
+ sprinkler_devc.csv
+
+CSVF
+ ctrl
+ sprinkler_ctrl.csv
+
+NMESHES
+  1
+
+TIMES
+          0.000        120.000
+
+VIEWTIMES
+           0.00         120.00  1000
+
+ALBEDO
+      0.30000
+
+IBLANK
+ 1
+
+GVEC
+      0.00000      0.00000     -9.80665
+
+SURFDEF
+ INERT                                                       
+
+SURFACE
+ INERT                                                       
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ Roof                                                        
+ 5000.00    1.00
+ 0      1.00000      1.00000      0.80000      0.80000      0.80000      1.00000
+ null                                                        
+
+SURFACE
+ FIRE                                                        
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.00000      0.00000      1.00000
+ null                                                        
+
+SURFACE
+ pilot                                                       
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ OPEN                                                        
+ 5000.00    1.00
+ 2      1.00000      1.00000      1.00000      0.00000      1.00000      1.00000
+ null                                                        
+
+SURFACE
+ MIRROR                                                      
+ 5000.00    1.00
+-2      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ INTERPOLATED                                                
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ PERIODIC                                                    
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ HVAC                                                        
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ MASSLESS TRACER                                             
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ DROPLET                                                     
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ MASSLESS TARGET                                             
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+SURFACE
+ PERIODIC FLOW ONLY                                          
+ 5000.00    1.00
+ 0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
+ null                                                        
+
+CLASS_OF_PARTICLES
+ water drops                                                 
+      0.18039      0.60392      0.94118
+  3
+ PARTICLE DIAMETER                                           
+ diam                                                        
+ mu-m                                                        
+ PARTICLE TEMPERATURE                                        
+ temp                                                        
+ C                                                           
+ PARTICLE AGE                                                
+ age                                                         
+ s                                                           
+
+CLASS_OF_PARTICLES
+ ignitor                                                     
+      0.00000      0.00000      0.00000
+  0
+
+OUTLINE
+  12
+        0.0000        0.0000        0.0000        0.0000        0.0000        3.0000
+        0.0000        5.0000        0.0000        0.0000        5.0000        3.0000
+        3.0000        0.0000        0.0000        3.0000        0.0000        3.0000
+        3.0000        5.0000        0.0000        3.0000        5.0000        3.0000
+        0.0000        0.0000        0.0000        0.0000        5.0000        0.0000
+        0.0000        0.0000        3.0000        0.0000        5.0000        3.0000
+        3.0000        0.0000        0.0000        3.0000        5.0000        0.0000
+        3.0000        0.0000        3.0000        3.0000        5.0000        3.0000
+        0.0000        0.0000        0.0000        3.0000        0.0000        0.0000
+        0.0000        5.0000        0.0000        3.0000        5.0000        0.0000
+        0.0000        0.0000        3.0000        3.0000        0.0000        3.0000
+        0.0000        5.0000        3.0000        3.0000        5.0000        3.0000
+
+TOFFSET
+      0.00000      0.00000      0.00000
+
+HRRPUVCUT
+     1
+    112.45769
+
+HoC
+ 1
+   44923.26196
+
+FUEL
+ 1
+ PILOT FUEL
+
+PROP
+ null
+  1
+ sensor
+  0
+
+PROP
+ K-11
+  1
+ sprinkler
+  0
+
+DEVICE
+ Spr_1 % SPRINKLER LINK TEMPERATURE                                  
+       1.50000       2.50000       2.99850       0.00000       0.00000      -1.00000  0  0 % K-11
+
+DEVICE
+ Ceiling_Thermocouple.Front_Left % THERMOCOUPLE                                                
+       0.00150       0.00250       2.99850       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ Ceiling_Thermocouple.Back_Left % THERMOCOUPLE                                                
+       0.00150       4.99750       2.99850       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ Ceiling_Thermocouple.Back_Right % THERMOCOUPLE                                                
+       2.99850       4.99750       2.99850       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ Ceiling_Thermocouple.Front_Right % THERMOCOUPLE                                                
+       2.99850       0.00250       2.99850       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ Ceiling_Thermocouple.Center % THERMOCOUPLE                                                
+       1.50000       2.50000       2.99850       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ FIRE_HRR % HRRPUV                                                      
+       1.50000       2.50000       1.50000       0.00000       0.00000      -1.00000  0  0 #        0.00000       0.00000       0.00000       3.00000       5.00000       3.00000 % null
+
+DEVICE
+ TIMER_2 % TIME                                                        
+       0.00150       0.00250       0.00150       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ TIMER % TIME                                                        
+       0.00150       0.00250       0.00150       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ Accum. Water droplets over fire base/m2 % AMPUA                                                       
+       1.45000       2.45000       0.05000       0.00000       0.00000      -1.00000  0  0 #        1.20000       2.20000       0.00000       1.70000       2.70000       0.10000 % null
+
+DEVICE
+ Accum. Water droplets over floor area/m2 % AMPUA                                                       
+       1.50000       2.50000       0.05000       0.00000       0.00000      -1.00000  0  0 #        0.00000       0.00000       0.00000       3.00000       5.00000       0.10000 % null
+
+VENTORIG
+ 2
+        1.10000       1.90000       0.00000       0.00000       0.00000       2.00000 ! 1
+        1.20000       1.70000       2.20000       2.70000       0.00000       0.00000 ! Vent #1
+
+OFFSET
+      0.00000      0.00000      0.00000
+
+GRID   Mesh01
+   20   20   20    0
+
+PDIM
+       0.00000       3.00000       0.00000       5.00000       0.00000       3.00000       0.00000       0.00000       0.00000
+
+TRNX
+    0
+    0       0.00000
+    1       0.15000
+    2       0.30000
+    3       0.45000
+    4       0.60000
+    5       0.75000
+    6       0.90000
+    7       1.05000
+    8       1.20000
+    9       1.35000
+   10       1.50000
+   11       1.65000
+   12       1.80000
+   13       1.95000
+   14       2.10000
+   15       2.25000
+   16       2.40000
+   17       2.55000
+   18       2.70000
+   19       2.85000
+   20       3.00000
+
+TRNY
+    0
+    0       0.00000
+    1       0.25000
+    2       0.50000
+    3       0.75000
+    4       1.00000
+    5       1.25000
+    6       1.50000
+    7       1.75000
+    8       2.00000
+    9       2.25000
+   10       2.50000
+   11       2.75000
+   12       3.00000
+   13       3.25000
+   14       3.50000
+   15       3.75000
+   16       4.00000
+   17       4.25000
+   18       4.50000
+   19       4.75000
+   20       5.00000
+
+TRNZ
+    0
+    0       0.00000
+    1       0.15000
+    2       0.30000
+    3       0.45000
+    4       0.60000
+    5       0.75000
+    6       0.90000
+    7       1.05000
+    8       1.20000
+    9       1.35000
+   10       1.50000
+   11       1.65000
+   12       1.80000
+   13       1.95000
+   14       2.10000
+   15       2.25000
+   16       2.40000
+   17       2.55000
+   18       2.70000
+   19       2.85000
+   20       3.00000
+
+OBST
+           0
+
+VENT
+   14   12
+       1.10000       1.90000       0.00000       0.00000       0.00000       2.00000     1   4    -999.00000    -999.00000    -999.00000
+       1.20000       1.70000       2.20000       2.70000       0.00000       0.00000     2   2    -999.00000    -999.00000    -999.00000
+       0.00000       0.00000       0.00000       5.00000       0.00000       3.00000     3   0
+       3.00000       3.00000       0.00000       5.00000       0.00000       3.00000     4   0
+       0.00000       1.05000       0.00000       0.00000       0.00000       3.00000     5   0
+       1.95000       3.00000       0.00000       0.00000       0.00000       3.00000     6   0
+       1.05000       1.95000       0.00000       0.00000       1.95000       3.00000     7   0
+       0.00000       3.00000       5.00000       5.00000       0.00000       3.00000     8   0
+       0.00000       1.20000       0.00000       5.00000       0.00000       0.00000     9   0
+       1.20000       3.00000       0.00000       2.25000       0.00000       0.00000    10   0
+       1.20000       1.65000       2.25000       2.75000       0.00000       0.00000    11   2
+       1.65000       3.00000       2.25000       5.00000       0.00000       0.00000    12   0
+       1.20000       1.65000       2.75000       5.00000       0.00000       0.00000    13   0
+       0.00000       3.00000       0.00000       5.00000       3.00000       3.00000    14   0
+    7   13    0    0    0   13  -99    2 !     2
+    8   11    9   11    0    0    8   -2 !     3
+    0    0    0   20    0   20   99    0
+   20   20    0   20    0   20   99    0
+    0    7    0    0    0   20   99    0
+   13   20    0    0    0   20   99    0
+    7   13    0    0   13   20   99    0
+    0   20   20   20    0   20   99    0
+    0    8    0   20    0    0   99    0
+    8   20    0    9    0    0   99    0
+    8   11    9   11    0    0   99    0
+   11   20    9   20    0    0   99    0
+    8   11   11   20    0    0   99    0
+    0   20    0   20   20   20   99    0
+
+CVENT
+    0
+
+ISOG     1      1 -0.100000E+01
+ sprinkler_1_1.iso
+ SOOT VISIBILITY
+ VIS_C
+ m
+ISOG     1      1 -0.100000E+01
+ sprinkler_1_2.iso
+ TEMPERATURE
+ temp
+ C
+SMOKF3D     1   8700.000
+ sprinkler_1_1.s3d
+ SOOT DENSITY
+ rho_C
+ kg/m3
+SMOKF3D     1      0.000
+ sprinkler_1_2.s3d
+ HRRPUV
+ hrrpuv
+ kW/m3
+SMOKF3D     1      0.000
+ sprinkler_1_3.s3d
+ TEMPERATURE
+ temp
+ C
+SLCF     1 # STRUCTURED &     0    20     0    20    13    13 !      1      0
+ sprinkler_1_1.sf
+ SOOT VISIBILITY
+ VIS_C
+ m
+SLCF     1 # STRUCTURED &     0    20    10    10     0    20 !      2      0
+ sprinkler_1_2.sf
+ TEMPERATURE
+ temp
+ C
+SLCF     1 # STRUCTURED &     0    20     0    20    20    20 !      3      0
+ sprinkler_1_3.sf
+ TEMPERATURE
+ temp
+ C
+SLCF     1 # STRUCTURED &     0    20     0     0     0    20 !      4      0
+ sprinkler_1_4.sf
+ N-HEPTANE MASS FRACTION
+ Y_C7H16
+ kg/kg
+SLCF     1 # STRUCTURED &     0    20    10    10     0    20 !      5      0
+ sprinkler_1_5.sf
+ U-VELOCITY
+ U-VEL
+ m/s
+SLCF     1 # STRUCTURED &     0    20    10    10     0    20 !      6      0
+ sprinkler_1_6.sf
+ V-VELOCITY
+ V-VEL
+ m/s
+SLCF     1 # STRUCTURED &     0    20     0     0     0    20 !      7      0
+ sprinkler_1_7.sf
+ WATER VAPOR MASS FRACTION
+ Y_H2O
+ kg/kg
+SLCF     1 # STRUCTURED &     0     0     0    20     0    20 !      8      0
+ sprinkler_1_8.sf
+ WATER VAPOR MASS FRACTION
+ Y_H2O
+ kg/kg
+SLCF     1 # STRUCTURED &     0    20     0    20     0     0 !      9      0
+ sprinkler_1_9.sf
+ water drops MPUV
+ mpuv
+ kg/m3
+SLCF     1 # STRUCTURED &     0    20     4     4     0    20 !     10      0
+ sprinkler_1_10.sf
+ water drops MPUV
+ mpuv
+ kg/m3
+SLCF     1 # STRUCTURED &     0    20     8     8     0    20 !     11      0
+ sprinkler_1_11.sf
+ water drops MPUV
+ mpuv
+ kg/m3
+SLCF     1 # STRUCTURED &     0    20    12    12     0    20 !     12      0
+ sprinkler_1_12.sf
+ water drops MPUV
+ mpuv
+ kg/m3
+SLCF     1 # STRUCTURED &     0    20     0    20     1     1 !     14      0
+ sprinkler_1_13.sf
+ water drops PARTICLE FLUX Z
+ flux_z
+ kg/s/m2
+PRT5     1
+ sprinkler_1.prt5
+      2
+      1
+      2
+DEVICE_ACT     Spr_1
+     1      0.00     0
+DEVICE_ACT     Ceiling_Thermocouple.Front_Left
+     2      0.00     0
+DEVICE_ACT     Ceiling_Thermocouple.Back_Left
+     3      0.00     0
+DEVICE_ACT     Ceiling_Thermocouple.Back_Right
+     4      0.00     0
+DEVICE_ACT     Ceiling_Thermocouple.Front_Right
+     5      0.00     0
+DEVICE_ACT     Ceiling_Thermocouple.Center
+     6      0.00     0
+DEVICE_ACT     FIRE_HRR
+     7      0.00     0
+DEVICE_ACT     TIMER_2
+     8      0.00     0
+DEVICE_ACT     TIMER
+     9      0.00     0
+DEVICE_ACT     Accum. Water droplets over fire base/m2
+    10      0.00     0
+DEVICE_ACT     Accum. Water droplets over floor area/m2
+    11      0.00     0
+DEVICE_ACT     TIMER
+     9     15.01     1
+DEVICE_ACT     Ceiling_Thermocouple.Front_Left
+     2     36.94     1
+DEVICE_ACT     Ceiling_Thermocouple.Back_Left
+     3     39.32     1
+DEVICE_ACT     Ceiling_Thermocouple.Front_Right
+     5     41.96     1
+DEVICE_ACT     Ceiling_Thermocouple.Back_Right
+     4     42.52     1

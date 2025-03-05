@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
         # Can add alerts specific to your simulation, eg:
         run.create_metric_threshold_alert(
-          name="visibility_below_five_metres",    # Name of Alert 
+          name="visibility_below_five_metres",    # Name of Alert
           metric="eye_level_visibility",          # Metric to monitor
           frequency=1,                            # Frequency to evaluate rule at (mins)
           rule="is below",                        # Rule to alert on
