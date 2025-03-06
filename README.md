@@ -69,7 +69,7 @@ The exact contents of both of the above options can be obtained directly by clic
 
 ## Usage example
 ```python
-from simvue_integrations_fds.connector import FDSRun
+from simvue_fds.connector import FDSRun
 
 ...
 

@@ -1,4 +1,4 @@
-from simvue_integrations_fds.connector import FDSRun
+from simvue_fds.connector import FDSRun
 import simvue
 import pathlib
 import shutil

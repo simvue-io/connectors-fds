@@ -1,4 +1,4 @@
-from simvue_integrations_fds.connector import FDSRun
+from simvue_fds.connector import FDSRun
 from simvue.api.objects import Run
 import pathlib
 from unittest.mock import patch, MagicMock

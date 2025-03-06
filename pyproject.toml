@@ -1,16 +1,45 @@
 [project]
-name = "simvue-integrations-fds"
-version = "0.1.0"
+name = "simvue-fds"
+version = "1.0.0a1"
 description = "Connector to allow you to easily add Simvue tracking and monitoring to FDS (Fire Dynamics Simulator) simulations."
 authors = [
     {name = "Matt Field",email = "matthew.field@ukaea.uk"}
 ]
 readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "simvue-connector (==1.0.0a2)",
+    "f90nml (>1.4.3)"
+    ]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: System :: Monitoring",
+    "Topic :: Utilities",
+    "Typing :: Typed"
+]
+keywords = [
+    "tracking",
+    "monitoring",
+    "metrics",
+    "alerting",
+    "metrics-gathering"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<=3.13"
-simvue-integrations-template = {git = "https://github.com/simvue-io/integrations-template"}
-f90nml = "^1.4.3"
+[project.urls]
+homepage = "https://simvue.io"
+repository = "https://github.com/simvue-io/connectors-fds"
+documentation = "https://docs.simvue.io"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
