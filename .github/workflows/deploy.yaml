@@ -105,7 +105,7 @@ jobs:
           gh release create
           '${{ github.ref_name }}'
           --notes "$LATESTCHANGES"
-          --title 'Simvue ${{ github.ref_name }}'
+          --title 'FDS Connector ${{ github.ref_name }}'
           --repo '${{ github.repository }}'
       - name: Upload artifact signatures to GitHub Release
         env:

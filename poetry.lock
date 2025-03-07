@@ -1627,15 +1627,15 @@ files = [
 
 [[package]]
 name = "simvue"
-version = "2.0.0a3"
+version = "2.0.0"
 description = "Simulation tracking and monitoring"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "simvue-2.0.0a3-py3-none-any.whl", hash = "sha256:d853f3db3a512a657ede96b05d6bf6aee51f1dfe02185c9c4f6642ad47c7cd8e"},
-    {file = "simvue-2.0.0a3.tar.gz", hash = "sha256:d28467665e7e75f348f31a787032b9a17261f286a38cdf61b011820870a03308"},
+    {file = "simvue-2.0.0-py3-none-any.whl", hash = "sha256:4699081d357b6f183d99f775fc6839ad564e91928ca3fd44331f490d0019066a"},
+    {file = "simvue-2.0.0.tar.gz", hash = "sha256:31e70735fc9c6cff5f7658883575eb6ba57c52d2c8457fa1aa4f564914fba71a"},
 ]
 
 [package.dependencies]
@@ -1665,19 +1665,19 @@ plot = ["matplotlib (>=3.10.0,<4.0.0)", "plotly (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "simvue-connector"
-version = "1.0.0a2"
+version = "1.0.0"
 description = "A generic class which all new Connectors (integrations which provide Simvue tracking for Non-Python software) should inherit from."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "simvue_connector-1.0.0a2-py3-none-any.whl", hash = "sha256:b2cddbec3ee44cd7ef5cd3432791940be0ad232601a1cbc7467dc6b0a575f200"},
-    {file = "simvue_connector-1.0.0a2.tar.gz", hash = "sha256:45651a5dd268f4bf4596594bef9ff4422ba9668a90ae1803bcf7a3492007b0a5"},
+    {file = "simvue_connector-1.0.0-py3-none-any.whl", hash = "sha256:7624efc972dad313c6771d4e2a05bacaeebc79bf8077eb221eba1655893bc102"},
+    {file = "simvue_connector-1.0.0.tar.gz", hash = "sha256:04fdb12a3f4faf29e97c150ac87fd6f615e9a44a902a13f4bbe4fa69d077c308"},
 ]
 
 [package.dependencies]
-simvue = "2.0.0a3"
+simvue = ">=2.0.0"
 ukaea-multiparser = ">=1.0.2"
 
 [[package]]
@@ -1972,4 +1972,4 @@ termcolor = ">=2.3,<3.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "3832dcec6da01c3805b441e076af40247dd38f192439f82f3bf7f9fd753970c1"
+content-hash = "387c0d010ee118896759e260cf8144c608fa6c5487c883f6ffb5f9be43f15600"
