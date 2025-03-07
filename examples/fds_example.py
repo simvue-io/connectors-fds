@@ -8,8 +8,8 @@ with supply and exhaust air vents activating after a few seconds to remove the s
 
 To run this example with Docker:
     - Pull the base FDS image: docker run -it ghcr.io/simvue-io/fds_example
-    - Clone this repository: git clone https://github.com/simvue-io/integrations-fds.git
-    - Move into FDS examples directory: cd integrations-fds/examples
+    - Clone this repository: git clone https://github.com/simvue-io/connectors-fds.git
+    - Move into FDS examples directory: cd connectors-fds/examples
     - Create a simvue.toml file, copying in your information from the Simvue server: nano simvue.toml
     - Install Poetry: pip install poetry
     - Install required modules: poetry install
@@ -17,7 +17,8 @@ To run this example with Docker:
 
 To run this example on your own system with FDS installed:
     - Ensure that you have FDS installed and added to your path: fds --help
-    - Move into FDS examples directory: cd integrations-fds/examples/fds
+    - Clone this repository: git clone https://github.com/simvue-io/connectors-fds.git
+    - Move into FDS examples directory: cd connectors-fds/examples/fds
     - Create a simvue.toml file, copying in your information from the Simvue server: vi simvue.toml
     - Install Poetry: pip install poetry
     - Install required modules: poetry install

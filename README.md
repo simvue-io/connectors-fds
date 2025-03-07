@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
         # Launch the FDS simulation
         run.launch(
-            fds_input_path='path/to/my/input_file.i',   # Path to your FDS input file
+            fds_input_path='path/to/my/input_file.fds', # Path to your FDS input file
             workdir_path='path/to/my/results_dir',      # Path where results should be created
             run_in_parallel=True,                       # Whether to run in parallel using MPI
             num_processors=2                            # Number of cores to use if in parallel
