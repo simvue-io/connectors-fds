@@ -3,19 +3,24 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
+import csv
 import glob
 import pathlib
 import platform
 import re
 import resource
 import typing
+from datetime import datetime
+from itertools import chain
 
 import click
 import f90nml
 import multiparser.parsing.file as mp_file_parser
 import multiparser.parsing.tail as mp_tail_parser
+import numpy
 import pydantic
 import simvue
+from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
@@ -42,8 +47,10 @@ class FDSRun(WrappedRun):
     _activation_times_data: typing.Dict[str, float] = {}
     _chid: str = None
     _results_prefix: str = None
+    _loading_historic_run: bool = False
+    _timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
     _patterns: typing.List[typing.Dict[str, typing.Pattern]] = [
-        {"pattern": re.compile(r"\s+Time\sStep\s+(\d+).*"), "name": "step"},
+        {"pattern": re.compile(r"\s+Time\sStep\s+(\d+)\s+([\w\s:,]+)"), "name": "step"},
         {
             "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.]+)\ss.*"),
             "name": "time",
@@ -112,6 +119,36 @@ class FDSRun(WrappedRun):
                 stop_file.write("FDS simulation aborted due to Simvue Alert.")
                 stop_file.close()
 
+    def _estimate_timestamp(self, time_to_convert: float) -> str:
+        """If loading historic runs, estimate the timestamp of a data point from a CSV file based on the in-simulation time.
+
+        Since we only have timestamps from the log, and the time steps reported by the log
+        won't necessarily correspond to those reported in DEVC / HRR CSV files, we need to
+        do some basic interpolation between points in the mapping.
+
+        Parameters
+        ----------
+        time_to_convert : float
+            The time from the CSV file to convert into a timestamp
+
+        Returns
+        -------
+        str
+            The estimated timestamp when this value was recorded
+
+        """
+        _index = numpy.searchsorted(self._timestamp_mapping[:, 0], time_to_convert)
+        # Find how far between the time values in the mapping the new time is, from to 1
+        _fraction = (time_to_convert - self._timestamp_mapping[_index, 0]) / (
+            self._timestamp_mapping[_index + 1, 0] - self._timestamp_mapping[_index, 0]
+        )
+        # Estimate timestamp
+        _timestamp = self._timestamp_mapping[_index, 1] + _fraction * (
+            self._timestamp_mapping[_index + 1, 1] - self._timestamp_mapping[_index, 1]
+        )
+        # Convert to string
+        return datetime.fromtimestamp(_timestamp).strftime(DATETIME_FORMAT)
+
     @mp_tail_parser.log_parser
     def _log_parser(
         self, file_content: str, **__
@@ -135,30 +172,68 @@ class FDSRun(WrappedRun):
         _out_record = {}
         _current_mesh = None
 
+        # Loop through each line and check against each pattern defined above to extract metrics
+        # Remember FDS writes in blocks, so will write at least one full step of data at a time
         for line in file_content.split("\n"):
             for pattern in self._patterns:
                 match = pattern["pattern"].search(line)
                 if match:
+                    # For FDS files with multiple meshes, all metrics will be reported for each mesh
+                    # So if this line represents start of a new mesh, update the prefix to be used
+                    # for the following metrics to represent this mesh number, then break
                     if pattern["name"] == "mesh":
                         _current_mesh = match.group(1)
                         break
 
+                    # This represents the start of a new block of metric data, so add the previous entry
+                    # to the list of all data to return, then start a new entry. Parse the timestamp and
+                    # add it as a key to the entry. Dont worry about adding the step itself here, that will
+                    # be added in the same way as other metrics below.
                     if pattern["name"] == "step":
                         if _out_record:
                             _out_data += [_out_record]
-                        _out_record = {}
+
+                        # Get timestamp, get rid of multiple spaces, then format as required
+                        _timestamp_str = match.group(2)
+                        _timestamp_str = " ".join(_timestamp_str.split())
+                        _timestamp = datetime.strptime(
+                            _timestamp_str, "%B %d, %Y %H:%M:%S"
+                        )
+
+                        # Create new record, reset current mesh to None (to be set later)
+                        _out_record = {
+                            "timestamp": _timestamp.strftime(DATETIME_FORMAT)
+                        }
                         _current_mesh = None
 
+                    # Define the name of the metric, then log the value as key/value pairs
+                    # This also adds the 'time' and 'step' for this set of metrics to the dict
                     _metric_name = pattern["name"]
                     if _current_mesh:
                         _metric_name = f"{_metric_name}.mesh.{_current_mesh}"
 
                     _out_record[_metric_name] = match.group(1)
 
+                    # Log an event for each new step being created
                     if pattern["name"] == "time":
                         self.log_event(
-                            f"Time Step: {_out_record['step']}, Simulation Time: {_out_record['time']} s"
+                            f"Time Step: {_out_record['step']}, Simulation Time: {_out_record['time']} s",
+                            timestamp=_out_record["timestamp"],
                         )
+                        # If loading from historic runs, keep track of time to timestamp mapping
+                        if self._loading_historic_run:
+                            self._timestamp_mapping = numpy.vstack(
+                                (
+                                    self._timestamp_mapping,
+                                    [
+                                        _out_record["time"],
+                                        datetime.strptime(
+                                            _out_record["timestamp"], DATETIME_FORMAT
+                                        ).timestamp(),
+                                    ],
+                                )
+                            )
+
                     break
 
             if "DEVICE Activation Times" in line:
@@ -172,6 +247,7 @@ class FDSRun(WrappedRun):
                         float(match.group(2))
                     )
 
+        # Add the dict of metrics created in the final iterations of the loop
         if _out_record:
             _out_data += [_out_record]
 
@@ -190,11 +266,14 @@ class FDSRun(WrappedRun):
         """
         metric_time = data.pop("time", None) or data.pop("Time", None)
         metric_step = data.pop("step", None)
+
+        # If this metric is coming from a historic run, we need to estimate the timestamp
+        if self._loading_historic_run and not data.get("timestamp"):
+            data["timestamp"] = self._estimate_timestamp(metric_time)
+
+        metric_timestamp = data.pop("timestamp", meta["timestamp"].replace(" ", "T"))
         self.log_metrics(
-            data,
-            timestamp=meta["timestamp"].replace(" ", "T"),
-            time=metric_time,
-            step=metric_step,
+            data, time=metric_time, step=metric_step, timestamp=metric_timestamp
         )
 
     @mp_file_parser.file_parser
@@ -218,6 +297,10 @@ class FDSRun(WrappedRun):
         """
         with open(input_file) as in_f:
             _file_lines = in_f.readlines()
+
+        # If loading historic runs, no point looking through entire .out file - just look at first 20 lines:
+        if self._loading_historic_run:
+            _file_lines = _file_lines[:20]
 
         _components_regex: dict[str, typing.Pattern[typing.AnyStr]] = {
             "revision": re.compile(r"^\s*Revision\s+\:\s*([\w\d\.\-\_][^\n]+)"),
@@ -268,7 +351,13 @@ class FDSRun(WrappedRun):
                 f", when it reached a value of {data['Value']}{data.get('Units', '')}."
             )
 
-        self.log_event(event_str)
+        # If loading from historic run, estimate timestamp when this activation was recorded
+        # Otherwise, just use the current time
+        _timestamp = None
+        if self._loading_historic_run:
+            _timestamp = self._estimate_timestamp(data.get("Time (s)"))
+
+        self.log_event(event_str, timestamp=_timestamp)
         self.update_metadata({data["ID"]: state})
 
     def _pre_simulation(self):
@@ -478,3 +567,85 @@ class FDSRun(WrappedRun):
         )
 
         super().launch()
+
+    def load(self, results_dir: pydantic.DirectoryPath, upload_files: list[str] = None):
+        """Load a pre-existing FDS simulation into Simvue.
+
+        Parameters
+        ----------
+        results_dir : pydantic.DirectoryPath
+            The directory where the results are stored
+        upload_files : list[str], optional
+            List of results file names to upload to the Simvue server for storage, by default None
+            These should be supplied as relative to the results directory specified above
+            If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised if no FDS input file was found in specified directory
+        ValueError
+            Raised if more than one FDS input file found in specified directory
+
+        """
+        self.upload_files = upload_files
+        self._loading_historic_run = True
+
+        # Find input file inside results dir
+        _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
+
+        if not _fds_files:
+            raise FileNotFoundError(
+                "Could not find an input '.fds' file in your results directory. Please make sure the relevant input file is provided."
+            )
+        elif len(_fds_files) > 1:
+            raise ValueError(
+                "Found more than one input '.fds' file - please make sure only one such file is in the results directory."
+            )
+
+        self.fds_input_file_path = _fds_files[0]
+        self.save_file(self.fds_input_file_path, "input")
+
+        # Load input file, upload as metadata
+        _nml = f90nml.read(self.fds_input_file_path)
+        self._chid = _nml["head"]["chid"]
+        self.update_metadata({"input_file": _nml})
+
+        self._results_prefix = str(pathlib.Path(self.results_dir).joinpath(self._chid))
+
+        # TODO: Get start time from head of log, end time from last timestamp in log, upload to run (how? Direct from Run api object?)
+
+        # Read relevant files and call methods directly
+
+        # Extract metadata from log file header
+        _data, _meta = self._header_metadata(f"{self._results_prefix}.out")
+        self.update_metadata({**_data, **_meta})
+
+        # Extract metrics from log file
+        with open(f"{self._results_prefix}.out", "r") as log_file:
+            _, _log_metrics = self._log_parser(log_file)
+        for _metric in _log_metrics:
+            self._metrics_callback(_metric)
+
+        # Extract metrics from DEVC and HRR files
+        with open(f"{self._results_prefix}_hrr.csv", "r") as hrr_file:
+            # Skip the first line, as that contains units and not the header names we want
+            next(hrr_file)
+            _hrr_metrics = csv.DictReader(hrr_file)
+
+        with open(f"{self._results_prefix}_devc.csv", "r") as devc_file:
+            # Skip the first line, as that contains units and not the header names we want
+            next(devc_file)
+            _devc_metrics = csv.DictReader(devc_file)
+
+        for _metric in chain(_hrr_metrics, _devc_metrics):
+            self._metrics_callback(_metric)
+
+        # Extract events / metadata from CTRL log file
+        with open(f"{self._results_prefix}_devc_ctrl_log.csv", "r") as ctrl_file:
+            _ctrl_data = csv.DictReader(devc_file)
+
+        for _metric in _ctrl_data:
+            self._ctrl_log_callback(_metric)
+
+        self._post_simulation()
