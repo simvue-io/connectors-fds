@@ -119,6 +119,20 @@ class FDSRun(WrappedRun):
                 stop_file.write("FDS simulation aborted due to Simvue Alert.")
                 stop_file.close()
 
+    def _tidy_run(self):
+        """Add correct start and end times.
+
+        Override base Run class tidy method to set start and end times according to when simulation was actually ran,
+        if loading from historic data.
+        """
+        super()._tidy_run()
+        if self._loading_historic_run:
+            self._sv_obj.started = datetime.fromtimestamp(self._timestamp_mapping[0, 1])
+            self._sv_obj.endtime = datetime.fromtimestamp(
+                self._timestamp_mapping[-1, 1]
+            )
+            self._sv_obj.commit()
+
     def _estimate_timestamp(self, time_to_convert: float) -> str:
         """If loading historic runs, estimate the timestamp of a data point from a CSV file based on the in-simulation time.
 
@@ -138,18 +152,23 @@ class FDSRun(WrappedRun):
 
         """
         _index = numpy.searchsorted(self._timestamp_mapping[:, 0], time_to_convert)
-        # Find how far between the time values in the mapping the new time is, from to 1
-        _fraction = (time_to_convert - self._timestamp_mapping[_index, 0]) / (
-            self._timestamp_mapping[_index + 1, 0] - self._timestamp_mapping[_index, 0]
-        )
-        # Estimate timestamp
-        _timestamp = self._timestamp_mapping[_index, 1] + _fraction * (
-            self._timestamp_mapping[_index + 1, 1] - self._timestamp_mapping[_index, 1]
-        )
+        # If the index found is the last in the array, just use final timestep
+        if _index == self._timestamp_mapping.shape[0]:
+            _timestamp = self._timestamp_mapping[-1, 1]
+        else:
+            # Find how far between the time values in the mapping the new time is, from 0 to 1
+            _fraction = (time_to_convert - self._timestamp_mapping[_index - 1, 0]) / (
+                self._timestamp_mapping[_index, 0]
+                - self._timestamp_mapping[_index - 1, 0]
+            )
+            # Estimate timestamp
+            _timestamp = self._timestamp_mapping[_index - 1, 1] + _fraction * (
+                self._timestamp_mapping[_index, 1]
+                - self._timestamp_mapping[_index - 1, 1]
+            )
         # Convert to string
         return datetime.fromtimestamp(_timestamp).strftime(DATETIME_FORMAT)
 
-    @mp_tail_parser.log_parser
     def _log_parser(
         self, file_content: str, **__
     ) -> tuple[dict[str, typing.Any], list[dict[str, typing.Any]]]:
@@ -226,7 +245,7 @@ class FDSRun(WrappedRun):
                                 (
                                     self._timestamp_mapping,
                                     [
-                                        _out_record["time"],
+                                        float(_out_record["time"]),
                                         datetime.strptime(
                                             _out_record["timestamp"], DATETIME_FORMAT
                                         ).timestamp(),
@@ -268,15 +287,19 @@ class FDSRun(WrappedRun):
         metric_step = data.pop("step", None)
 
         # If this metric is coming from a historic run, we need to estimate the timestamp
-        if self._loading_historic_run and not data.get("timestamp"):
-            data["timestamp"] = self._estimate_timestamp(metric_time)
+        if self._loading_historic_run:
+            metric_timestamp = data.pop(
+                "timestamp", self._estimate_timestamp(float(metric_time))
+            )
+        else:
+            metric_timestamp = data.pop(
+                "timestamp", meta["timestamp"].replace(" ", "T")
+            )
 
-        metric_timestamp = data.pop("timestamp", meta["timestamp"].replace(" ", "T"))
         self.log_metrics(
             data, time=metric_time, step=metric_step, timestamp=metric_timestamp
         )
 
-    @mp_file_parser.file_parser
     def _header_metadata(
         self, input_file: str, **__
     ) -> tuple[dict[str, typing.Any], list[dict[str, typing.Any]]]:
@@ -329,7 +352,7 @@ class FDSRun(WrappedRun):
 
         return {}, _output_metadata
 
-    def _ctrl_log_callback(self, data: typing.Dict, _):
+    def _ctrl_log_callback(self, data: typing.Dict, _=None):
         """Log metrics extracted from the CTRL log file to Simvue.
 
         Parameters
@@ -355,7 +378,7 @@ class FDSRun(WrappedRun):
         # Otherwise, just use the current time
         _timestamp = None
         if self._loading_historic_run:
-            _timestamp = self._estimate_timestamp(data.get("Time (s)"))
+            _timestamp = self._estimate_timestamp(float(data.get("Time (s)")))
 
         self.log_event(event_str, timestamp=_timestamp)
         self.update_metadata({data["ID"]: state})
@@ -432,13 +455,13 @@ class FDSRun(WrappedRun):
         # Upload metadata from file header
         self.file_monitor.track(
             path_glob_exprs=f"{self._results_prefix}.out",
-            parser_func=self._header_metadata,
+            parser_func=mp_file_parser.file_parser(self._header_metadata),
             callback=lambda data, meta: self.update_metadata({**data, **meta}),
             static=True,
         )
         self.file_monitor.tail(
             path_glob_exprs=f"{self._results_prefix}.out",
-            parser_func=self._log_parser,
+            parser_func=mp_tail_parser.log_parser(self._log_parser),
             callback=self._metrics_callback,
         )
         self.file_monitor.tail(
@@ -611,41 +634,37 @@ class FDSRun(WrappedRun):
         self._chid = _nml["head"]["chid"]
         self.update_metadata({"input_file": _nml})
 
-        self._results_prefix = str(pathlib.Path(self.results_dir).joinpath(self._chid))
+        self._results_prefix = str(pathlib.Path(results_dir).joinpath(self._chid))
 
         # TODO: Get start time from head of log, end time from last timestamp in log, upload to run (how? Direct from Run api object?)
 
         # Read relevant files and call methods directly
 
         # Extract metadata from log file header
-        _data, _meta = self._header_metadata(f"{self._results_prefix}.out")
+        _data, _meta = self._header_metadata(input_file=f"{self._results_prefix}.out")
         self.update_metadata({**_data, **_meta})
 
         # Extract metrics from log file
         with open(f"{self._results_prefix}.out", "r") as log_file:
-            _, _log_metrics = self._log_parser(log_file)
+            _, _log_metrics = self._log_parser(file_content=log_file.read())
         for _metric in _log_metrics:
-            self._metrics_callback(_metric)
+            self._metrics_callback(data=_metric, meta={})
 
         # Extract metrics from DEVC and HRR files
-        with open(f"{self._results_prefix}_hrr.csv", "r") as hrr_file:
-            # Skip the first line, as that contains units and not the header names we want
-            next(hrr_file)
-            _hrr_metrics = csv.DictReader(hrr_file)
-
-        with open(f"{self._results_prefix}_devc.csv", "r") as devc_file:
-            # Skip the first line, as that contains units and not the header names we want
-            next(devc_file)
-            _devc_metrics = csv.DictReader(devc_file)
-
-        for _metric in chain(_hrr_metrics, _devc_metrics):
-            self._metrics_callback(_metric)
+        for _suffix in ("hrr", "devc"):
+            with open(f"{self._results_prefix}_{_suffix}.csv", "r") as _file:
+                # Skip the first line, as that contains units and not the header names we want
+                next(_file)
+                for _step, _metric in enumerate(csv.DictReader(_file)):
+                    _metric["step"] = _step
+                    self._metrics_callback(data=_metric, meta={})
 
         # Extract events / metadata from CTRL log file
         with open(f"{self._results_prefix}_devc_ctrl_log.csv", "r") as ctrl_file:
-            _ctrl_data = csv.DictReader(devc_file)
-
-        for _metric in _ctrl_data:
-            self._ctrl_log_callback(_metric)
+            for _metric in csv.DictReader(ctrl_file):
+                _metric = {
+                    key: val.replace(" ", "") for key, val in _metric.items() if val
+                }
+                self._ctrl_log_callback(data=_metric)
 
         self._post_simulation()
