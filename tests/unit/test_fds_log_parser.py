@@ -7,6 +7,7 @@ from unittest.mock import patch
 import uuid
 import pathlib
 import pytest
+import shutil
 
 testdata = [
     (
@@ -70,10 +71,11 @@ def mock_fds_process(self, *_, **__):
         return
     thread = threading.Thread(target=write_to_log)
     thread.start()
-    
+
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @pytest.mark.parametrize("file_name,num_meshes,expected_results", testdata, ids=("single_mesh", "multi_mesh"))
 @patch.object(FDSRun, 'add_process', mock_fds_process)
-def test_fds_log_parser(folder_setup, file_name, num_meshes, expected_results):
+def test_fds_log_parser(folder_setup, load, file_name, num_meshes, expected_results):
     """
     Check that values from FDS log file are uploaded as metrics.
     """ 
@@ -87,10 +89,17 @@ def test_fds_log_parser(folder_setup, file_name, num_meshes, expected_results):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", file_name), pathlib.Path(temp_dir.name).joinpath("fds_test.out"))
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+            )
         
            
     client = simvue.Client()

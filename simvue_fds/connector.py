@@ -126,7 +126,8 @@ class FDSRun(WrappedRun):
         if loading from historic data.
         """
         super()._tidy_run()
-        if self._loading_historic_run:
+
+        if self._loading_historic_run and self._timestamp_mapping.shape[0] > 0:
             self._sv_obj.started = datetime.fromtimestamp(self._timestamp_mapping[0, 1])
             self._sv_obj.endtime = datetime.fromtimestamp(
                 self._timestamp_mapping[-1, 1]
@@ -152,6 +153,7 @@ class FDSRun(WrappedRun):
 
         """
         _index = numpy.searchsorted(self._timestamp_mapping[:, 0], time_to_convert)
+
         # If the index found is the last in the array, just use final timestep
         if _index == self._timestamp_mapping.shape[0]:
             _timestamp = self._timestamp_mapping[-1, 1]
@@ -611,6 +613,7 @@ class FDSRun(WrappedRun):
             Raised if more than one FDS input file found in specified directory
 
         """
+        self.workdir_path = results_dir
         self.upload_files = upload_files
         self._loading_historic_run = True
 
@@ -630,7 +633,7 @@ class FDSRun(WrappedRun):
         self.save_file(self.fds_input_file_path, "input")
 
         # Load input file, upload as metadata
-        _nml = f90nml.read(self.fds_input_file_path)
+        _nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = _nml["head"]["chid"]
         self.update_metadata({"input_file": _nml})
 
@@ -639,32 +642,47 @@ class FDSRun(WrappedRun):
         # TODO: Get start time from head of log, end time from last timestamp in log, upload to run (how? Direct from Run api object?)
 
         # Read relevant files and call methods directly
+        # Will make it so that if there are files missing, the code will still upload whichever files it can...
 
-        # Extract metadata from log file header
-        _data, _meta = self._header_metadata(input_file=f"{self._results_prefix}.out")
-        self.update_metadata({**_data, **_meta})
+        # Extract metadata and metrics from log (.out) file
+        if pathlib.Path(f"{self._results_prefix}.out").exists():
+            _data, _meta = self._header_metadata(
+                input_file=f"{self._results_prefix}.out"
+            )
+            self.update_metadata({**_data, **_meta})
 
-        # Extract metrics from log file
-        with open(f"{self._results_prefix}.out", "r") as log_file:
-            _, _log_metrics = self._log_parser(file_content=log_file.read())
-        for _metric in _log_metrics:
-            self._metrics_callback(data=_metric, meta={})
+            with open(f"{self._results_prefix}.out", "r") as log_file:
+                _, _log_metrics = self._log_parser(file_content=log_file.read())
+            for _metric in _log_metrics:
+                self._metrics_callback(data=_metric, meta={})
+        else:
+            # If file was not found, no other way to obtain timestamps from when the simulation will run
+            # Will default to using the current timestamp for any time (t >= 0 ), with a warning
+            print(
+                "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
+                "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
+            )
+            self._timestamp_mapping = numpy.array(
+                [[-1, self.fds_input_file_path.stat().st_mtime]]
+            )
 
         # Extract metrics from DEVC and HRR files
         for _suffix in ("hrr", "devc"):
-            with open(f"{self._results_prefix}_{_suffix}.csv", "r") as _file:
-                # Skip the first line, as that contains units and not the header names we want
-                next(_file)
-                for _step, _metric in enumerate(csv.DictReader(_file)):
-                    _metric["step"] = _step
-                    self._metrics_callback(data=_metric, meta={})
+            if pathlib.Path(f"{self._results_prefix}_{_suffix}.csv").exists():
+                with open(f"{self._results_prefix}_{_suffix}.csv", "r") as _file:
+                    # Skip the first line, as that contains units and not the header names we want
+                    next(_file)
+                    for _step, _metric in enumerate(csv.DictReader(_file)):
+                        _metric["step"] = _step
+                        self._metrics_callback(data=_metric, meta={})
 
         # Extract events / metadata from CTRL log file
-        with open(f"{self._results_prefix}_devc_ctrl_log.csv", "r") as ctrl_file:
-            for _metric in csv.DictReader(ctrl_file):
-                _metric = {
-                    key: val.replace(" ", "") for key, val in _metric.items() if val
-                }
-                self._ctrl_log_callback(data=_metric)
+        if pathlib.Path(f"{self._results_prefix}_devc_ctrl_log.csv").exists():
+            with open(f"{self._results_prefix}_devc_ctrl_log.csv", "r") as ctrl_file:
+                for _metric in csv.DictReader(ctrl_file):
+                    _metric = {
+                        key: val.replace(" ", "") for key, val in _metric.items() if val
+                    }
+                    self._ctrl_log_callback(data=_metric)
 
         self._post_simulation()
