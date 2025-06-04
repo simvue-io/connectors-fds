@@ -18,7 +18,6 @@ import f90nml
 import multiparser.parsing.file as mp_file_parser
 import multiparser.parsing.tail as mp_tail_parser
 import numpy
-import polars as pl
 import pydantic
 import pyfdstools
 import simvue
