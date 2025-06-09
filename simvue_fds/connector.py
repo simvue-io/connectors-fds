@@ -283,6 +283,8 @@ class FDSRun(WrappedRun):
         """Read and process all 2D slice files, uploading min, max and mean as metrics."""
         processed_time = -1
         while True:
+            time.sleep(60 * self.slice_parse_interval)
+
             # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
             # data_abs is an array of all values, shape (X, Y, Z, times)
             # times_out is an array of in simulation times
@@ -291,7 +293,8 @@ class FDSRun(WrappedRun):
                 with HiddenPrints():
                     grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
                         self._chid,
-                        self.workdir_path or str(pathlib.Path.cwd()),
+                        str(pathlib.Path(self.workdir_path).absolute())
+                        or str(pathlib.Path.cwd()),
                         self.slice_parse_quantity,
                     )
             except ValueError as e:
@@ -301,6 +304,10 @@ class FDSRun(WrappedRun):
                 break
             # Remove times which we have already processed
             to_process = numpy.where(times_out > processed_time)[0]
+
+            if len(to_process) == 0:
+                continue
+
             times_out = times_out[to_process]
             # times_out = times_out[times_out > processed_time]
             data_abs = data_abs[:, :, :, to_process]
@@ -319,10 +326,6 @@ class FDSRun(WrappedRun):
             x_slices = data_abs[x_indices, :, :, :]
             y_slices = data_abs[:, y_indices, :, :]
             z_slices = data_abs[:, :, z_indices, :]
-
-            import pdb
-
-            pdb.set_trace()
 
             for time_idx, time_val in enumerate(times_out):
                 metrics = {}
@@ -365,8 +368,6 @@ class FDSRun(WrappedRun):
 
             if self._trigger.is_set():
                 break
-
-            time.sleep(60 * self.slice_parse_interval)
 
     def _pre_simulation(self):
         """Start the FDS process."""
