@@ -294,7 +294,8 @@ class FDSRun(WrappedRun):
                     grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
                         self._chid,
                         str(pathlib.Path(self.workdir_path).absolute())
-                        or str(pathlib.Path.cwd()),
+                        if self.workdir_path
+                        else str(pathlib.Path.cwd()),
                         self.slice_parse_quantity,
                     )
             except ValueError as e:
@@ -330,37 +331,37 @@ class FDSRun(WrappedRun):
             for time_idx, time_val in enumerate(times_out):
                 metrics = {}
                 for idx in range(len(x_indices)):
-                    metrics[f"2D_slice.x.{str(x_names[idx]).replace('.', '_')}.min"] = (
-                        numpy.min(x_slices[idx, :, :, time_idx])
-                    )
-                    metrics[f"2D_slice.x.{str(x_names[idx]).replace('.', '_')}.max"] = (
-                        numpy.max(x_slices[idx, :, :, time_idx])
-                    )
-                    metrics[f"2D_slice.x.{str(x_names[idx]).replace('.', '_')}.avg"] = (
-                        numpy.mean(x_slices[idx, :, :, time_idx])
-                    )
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.min"
+                    ] = numpy.min(x_slices[idx, :, :, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.max"
+                    ] = numpy.max(x_slices[idx, :, :, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.avg"
+                    ] = numpy.mean(x_slices[idx, :, :, time_idx])
 
                 for idx in range(len(y_indices)):
-                    metrics[f"2D_slice.y.{str(y_names[idx]).replace('.', '_')}.min"] = (
-                        numpy.min(y_slices[:, idx, :, time_idx])
-                    )
-                    metrics[f"2D_slice.y.{str(y_names[idx]).replace('.', '_')}.max"] = (
-                        numpy.max(y_slices[:, idx, :, time_idx])
-                    )
-                    metrics[f"2D_slice.y.{str(y_names[idx]).replace('.', '_')}.avg"] = (
-                        numpy.mean(y_slices[:, idx, :, time_idx])
-                    )
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.min"
+                    ] = numpy.min(y_slices[:, idx, :, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.max"
+                    ] = numpy.max(y_slices[:, idx, :, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.avg"
+                    ] = numpy.mean(y_slices[:, idx, :, time_idx])
 
                 for idx in range(len(z_indices)):
-                    metrics[f"2D_slice.z.{str(z_names[idx]).replace('.', '_')}.min"] = (
-                        numpy.min(z_slices[:, :, idx, time_idx])
-                    )
-                    metrics[f"2D_slice.z.{str(z_names[idx]).replace('.', '_')}.max"] = (
-                        numpy.max(z_slices[:, :, idx, time_idx])
-                    )
-                    metrics[f"2D_slice.z.{str(z_names[idx]).replace('.', '_')}.avg"] = (
-                        numpy.mean(z_slices[:, :, idx, time_idx])
-                    )
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.min"
+                    ] = numpy.min(z_slices[:, :, idx, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.max"
+                    ] = numpy.max(z_slices[:, :, idx, time_idx])
+                    metrics[
+                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.avg"
+                    ] = numpy.mean(z_slices[:, :, idx, time_idx])
 
                 self.log_metrics(metrics, time=float(time_val))
 
