@@ -312,7 +312,6 @@ class FDSRun(WrappedRun):
                 continue
 
             times_out = times_out[to_process]
-            # times_out = times_out[times_out > processed_time]
             data_abs = data_abs[:, :, :, to_process]
 
             # Find X, Y, and Z slices which are present in our data
