@@ -303,7 +303,9 @@ class FDSRun(WrappedRun):
                     "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run."
                 )
                 break
+
             # Remove times which we have already processed
+            times_out = times_out[: data_abs.shape[-1]]
             to_process = numpy.where(times_out > processed_time)[0]
 
             if len(to_process) == 0:
@@ -314,9 +316,22 @@ class FDSRun(WrappedRun):
             data_abs = data_abs[:, :, :, to_process]
 
             # Find X, Y, and Z slices which are present in our data
-            x_indices = numpy.where(~numpy.isnan(data_abs[..., 0]).any(axis=(1, 2)))[0]
-            y_indices = numpy.where(~numpy.isnan(data_abs[..., 0]).any(axis=(0, 2)))[0]
-            z_indices = numpy.where(~numpy.isnan(data_abs[..., 0]).any(axis=(0, 1)))[0]
+            # Defined as over 50% of mesh points being not NaN
+            x_indices = numpy.where(
+                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(1, 2))
+                / (data_abs.shape[1] * data_abs.shape[2])
+                > 0.5
+            )[0]
+            y_indices = numpy.where(
+                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 2))
+                / (data_abs.shape[0] * data_abs.shape[2])
+                > 0.5
+            )[0]
+            z_indices = numpy.where(
+                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 1))
+                / (data_abs.shape[0] * data_abs.shape[1])
+                > 0.5
+            )[0]
 
             # Convert these to their actual positions, for naming
             x_names = grid_abs[x_indices, 0, 0, 0]
@@ -331,38 +346,43 @@ class FDSRun(WrappedRun):
             for time_idx, time_val in enumerate(times_out):
                 metrics = {}
                 for idx in range(len(x_indices)):
+                    sub_slice = x_slices[idx, :, :, time_idx]
+                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(x_slices[idx, :, :, time_idx])
+                    ] = numpy.min(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(x_slices[idx, :, :, time_idx])
+                    ] = numpy.max(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(x_slices[idx, :, :, time_idx])
+                    ] = numpy.mean(sub_slice)
 
                 for idx in range(len(y_indices)):
+                    sub_slice = y_slices[idx, :, :, time_idx]
+                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(y_slices[:, idx, :, time_idx])
+                    ] = numpy.min(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(y_slices[:, idx, :, time_idx])
+                    ] = numpy.max(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(y_slices[:, idx, :, time_idx])
+                    ] = numpy.mean(sub_slice)
 
                 for idx in range(len(z_indices)):
+                    sub_slice = z_slices[idx, :, :, time_idx]
+                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(z_slices[:, :, idx, time_idx])
+                    ] = numpy.min(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(z_slices[:, :, idx, time_idx])
+                    ] = numpy.max(sub_slice)
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(z_slices[:, :, idx, time_idx])
-
+                    ] = numpy.mean(sub_slice)
                 self.log_metrics(metrics, time=float(time_val))
 
             processed_time = times_out[-1]
@@ -600,11 +620,20 @@ class FDSRun(WrappedRun):
 
         if self.slice_parse_quantity:
             # This is only necessary because of the way pyfdstools works
-            if self.workdir_path:
-                shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
-            elif (
-                pathlib.Path(self.fds_input_file_path).absolute()
-                != pathlib.Path.cwd().joinpath(f"{self._chid}.fds").absolute()
+            if (
+                self.workdir_path
+                and (
+                    pathlib.Path(self.fds_input_file_path).absolute()
+                    != pathlib.Path(self.workdir_path)
+                    .joinpath(f"{self._chid}.fds")
+                    .absolute()
+                )
+            ) or (
+                not self.workdir_path
+                and (
+                    pathlib.Path(self.fds_input_file_path).absolute()
+                    != pathlib.Path.cwd().joinpath(f"{self._chid}.fds").absolute()
+                )
             ):
                 shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
 
