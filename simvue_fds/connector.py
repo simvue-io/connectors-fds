@@ -358,7 +358,7 @@ class FDSRun(WrappedRun):
                     ] = numpy.mean(sub_slice)
 
                 for idx in range(len(y_indices)):
-                    sub_slice = y_slices[idx, :, :, time_idx]
+                    sub_slice = y_slices[:, idx, :, time_idx]
                     sub_slice = sub_slice[~numpy.isnan(sub_slice)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.min"
@@ -371,7 +371,7 @@ class FDSRun(WrappedRun):
                     ] = numpy.mean(sub_slice)
 
                 for idx in range(len(z_indices)):
-                    sub_slice = z_slices[idx, :, :, time_idx]
+                    sub_slice = z_slices[:, :, idx, time_idx]
                     sub_slice = sub_slice[~numpy.isnan(sub_slice)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.min"
