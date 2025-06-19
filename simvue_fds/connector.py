@@ -197,13 +197,17 @@ class FDSRun(WrappedRun):
 
         """
         metric_time = data.pop("time", None) or data.pop("Time", None)
-        metric_step = data.pop("step", None)
+        metric_step = data.pop("step", None) or self._step_tracker.get(
+            meta["file_name"], 0
+        )
         self.log_metrics(
             data,
             timestamp=meta["timestamp"].replace(" ", "T"),
             time=metric_time,
             step=metric_step,
         )
+        # Since we don't have 'step' information from CSV files, just increment on each reading, starting from 0
+        self._step_tracker[meta["file_name"]] = int(metric_step) + 1
 
     @mp_file_parser.file_parser
     def _header_metadata(
@@ -614,6 +618,7 @@ class FDSRun(WrappedRun):
         self._activation_times = False
         self._activation_times_data = {}
         self._slice_time = -1
+        self._step_tracker = {}
 
         nml = f90nml.read(self.fds_input_file_path)
         self._chid = nml["head"]["chid"]
