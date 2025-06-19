@@ -343,52 +343,59 @@ class FDSRun(WrappedRun):
             y_slices = data_abs[:, y_indices, :, :]
             z_slices = data_abs[:, :, z_indices, :]
 
+            def add_metrics(
+                metrics: dict,
+                sub_slice: numpy.ndarray,
+                label: str,
+                name: float,
+                ignore_zeros: bool,
+            ):
+                sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+                if ignore_zeros:
+                    sub_slice = sub_slice[numpy.where(sub_slice != 0)]
+                metrics[
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(name).replace('.', '_')}.min"
+                ] = numpy.min(sub_slice)
+                metrics[
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(name).replace('.', '_')}.max"
+                ] = numpy.max(sub_slice)
+                metrics[
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(name).replace('.', '_')}.avg"
+                ] = numpy.mean(sub_slice)
+                return metrics
+
             for time_idx, time_val in enumerate(times_out):
                 metrics = {}
                 for idx in range(len(x_indices)):
                     sub_slice = x_slices[idx, :, :, time_idx]
-                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
-                    if self.slice_parse_ignore_zeros:
-                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(sub_slice)
+                    metrics = add_metrics(
+                        metrics,
+                        sub_slice,
+                        label="x",
+                        name=x_names[idx],
+                        ignore_zeros=self.slice_parse_ignore_zeros,
+                    )
 
                 for idx in range(len(y_indices)):
                     sub_slice = y_slices[:, idx, :, time_idx]
-                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
-                    if self.slice_parse_ignore_zeros:
-                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(sub_slice)
+                    metrics = add_metrics(
+                        metrics,
+                        sub_slice,
+                        label="y",
+                        name=y_names[idx],
+                        ignore_zeros=self.slice_parse_ignore_zeros,
+                    )
 
                 for idx in range(len(z_indices)):
                     sub_slice = z_slices[:, :, idx, time_idx]
-                    sub_slice = sub_slice[~numpy.isnan(sub_slice)]
-                    if self.slice_parse_ignore_zeros:
-                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.min"
-                    ] = numpy.min(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.max"
-                    ] = numpy.max(sub_slice)
-                    metrics[
-                        f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.avg"
-                    ] = numpy.mean(sub_slice)
+                    metrics = add_metrics(
+                        metrics,
+                        sub_slice,
+                        label="z",
+                        name=z_names[idx],
+                        ignore_zeros=self.slice_parse_ignore_zeros,
+                    )
+
                 self.log_metrics(metrics, time=float(time_val), step=step)
                 step += 1
 
