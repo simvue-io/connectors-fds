@@ -282,6 +282,7 @@ class FDSRun(WrappedRun):
     def _slice_parser(self):
         """Read and process all 2D slice files, uploading min, max and mean as metrics."""
         processed_time = -1
+        step = 0
         while True:
             time.sleep(60 * self.slice_parse_interval)
 
@@ -347,6 +348,8 @@ class FDSRun(WrappedRun):
                 for idx in range(len(x_indices)):
                     sub_slice = x_slices[idx, :, :, time_idx]
                     sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+                    if self.slice_parse_ignore_zeros:
+                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(x_names[idx]).replace('.', '_')}.min"
                     ] = numpy.min(sub_slice)
@@ -360,6 +363,8 @@ class FDSRun(WrappedRun):
                 for idx in range(len(y_indices)):
                     sub_slice = y_slices[:, idx, :, time_idx]
                     sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+                    if self.slice_parse_ignore_zeros:
+                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.y.{str(y_names[idx]).replace('.', '_')}.min"
                     ] = numpy.min(sub_slice)
@@ -373,6 +378,8 @@ class FDSRun(WrappedRun):
                 for idx in range(len(z_indices)):
                     sub_slice = z_slices[:, :, idx, time_idx]
                     sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+                    if self.slice_parse_ignore_zeros:
+                        sub_slice = sub_slice[numpy.where(sub_slice != 0)]
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.min"
                     ] = numpy.min(sub_slice)
@@ -382,7 +389,8 @@ class FDSRun(WrappedRun):
                     metrics[
                         f"{self.slice_parse_quantity.replace(' ', '_').lower()}.z.{str(z_names[idx]).replace('.', '_')}.avg"
                     ] = numpy.mean(sub_slice)
-                self.log_metrics(metrics, time=float(time_val))
+                self.log_metrics(metrics, time=float(time_val), step=step)
+                step += 1
 
             processed_time = times_out[-1]
 
@@ -534,6 +542,7 @@ class FDSRun(WrappedRun):
         upload_files: list[str] = None,
         slice_parse_quantity: str = None,
         slice_parse_interval: int = 1,
+        slice_parse_ignore_zeros: bool = True,
         ulimit: typing.Union[str, int] = "unlimited",
         fds_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
@@ -564,6 +573,8 @@ class FDSRun(WrappedRun):
             Default is None, which will disable this feature
         slice_parse_interval : int, optional
             Interval (in minutes) at which to parse and upload 2D slice data, default is 1
+        slice_parse_ignore_zeros : bool, optional
+            Whether to ignore values of zero in slices (useful if there are obstructions in the mesh), default is True
         ulimit : typing.Union[str, int], optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[typing.Dict[str, typing.Any]], optional
@@ -586,6 +597,7 @@ class FDSRun(WrappedRun):
         self.upload_files = upload_files
         self.slice_parse_quantity = slice_parse_quantity
         self.slice_parse_interval = slice_parse_interval
+        self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
         self.ulimit = ulimit
         self.fds_env_vars = fds_env_vars or {}
         self.run_in_parallel = run_in_parallel
