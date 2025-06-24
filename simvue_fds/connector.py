@@ -115,7 +115,10 @@ class FDSRun(WrappedRun):
 
     def _soft_abort(self):
         """Create a '.stop' file so that FDS simulation is stopped gracefully if an abort is triggered."""
-        if not pathlib.Path(f"{self._results_prefix}.stop").exists():
+        if (
+            self._results_prefix
+            and not pathlib.Path(f"{self._results_prefix}.stop").exists()
+        ):
             with open(f"{self._results_prefix}.stop", "w") as stop_file:
                 stop_file.write("FDS simulation aborted due to Simvue Alert.")
                 stop_file.close()
