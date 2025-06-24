@@ -25,6 +25,13 @@ To run this example on your own system with FDS installed:
     - Run the example script: poetry run python fds_example.py
     
 For a more in depth example, see: https://docs.simvue.io/examples/fds/
+
+This example is set to only simulate 10 seconds of the fire - to see more,
+open the file `activate_vents.fds` and update the following lines (eg to increase to 60s):
+
+&TIME T_END=60. /
+&DUMP NFRAMES=60, WRITE_XYZ=.TRUE. /
+
 """
 
 import pathlib
@@ -61,6 +68,8 @@ def fds_example(run_folder, offline=False, parallel=False) -> None:
         run.launch(
             fds_input_file_path = pathlib.Path(__file__).parent.joinpath("activate_vents.fds"),
             workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
+            # You can optionally have the connector track slices in your simulation
+            slice_parse_quantity = "TEMPERATURE",
             # And you can choose whether to run it in parallel
             run_in_parallel = parallel,
             num_processors = 2,

@@ -3,7 +3,9 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
+import contextlib
 import glob
+import io
 import pathlib
 import platform
 import re
@@ -24,8 +26,6 @@ import simvue
 from loguru import logger
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
-
-from simvue_fds.utils import HiddenPrints
 
 
 class FDSRun(WrappedRun):
@@ -287,15 +287,16 @@ class FDSRun(WrappedRun):
         """Read and process all 2D slice files, uploading min, max and mean as metrics."""
         processed_time = -1
         step = 0
+        self._parsing = True
         while True:
-            time.sleep(60 * self.slice_parse_interval)
+            time.sleep(6 * self.slice_parse_interval)
 
             # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
             # data_abs is an array of all values, shape (X, Y, Z, times)
             # times_out is an array of in simulation times
+            temp_stdout = io.StringIO()
             try:
-                # Need to silence this function so it doesnt print tons of junk
-                with HiddenPrints():
+                with contextlib.redirect_stdout(temp_stdout):
                     grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
                         self._chid,
                         str(pathlib.Path(self.workdir_path).absolute())
@@ -303,10 +304,13 @@ class FDSRun(WrappedRun):
                         else str(pathlib.Path.cwd()),
                         self.slice_parse_quantity,
                     )
-            except ValueError as e:
+            except Exception as e:
+                self._parsing = False
                 logger.error(
                     "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run."
                 )
+                print("Exception is:", e)
+                print(temp_stdout.getvalue())
                 break
 
             # Remove times which we have already processed
@@ -347,7 +351,7 @@ class FDSRun(WrappedRun):
             y_slices = data_abs[:, y_indices, :, :]
             z_slices = data_abs[:, :, z_indices, :]
 
-            def add_metrics(
+            def _add_metrics(
                 metrics: dict,
                 sub_slice: numpy.ndarray,
                 label: str,
@@ -358,13 +362,13 @@ class FDSRun(WrappedRun):
                 if ignore_zeros:
                     sub_slice = sub_slice[numpy.where(sub_slice != 0)]
                 metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(name).replace('.', '_')}.min"
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.min"
                 ] = numpy.min(sub_slice)
                 metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(name).replace('.', '_')}.max"
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.max"
                 ] = numpy.max(sub_slice)
                 metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.x.{str(name).replace('.', '_')}.avg"
+                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.avg"
                 ] = numpy.mean(sub_slice)
                 return metrics
 
@@ -372,7 +376,7 @@ class FDSRun(WrappedRun):
                 metrics = {}
                 for idx in range(len(x_indices)):
                     sub_slice = x_slices[idx, :, :, time_idx]
-                    metrics = add_metrics(
+                    metrics = _add_metrics(
                         metrics,
                         sub_slice,
                         label="x",
@@ -382,7 +386,7 @@ class FDSRun(WrappedRun):
 
                 for idx in range(len(y_indices)):
                     sub_slice = y_slices[:, idx, :, time_idx]
-                    metrics = add_metrics(
+                    metrics = _add_metrics(
                         metrics,
                         sub_slice,
                         label="y",
@@ -392,7 +396,7 @@ class FDSRun(WrappedRun):
 
                 for idx in range(len(z_indices)):
                     sub_slice = z_slices[:, :, idx, time_idx]
-                    metrics = add_metrics(
+                    metrics = _add_metrics(
                         metrics,
                         sub_slice,
                         label="z",
@@ -406,6 +410,7 @@ class FDSRun(WrappedRun):
             processed_time = times_out[-1]
 
             if self._trigger.is_set():
+                self._parsing = False
                 break
 
     def _pre_simulation(self):
@@ -466,10 +471,11 @@ class FDSRun(WrappedRun):
             completion_callback=check_for_errors,
         )
 
-        # Should add locking to this? And thread each call individuall to make sure it frees memory? #TODO
         if self.slice_parse_quantity:
             slice_parser = threading.Thread(target=self._slice_parser)
-            slice_parser.daemon = True  # TODO: is this safe in this case? Have done it so that ctrl C doesnt wait for sleep to finish
+            slice_parser.daemon = (
+                True  # So that it is stopped if the overall run is stopped
+            )
             slice_parser.start()
 
     def _during_simulation(self):
@@ -540,6 +546,10 @@ class FDSRun(WrappedRun):
                     ):
                         continue
                     self.save_file(file, "output")
+
+        # Then wait for slice parser to finish
+        while self._parsing:
+            time.sleep(10)
 
         super()._post_simulation()
 
@@ -619,6 +629,7 @@ class FDSRun(WrappedRun):
         self._activation_times_data = {}
         self._slice_time = -1
         self._step_tracker = {}
+        self._parsing = False
 
         nml = f90nml.read(self.fds_input_file_path)
         self._chid = nml["head"]["chid"]

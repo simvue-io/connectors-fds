@@ -3,6 +3,7 @@ import pytest
 import subprocess
 import pathlib
 import tempfile
+import numpy
 import simvue
 from simvue.sender import sender
 
@@ -56,6 +57,21 @@ def test_fds_connector(folder_setup, offline, parallel):
     # Check metrics from log file
     assert metrics["max_pressure_error"]["count"] > 0
     assert metrics["max_divergence.mesh.2"]["count"] > 0
+    
+    # Check metrics from slice
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    
+    _retrieved = client.get_metric_values(run_ids=[run_id], metric_names = ["temperature.y.2_0.max", "temperature.y.2_0.min", "temperature.y.2_0.avg"], xaxis="time")
+    _max = numpy.array(list(_retrieved["temperature.y.2_0.max"].values()))
+    _min = numpy.array(list(_retrieved["temperature.y.2_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["temperature.y.2_0.avg"].values()))
+
+    # Check all max >= avg >= min
+    assert numpy.all(_max >= _avg)
+    assert numpy.all(_avg >= _min)
+    assert numpy.all(_min > 0)
 
     temp_dir = tempfile.TemporaryDirectory()
     

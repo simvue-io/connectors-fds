@@ -98,7 +98,8 @@ def mock_aborted_fds_process(self, *_, **__):
         
     thread = threading.Thread(target=aborted_process, args=(self,))
     thread.start()
-    
+
+@property
 def abort(self):
     """
     Instead of making an API call to the server, just sleep for 1s and return True to indicate an abort has been triggered
