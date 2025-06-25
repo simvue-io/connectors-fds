@@ -121,7 +121,7 @@ class FDSRun(WrappedRun):
                 stop_file.write("FDS simulation aborted due to Simvue Alert.")
                 stop_file.close()
 
-    def _tidy_run(self):
+    def _tidy_run(self) -> None:
         """Add correct start and end times.
 
         Override base Run class tidy method to set start and end times according to when simulation was actually ran,
