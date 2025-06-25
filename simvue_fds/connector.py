@@ -296,7 +296,8 @@ class FDSRun(WrappedRun):
         # If this metric is coming from a historic run, we need to estimate the timestamp
         if self._loading_historic_run:
             metric_timestamp = data.pop(
-                "timestamp", self._estimate_timestamp(float(metric_time))
+                "timestamp",
+                self._estimate_timestamp(float(metric_time) if metric_time else None),
             )
         else:
             metric_timestamp = data.pop(
