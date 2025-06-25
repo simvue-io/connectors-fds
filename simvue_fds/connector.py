@@ -405,133 +405,137 @@ class FDSRun(WrappedRun):
         self.log_event(event_str, timestamp=_timestamp)
         self.update_metadata({data["ID"]: state})
 
+    def _add_slice_metrics(
+        self,
+        metrics: dict,
+        sub_slice: numpy.ndarray,
+        label: str,
+        name: float,
+        ignore_zeros: bool,
+    ):
+        sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+        if ignore_zeros:
+            sub_slice = sub_slice[numpy.where(sub_slice != 0)]
+        metrics[
+            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.min"
+        ] = numpy.min(sub_slice)
+        metrics[
+            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.max"
+        ] = numpy.max(sub_slice)
+        metrics[
+            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.avg"
+        ] = numpy.mean(sub_slice)
+        return metrics
+
+    def _parse_slice(self):
+        # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
+        # data_abs is an array of all values, shape (X, Y, Z, times)
+        # times_out is an array of in simulation times
+        temp_stdout = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(temp_stdout):
+                grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
+                    self._chid,
+                    str(pathlib.Path(self.workdir_path).absolute())
+                    if self.workdir_path
+                    else str(pathlib.Path.cwd()),
+                    self.slice_parse_quantity,
+                )
+        except Exception as e:
+            logger.error(
+                "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run. Enable debug logging for more info."
+            )
+            logger.debug(f"Exception is: {e}")
+            logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
+            return False
+
+        # Remove times which we have already processed
+        times_out = times_out[: data_abs.shape[-1]]
+        to_process = numpy.where(times_out > self._processed_time)[0]
+
+        if len(to_process) == 0:
+            return True
+
+        times_out = times_out[to_process]
+        data_abs = data_abs[:, :, :, to_process]
+
+        # Find X, Y, and Z slices which are present in our data
+        # Defined as over 50% of mesh points being not NaN
+        x_indices = numpy.where(
+            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(1, 2))
+            / (data_abs.shape[1] * data_abs.shape[2])
+            > 0.5
+        )[0]
+        y_indices = numpy.where(
+            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 2))
+            / (data_abs.shape[0] * data_abs.shape[2])
+            > 0.5
+        )[0]
+        z_indices = numpy.where(
+            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 1))
+            / (data_abs.shape[0] * data_abs.shape[1])
+            > 0.5
+        )[0]
+
+        # Convert these to their actual positions, for naming
+        x_names = grid_abs[x_indices, 0, 0, 0]
+        y_names = grid_abs[0, y_indices, 0, 1]
+        z_names = grid_abs[0, 0, z_indices, 2]
+
+        # Take the 2D slices
+        x_slices = data_abs[x_indices, :, :, :]
+        y_slices = data_abs[:, y_indices, :, :]
+        z_slices = data_abs[:, :, z_indices, :]
+
+        for time_idx, time_val in enumerate(times_out):
+            metrics = {}
+            for idx in range(len(x_indices)):
+                sub_slice = x_slices[idx, :, :, time_idx]
+                metrics = self._add_slice_metrics(
+                    metrics,
+                    sub_slice,
+                    label="x",
+                    name=x_names[idx],
+                    ignore_zeros=self.slice_parse_ignore_zeros,
+                )
+
+            for idx in range(len(y_indices)):
+                sub_slice = y_slices[:, idx, :, time_idx]
+                metrics = self._add_slice_metrics(
+                    metrics,
+                    sub_slice,
+                    label="y",
+                    name=y_names[idx],
+                    ignore_zeros=self.slice_parse_ignore_zeros,
+                )
+
+            for idx in range(len(z_indices)):
+                sub_slice = z_slices[:, :, idx, time_idx]
+                metrics = self._add_slice_metrics(
+                    metrics,
+                    sub_slice,
+                    label="z",
+                    name=z_names[idx],
+                    ignore_zeros=self.slice_parse_ignore_zeros,
+                )
+
+            self.log_metrics(metrics, time=float(time_val), step=self._slice_step)
+            self._slice_step += 1
+
+        self._processed_time = times_out[-1]
+        return True
+
     def _slice_parser(self):
         """Read and process all 2D slice files, uploading min, max and mean as metrics."""
-        processed_time = -1
-        step = 0
+        self._processed_time = -1
+        self._slice_step = 0
         self._parsing = True
         while True:
-            time.sleep(6 * self.slice_parse_interval)
+            time.sleep(60 * self.slice_parse_interval)
 
-            # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
-            # data_abs is an array of all values, shape (X, Y, Z, times)
-            # times_out is an array of in simulation times
-            temp_stdout = io.StringIO()
-            try:
-                with contextlib.redirect_stdout(temp_stdout):
-                    grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
-                        self._chid,
-                        str(pathlib.Path(self.workdir_path).absolute())
-                        if self.workdir_path
-                        else str(pathlib.Path.cwd()),
-                        self.slice_parse_quantity,
-                    )
-            except Exception as e:
-                self._parsing = False
-                logger.error(
-                    "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run. Enable debug logging for more info."
-                )
-                logger.debug(f"Exception is: {e}")
-                logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
-                break
+            slice_parsed = self._parse_slice()
 
-            # Remove times which we have already processed
-            times_out = times_out[: data_abs.shape[-1]]
-            to_process = numpy.where(times_out > processed_time)[0]
-
-            if len(to_process) == 0:
-                continue
-
-            times_out = times_out[to_process]
-            data_abs = data_abs[:, :, :, to_process]
-
-            # Find X, Y, and Z slices which are present in our data
-            # Defined as over 50% of mesh points being not NaN
-            x_indices = numpy.where(
-                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(1, 2))
-                / (data_abs.shape[1] * data_abs.shape[2])
-                > 0.5
-            )[0]
-            y_indices = numpy.where(
-                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 2))
-                / (data_abs.shape[0] * data_abs.shape[2])
-                > 0.5
-            )[0]
-            z_indices = numpy.where(
-                numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 1))
-                / (data_abs.shape[0] * data_abs.shape[1])
-                > 0.5
-            )[0]
-
-            # Convert these to their actual positions, for naming
-            x_names = grid_abs[x_indices, 0, 0, 0]
-            y_names = grid_abs[0, y_indices, 0, 1]
-            z_names = grid_abs[0, 0, z_indices, 2]
-
-            # Take the 2D slices
-            x_slices = data_abs[x_indices, :, :, :]
-            y_slices = data_abs[:, y_indices, :, :]
-            z_slices = data_abs[:, :, z_indices, :]
-
-            def _add_metrics(
-                metrics: dict,
-                sub_slice: numpy.ndarray,
-                label: str,
-                name: float,
-                ignore_zeros: bool,
-            ):
-                sub_slice = sub_slice[~numpy.isnan(sub_slice)]
-                if ignore_zeros:
-                    sub_slice = sub_slice[numpy.where(sub_slice != 0)]
-                metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.min"
-                ] = numpy.min(sub_slice)
-                metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.max"
-                ] = numpy.max(sub_slice)
-                metrics[
-                    f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.avg"
-                ] = numpy.mean(sub_slice)
-                return metrics
-
-            for time_idx, time_val in enumerate(times_out):
-                metrics = {}
-                for idx in range(len(x_indices)):
-                    sub_slice = x_slices[idx, :, :, time_idx]
-                    metrics = _add_metrics(
-                        metrics,
-                        sub_slice,
-                        label="x",
-                        name=x_names[idx],
-                        ignore_zeros=self.slice_parse_ignore_zeros,
-                    )
-
-                for idx in range(len(y_indices)):
-                    sub_slice = y_slices[:, idx, :, time_idx]
-                    metrics = _add_metrics(
-                        metrics,
-                        sub_slice,
-                        label="y",
-                        name=y_names[idx],
-                        ignore_zeros=self.slice_parse_ignore_zeros,
-                    )
-
-                for idx in range(len(z_indices)):
-                    sub_slice = z_slices[:, :, idx, time_idx]
-                    metrics = _add_metrics(
-                        metrics,
-                        sub_slice,
-                        label="z",
-                        name=z_names[idx],
-                        ignore_zeros=self.slice_parse_ignore_zeros,
-                    )
-
-                self.log_metrics(metrics, time=float(time_val), step=step)
-                step += 1
-
-            processed_time = times_out[-1]
-
-            if self._trigger.is_set():
+            if self._trigger.is_set() or not slice_parsed:
                 self._parsing = False
                 break
 

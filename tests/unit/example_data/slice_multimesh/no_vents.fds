@@ -3,7 +3,6 @@
 
 # Define the room as a 3m x 4m x 3m cube
 &MESH XB= 0, 3, 0, 4, 0, 3, IJK= 30, 40, 30 /
-
 #&MESH XB= 0, 3, 2, 4, 0, 3, IJK= 30, 20, 30 /
 &OBST XB= 1.25, 1.75, 1.25, 1.75, 1.25, 1.75/
 
