@@ -429,10 +429,10 @@ class FDSRun(WrappedRun):
             except Exception as e:
                 self._parsing = False
                 logger.error(
-                    "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run."
+                    "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run. Enable debug logging for more info."
                 )
-                print("Exception is:", e)
-                print(temp_stdout.getvalue())
+                logger.debug(f"Exception is: {e}")
+                logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
                 break
 
             # Remove times which we have already processed
