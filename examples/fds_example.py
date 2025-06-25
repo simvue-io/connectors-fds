@@ -80,7 +80,7 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
 
         # Then call the .launch() method to start your FDS simulation, providing the path to the input file
         run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("activate_vents.fds"),
+            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("supply_exhaust_vents.fds"),
             workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
             # You can optionally have the connector track slices in your simulation
             slice_parse_quantity = "TEMPERATURE",

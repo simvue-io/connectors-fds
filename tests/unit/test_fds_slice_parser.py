@@ -24,27 +24,42 @@ def mock_post_sim(self, *_, **__):
 @pytest.mark.parametrize("results_path", ("slice_singlemesh", "slice_multimesh"), ids=("single_mesh", "multi_mesh"))
 @pytest.mark.parametrize("slice_parameter", ("SOOT VISIBILITY", "TEMPERATURE", None), ids=("visibility", "temperature", "disabled"))
 @pytest.mark.parametrize("ignore_zeros", (True, False), ids=("ignore_zeros", "include_zeros"))
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 @patch.object(FDSRun, '_during_simulation', mock_during_sim)
 @patch.object(FDSRun, '_post_simulation', mock_post_sim)
-def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_zeros):
+def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_zeros, load):
     _prefix = slice_parameter.replace(' ', '_').lower() if slice_parameter else None
     with FDSRun() as run:
-        run.init(f"testing_{results_path}_{_prefix}_{'ignore_zeros' if ignore_zeros else 'include_zeros'}", folder=folder_setup)
+        run.init(f"testing_{results_path}_{_prefix}_{'ignore_zeros' if ignore_zeros else 'include_zeros'}_{'load' if load else 'launch'}", folder=folder_setup)
         run_id = run.id
-        if slice_parameter:
-            run.launch(
-                fds_input_file_path= "no_vents.fds",
-                workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                slice_parse_quantity = slice_parameter,
-                slice_parse_interval = 1,
-                slice_parse_ignore_zeros = ignore_zeros,
-            )
+        if load:
+            if slice_parameter:
+                run.load(
+                    pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                    slice_parse_quantity = slice_parameter,
+                    slice_parse_ignore_zeros = ignore_zeros
+                )
+            else:
+                run.load(
+                    pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                )
         else:
-            run.launch(
-                fds_input_file_path= "no_vents.fds",
-                workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-            )
+            if slice_parameter:
+                run.launch(
+                    fds_input_file_path= "no_vents.fds",
+                    workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                    slice_parse_quantity = slice_parameter,
+                    slice_parse_interval = 1,
+                    slice_parse_ignore_zeros = ignore_zeros,
+                )
+            else:
+                run.launch(
+                    fds_input_file_path= "no_vents.fds",
+                    workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                )
+                
+        time.sleep(2)
     
         client = simvue.Client()
         

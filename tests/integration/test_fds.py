@@ -6,6 +6,7 @@ import pathlib
 import tempfile
 import numpy
 import simvue
+import time
 from simvue.sender import sender
 
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
@@ -29,6 +30,8 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     if offline:
         _id_mapping = sender()
         run_id = _id_mapping.get(run_id)
+        
+    time.sleep(2)
     
     client = simvue.Client()
     run_data = client.get_run(run_id)
@@ -86,7 +89,7 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     
     # Check input file uploaded as input
     client.get_artifacts_as_files(run_id, "input", temp_dir.name)
-    assert pathlib.Path(temp_dir.name).joinpath("activate_vents.fds").exists()
+    assert pathlib.Path(temp_dir.name).joinpath("supply_exhaust_vents.fds").exists()
     
     # Check results uploaded as output
     client.get_artifacts_as_files(run_id, "output", temp_dir.name)

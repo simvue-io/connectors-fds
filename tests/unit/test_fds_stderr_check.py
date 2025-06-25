@@ -30,7 +30,7 @@ def test_fds_stderr_check(folder_setup, file_name):
         with FDSRun() as run:
             run.config(disable_resources_metrics=True)
             run.init('test_fds_stderr-%s' % str(uuid.uuid4()), folder=folder_setup)
-            run_id = run._id
+            run_id = run.id
             run.launch(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"))
             
     time.sleep(1)

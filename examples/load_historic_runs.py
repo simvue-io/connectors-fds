@@ -63,6 +63,8 @@ def load_runs_example(run_folder: str, offline: bool=False) -> str:
         # Then call the .load() method to load historic results, providing the path to the results directory
         run.load(
             results_dir = pathlib.Path(__file__).parent.joinpath("example_results"),
+            # You can optionally have the connector track slices in your simulation
+            slice_parse_quantity = "TEMPERATURE",
         )
         
         # Once the simulation is complete, you can upload any final items to the Simvue run before it closes

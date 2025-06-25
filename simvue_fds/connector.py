@@ -48,9 +48,16 @@ class FDSRun(WrappedRun):
     fds_input_file_path: pydantic.FilePath = None
     workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
     upload_files: typing.List[str] = None
+    slice_parse_quantity: str = None
+    slice_parse_interval: int = 1
+    slice_parse_ignore_zeros: bool = False
     ulimit: typing.Union[str, int] = None
     fds_env_vars: typing.Dict[str, typing.Any] = None
 
+    _slice_processed_time: int = -1
+    _slice_step: int = 0
+    _step_tracker: dict = {}
+    _parsing: bool = False
     _activation_times: bool = False
     _activation_times_data: typing.Dict[str, float] = {}
     _chid: str = None
@@ -451,7 +458,7 @@ class FDSRun(WrappedRun):
 
         # Remove times which we have already processed
         times_out = times_out[: data_abs.shape[-1]]
-        to_process = numpy.where(times_out > self._processed_time)[0]
+        to_process = numpy.where(times_out > self._slice_processed_time)[0]
 
         if len(to_process) == 0:
             return True
@@ -522,13 +529,11 @@ class FDSRun(WrappedRun):
             self.log_metrics(metrics, time=float(time_val), step=self._slice_step)
             self._slice_step += 1
 
-        self._processed_time = times_out[-1]
+        self._slice_processed_time = times_out[-1]
         return True
 
     def _slice_parser(self):
         """Read and process all 2D slice files, uploading min, max and mean as metrics."""
-        self._processed_time = -1
-        self._slice_step = 0
         self._parsing = True
         while True:
             time.sleep(60 * self.slice_parse_interval)
@@ -753,9 +758,6 @@ class FDSRun(WrappedRun):
 
         self._activation_times = False
         self._activation_times_data = {}
-        self._slice_time = -1
-        self._step_tracker = {}
-        self._parsing = False
 
         nml = f90nml.read(self.fds_input_file_path)
         self._chid = nml["head"]["chid"]
@@ -806,7 +808,11 @@ class FDSRun(WrappedRun):
         super().launch()
 
     def load(
-        self, results_dir: pydantic.DirectoryPath, upload_files: list[str] = None
+        self,
+        results_dir: pydantic.DirectoryPath,
+        upload_files: list[str] = None,
+        slice_parse_quantity: str = None,
+        slice_parse_ignore_zeros: bool = True,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
@@ -818,6 +824,13 @@ class FDSRun(WrappedRun):
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the results directory specified above
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
+        slice_parse_quantity: str, optional
+            ***** WARNING: EXPERIMENTAL FEATURE*****
+            The quantity for which to find any 2D slices saved by the simulation, and upload the min/max/average as metrics
+            Default is None, which will disable this feature
+            Note that the XYZ files must have been recorded when running the simulation for this to work.
+        slice_parse_ignore_zeros : bool, optional
+            Whether to ignore values of zero in slices (useful if there are obstructions in the mesh), default is True
 
         Raises
         ------
@@ -828,6 +841,8 @@ class FDSRun(WrappedRun):
         """
         self.workdir_path = results_dir
         self.upload_files = upload_files
+        self.slice_parse_quantity = slice_parse_quantity
+        self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
         self._loading_historic_run = True
 
         # Find input file inside results dir
@@ -838,6 +853,7 @@ class FDSRun(WrappedRun):
             logger.warning(
                 "No FDS input file found in your results directory - input metadata will not be stored."
             )
+
             # Try to deduce CHID by common prefix within directory
             all_files = [
                 file.name
@@ -863,6 +879,18 @@ class FDSRun(WrappedRun):
             self._chid = _nml["head"]["chid"]
             self.update_metadata({"input_file": _nml})
 
+            if (
+                self.slice_parse_quantity
+                and self.fds_input_file_path.stem != self._chid
+            ):
+                logger.warning(
+                    "Detected FDS input file with name different to CHID - creating a copy for slice parser..."
+                )
+                shutil.copy(
+                    self.fds_input_file_path,
+                    pathlib.Path(results_dir).joinpath(f"{self._chid}.fds"),
+                )
+
         self._results_prefix = str(pathlib.Path(results_dir).joinpath(self._chid))
 
         # Read relevant files and call methods directly
@@ -878,7 +906,9 @@ class FDSRun(WrappedRun):
             with open(f"{self._results_prefix}.out", "r") as log_file:
                 _, _log_metrics = self._log_parser(file_content=log_file.read())
             for _metric in _log_metrics:
-                self._metrics_callback(data=_metric, meta={})
+                self._metrics_callback(
+                    data=_metric, meta={"file_name": f"{self._results_prefix}.out"}
+                )
         else:
             # If file was not found, no other way to obtain timestamps from when the simulation will run
             # Will default to using the last time the input file was edited for any time (t >= 0 ), with a warning
@@ -906,7 +936,10 @@ class FDSRun(WrappedRun):
                     next(_file)
                     for _step, _metric in enumerate(csv.DictReader(_file)):
                         _metric["step"] = _step
-                        self._metrics_callback(data=_metric, meta={})
+                        self._metrics_callback(
+                            data=_metric,
+                            meta={"file_name": f"{self._results_prefix}_{_suffix}.csv"},
+                        )
 
         # Extract events / metadata from CTRL log file
         if pathlib.Path(f"{self._results_prefix}_devc_ctrl_log.csv").exists():
@@ -916,5 +949,17 @@ class FDSRun(WrappedRun):
                         key: val.replace(" ", "") for key, val in _metric.items() if val
                     }
                     self._ctrl_log_callback(data=_metric)
+
+        if self.slice_parse_quantity:
+            if not _fds_files:
+                logger.warning(
+                    "Slice cannot be parsed without an input file available - slice parsing disabled."
+                )
+            elif not list(pathlib.Path(results_dir).rglob("*.xyz")):
+                logger.warning(
+                    "No XYZ files detected in results directory - slice parsing disabled."
+                )
+            else:
+                self._parse_slice()
 
         self._post_simulation()
