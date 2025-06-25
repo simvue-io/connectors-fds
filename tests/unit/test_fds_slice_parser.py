@@ -55,7 +55,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                 )
             else:
                 run.launch(
-                    fds_input_file_path= "no_vents.fds",
+                    fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
                     workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
                 )
                 
