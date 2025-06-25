@@ -9,6 +9,7 @@ import filecmp
 import shutil
 import time
 import threading
+import pytest
 
 def mock_fds_process(self, *_, **__):
     """
@@ -18,9 +19,10 @@ def mock_fds_process(self, *_, **__):
     time.sleep(1)
     self._trigger.set()
     return True
-    
+
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @patch.object(FDSRun, 'add_process', mock_fds_process)
-def test_fds_file_upload(folder_setup):    
+def test_fds_file_upload(folder_setup, load):    
     """
     Check that all results are uploaded from workdir.
     """
@@ -30,10 +32,17 @@ def test_fds_file_upload(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copytree(pathlib.Path(__file__).parent.joinpath("example_data", "fds_outputs"), temp_dir.name, dirs_exist_ok=True)
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name
+            )
         
         client = simvue.Client()
         
@@ -43,9 +52,10 @@ def test_fds_file_upload(folder_setup):
         client.get_artifacts_as_files(run_id, "output", str(retrieved_dir))
         comparison = filecmp.dircmp(pathlib.Path(__file__).parent.joinpath("example_data", "fds_outputs"), str(retrieved_dir))
         assert not (comparison.diff_files or comparison.left_only or comparison.right_only)
-        
+
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @patch.object(FDSRun, 'add_process', mock_fds_process)
-def test_fds_file_specified_upload(folder_setup):    
+def test_fds_file_specified_upload(folder_setup, load):    
     """
     Check that all results are uploaded from workdir.
     """
@@ -55,11 +65,19 @@ def test_fds_file_specified_upload(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-            upload_files = ["fds_test.smv", "fds_test_1_1.s3d.sz"]
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copytree(pathlib.Path(__file__).parent.joinpath("example_data", "fds_outputs"), temp_dir.name, dirs_exist_ok=True)
+            run.load(
+                results_dir = temp_dir.name,
+                upload_files = ["fds_test.smv", "fds_test_1_1.s3d.sz"]
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+                upload_files = ["fds_test.smv", "fds_test_1_1.s3d.sz"]
+            )
         
         client = simvue.Client()
         
@@ -98,7 +116,8 @@ def mock_aborted_fds_process(self, *_, **__):
         
     thread = threading.Thread(target=aborted_process, args=(self,))
     thread.start()
-    
+
+@property
 def abort(self):
     """
     Instead of making an API call to the server, just sleep for 1s and return True to indicate an abort has been triggered

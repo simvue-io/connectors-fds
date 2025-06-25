@@ -7,7 +7,8 @@ import uuid
 import tempfile
 import threading
 from unittest.mock import patch
-
+import pytest
+import shutil
 def mock_fds_process(self, *_, **__):
     """
     Mock process for writing FDS log header, all at once.
@@ -19,9 +20,10 @@ def mock_fds_process(self, *_, **__):
         return
     thread = threading.Thread(target=create_header, args=(self,))
     thread.start()
-
+    
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @patch.object(FDSRun, 'add_process', mock_fds_process)
-def test_fds_header_parser(folder_setup):
+def test_fds_header_parser(folder_setup, load):
     """
     Check that metadata from the header of the log file is correctly uploaded.
     """
@@ -31,10 +33,17 @@ def test_fds_header_parser(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_header.txt"), pathlib.Path(temp_dir.name).joinpath("fds_test.out"))
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+            )
         
     client = simvue.Client()
     
