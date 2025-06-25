@@ -1,4 +1,5 @@
 from examples.fds_example import fds_example
+from examples.load_historic_runs import load_runs_example
 import pytest
 import subprocess
 import pathlib
@@ -7,15 +8,23 @@ import numpy
 import simvue
 from simvue.sender import sender
 
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
 @pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
-def test_fds_connector(folder_setup, offline, parallel):
-    try:
-        subprocess.run("fds")
-    except FileNotFoundError:
-        pytest.skip("You are attempting to run FDS Integration Tests without having FDS installed in your path.")
+def test_fds_connector(folder_setup, load, offline, parallel):
     
-    run_id = fds_example(folder_setup, offline, parallel)
+    if load:
+        if parallel:
+            pytest.skip("Parallel has no effect when loading from historic runs")
+        else:
+            run_id = load_runs_example(folder_setup, offline)
+    else:
+        try:
+            subprocess.run("fds")
+        except FileNotFoundError:
+            pytest.skip("You are attempting to run FDS Integration Tests without having FDS installed in your path.")
+        
+        run_id = fds_example(folder_setup, offline, parallel)
 
     if offline:
         _id_mapping = sender()

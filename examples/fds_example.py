@@ -39,8 +39,22 @@ import shutil
 import uuid
 from simvue_fds.connector import FDSRun
 
-def fds_example(run_folder, offline=False, parallel=False) -> None:
-    
+def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) -> str:
+    """Function demonstrating how to launch FDS runs with Simvue.
+
+    Parameters
+    ----------
+    run_folder : str
+        The folder/directory where the input file is stored
+    offline : bool, optional
+        Whether to run in offline mode, by default False
+    parallel : bool, optional
+        Whether to run FDS across multiple CPU cores in parallel, by default False
+    Returns
+    -------
+    str
+        The ID of the run
+    """
     # Delete old copies of results, if they exist:
     if pathlib.Path(__file__).parent.joinpath("results").exists():
         shutil.rmtree(pathlib.Path(__file__).parent.joinpath("results"))

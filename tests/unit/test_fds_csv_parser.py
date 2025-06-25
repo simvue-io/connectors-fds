@@ -7,6 +7,10 @@ from unittest.mock import patch
 import uuid
 import pathlib
 import pandas
+import pytest
+import shutil
+import numpy
+import datetime
 
 def write_to_log(self, example_file, temp_logfile):
     for line in example_file:
@@ -45,8 +49,9 @@ def mock_ctrl_process(self, *_, **__):
     thread = threading.Thread(target=write_to_log, args=(self, example_file, temp_logfile))
     thread.start()
 
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @patch.object(FDSRun, 'add_process', mock_devc_process)
-def test_fds_devc_parser(folder_setup):
+def test_fds_devc_parser(folder_setup, load):
     """
     Check that values of each DEVC device at every timestep are uploaded to Simvue as metrics
     """
@@ -56,10 +61,17 @@ def test_fds_devc_parser(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_devc.csv"), pathlib.Path(temp_dir.name).joinpath("fds_test_devc.csv"))
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+            )
            
     client = simvue.Client()
         
@@ -85,9 +97,9 @@ def test_fds_devc_parser(folder_setup):
     assert expected_metric_names == actual_metric_names
     assert expected_metric_last_values == actual_metric_last_values    
     
-    
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @patch.object(FDSRun, 'add_process', mock_hrr_process)
-def test_fds_hrr_parser(folder_setup):    
+def test_fds_hrr_parser(folder_setup, load):    
     """
     Check that values about Heat Release Rate at every timestep are uploaded to Simvue as metrics
     """
@@ -97,10 +109,17 @@ def test_fds_hrr_parser(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name, folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_hrr.csv"), pathlib.Path(temp_dir.name).joinpath("fds_test_hrr.csv"))
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+            )
            
     client = simvue.Client()
         
@@ -126,9 +145,9 @@ def test_fds_hrr_parser(folder_setup):
     assert expected_metric_names == actual_metric_names
     assert expected_metric_last_values == actual_metric_last_values
     
-    
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @patch.object(FDSRun, 'add_process', mock_ctrl_process)
-def test_fds_ctrl_parser(folder_setup):    
+def test_fds_ctrl_parser(folder_setup, load):    
     """
     Check that activation status of CTRL and DEVC devices are written to Events log and metadata.
     """
@@ -138,10 +157,17 @@ def test_fds_ctrl_parser(folder_setup):
         run.config(disable_resources_metrics=True)
         run.init(name=name,folder=folder_setup)
         run_id = run.id
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
-            workdir_path = temp_dir.name,
-        )
+        if load:
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"), pathlib.Path(temp_dir.name).joinpath("fds_input.fds"))
+            shutil.copy(pathlib.Path(__file__).parent.joinpath("example_data", "fds_devc_ctrl_log.csv"), pathlib.Path(temp_dir.name).joinpath("fds_test_devc_ctrl_log.csv"))
+            run.load(
+                results_dir = temp_dir.name,
+            )
+        else:
+            run.launch(
+                fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                workdir_path = temp_dir.name,
+            )
            
     client = simvue.Client()
     
