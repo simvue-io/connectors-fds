@@ -360,13 +360,15 @@ class FDSRun(WrappedRun):
 
         return {}, _output_metadata
 
-    def _ctrl_log_callback(self, data: typing.Dict, _=None):
+    def _ctrl_log_callback(self, data: typing.Dict, **__):
         """Log metrics extracted from the CTRL log file to Simvue.
 
         Parameters
         ----------
         data : typing.Dict
             Dictionary of data from the latest line of the CTRL log file.
+        **__
+            Additional unused keyword arguments
 
         """
         if data["State"].lower() == "f":
