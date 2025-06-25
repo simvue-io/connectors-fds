@@ -155,9 +155,12 @@ class FDSRun(WrappedRun):
         """
         _index = numpy.searchsorted(self._timestamp_mapping[:, 0], time_to_convert)
 
-        # If the index found is 0, this means that
+        # If the index found is 0, then it has found a time before our first measurement from out file
+        # Just use first measurement from out file as this is the best guess we can achieve
+        if _index == 0:
+            _timestamp = self._timestamp_mapping[0, 1]
         # If the index found is the last in the array, just use final timestep
-        if _index == self._timestamp_mapping.shape[0]:
+        elif _index == self._timestamp_mapping.shape[0]:
             _timestamp = self._timestamp_mapping[-1, 1]
         else:
             # Find how far between the time values in the mapping the new time is, from 0 to 1
@@ -674,7 +677,7 @@ class FDSRun(WrappedRun):
                 "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
                 "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
             )
-
+        if not self._timestamp_mapping:
             self._timestamp_mapping = numpy.array(
                 [
                     [
