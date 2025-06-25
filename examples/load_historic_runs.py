@@ -25,7 +25,21 @@ import shutil
 import uuid
 from simvue_fds.connector import FDSRun
 
-def load_runs_example(run_folder, offline=False) -> None:
+def load_runs_example(run_folder: str, offline: bool=False) -> str:
+    """Function demonstrating how to load pre-existing FDS results into Simvue.
+
+    Parameters
+    ----------
+    run_folder : str
+        The folder/directory where results are contained
+    offline : bool, optional
+        Whether to run in offline mode, by default False
+
+    Returns
+    -------
+    str
+        The ID of the run
+    """
 
     # Initialise the FDSRun class as a context manager
     with FDSRun(mode="offline" if offline else "online") as run:

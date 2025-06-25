@@ -5,6 +5,7 @@ This module provides functionality for using Simvue to track and monitor an FDS 
 
 import csv
 import glob
+import os
 import pathlib
 import platform
 import re
@@ -20,6 +21,7 @@ import multiparser.parsing.tail as mp_tail_parser
 import numpy
 import pydantic
 import simvue
+from loguru import logger
 from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
@@ -126,8 +128,7 @@ class FDSRun(WrappedRun):
         if loading from historic data.
         """
         super()._tidy_run()
-
-        if self._loading_historic_run and self._timestamp_mapping.shape[0] > 0:
+        if self._loading_historic_run and self._timestamp_mapping.size:
             self._sv_obj.started = datetime.fromtimestamp(self._timestamp_mapping[0, 1])
             self._sv_obj.endtime = datetime.fromtimestamp(
                 self._timestamp_mapping[-1, 1]
@@ -154,6 +155,7 @@ class FDSRun(WrappedRun):
         """
         _index = numpy.searchsorted(self._timestamp_mapping[:, 0], time_to_convert)
 
+        # If the index found is 0, this means that
         # If the index found is the last in the array, just use final timestep
         if _index == self._timestamp_mapping.shape[0]:
             _timestamp = self._timestamp_mapping[-1, 1]
@@ -607,10 +609,9 @@ class FDSRun(WrappedRun):
 
         Raises
         ------
-        FileNotFoundError
-            Raised if no FDS input file was found in specified directory
         ValueError
             Raised if more than one FDS input file found in specified directory
+            Raised if no input file present and CHID could not be determined from results file names
 
         """
         self.workdir_path = results_dir
@@ -621,25 +622,36 @@ class FDSRun(WrappedRun):
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
 
         if not _fds_files:
-            raise FileNotFoundError(
-                "Could not find an input '.fds' file in your results directory. Please make sure the relevant input file is provided."
+            # Give a warning that no input file was found
+            logger.warning(
+                "No FDS input file found in your results directory - input metadata will not be stored."
             )
+            # Try to deduce CHID by common prefix within directory
+            all_files = [
+                file.name
+                for file in pathlib.Path(results_dir).iterdir()
+                if file.is_file()
+            ]
+            self._chid = os.path.commonprefix(all_files)
+            if not self._chid:
+                raise ValueError(
+                    "Could not determine CHID from results directory due to files with inconsistent names."
+                )
+
         elif len(_fds_files) > 1:
             raise ValueError(
                 "Found more than one input '.fds' file - please make sure only one such file is in the results directory."
             )
+        else:
+            self.fds_input_file_path = _fds_files[0]
+            self.save_file(self.fds_input_file_path, "input")
 
-        self.fds_input_file_path = _fds_files[0]
-        self.save_file(self.fds_input_file_path, "input")
-
-        # Load input file, upload as metadata
-        _nml = f90nml.read(self.fds_input_file_path).todict()
-        self._chid = _nml["head"]["chid"]
-        self.update_metadata({"input_file": _nml})
+            # Load input file, upload as metadata
+            _nml = f90nml.read(self.fds_input_file_path).todict()
+            self._chid = _nml["head"]["chid"]
+            self.update_metadata({"input_file": _nml})
 
         self._results_prefix = str(pathlib.Path(results_dir).joinpath(self._chid))
-
-        # TODO: Get start time from head of log, end time from last timestamp in log, upload to run (how? Direct from Run api object?)
 
         # Read relevant files and call methods directly
         # Will make it so that if there are files missing, the code will still upload whichever files it can...
@@ -657,13 +669,21 @@ class FDSRun(WrappedRun):
                 self._metrics_callback(data=_metric, meta={})
         else:
             # If file was not found, no other way to obtain timestamps from when the simulation will run
-            # Will default to using the current timestamp for any time (t >= 0 ), with a warning
+            # Will default to using the last time the input file was edited for any time (t >= 0 ), with a warning
             print(
                 "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
                 "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
             )
+
             self._timestamp_mapping = numpy.array(
-                [[-1, self.fds_input_file_path.stat().st_mtime]]
+                [
+                    [
+                        -1,
+                        self.fds_input_file_path.stat().st_mtime
+                        if self.fds_input_file_path
+                        else datetime.now().timestamp(),
+                    ]
+                ]
             )
 
         # Extract metrics from DEVC and HRR files
