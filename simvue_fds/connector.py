@@ -360,15 +360,15 @@ class FDSRun(WrappedRun):
 
         return {}, _output_metadata
 
-    def _ctrl_log_callback(self, data: typing.Dict, **__):
+    def _ctrl_log_callback(self, data: typing.Dict, *_):
         """Log metrics extracted from the CTRL log file to Simvue.
 
         Parameters
         ----------
         data : typing.Dict
             Dictionary of data from the latest line of the CTRL log file.
-        **__
-            Additional unused keyword arguments
+        *_
+            Additional unused arguments
 
         """
         if data["State"].lower() == "f":
@@ -386,7 +386,7 @@ class FDSRun(WrappedRun):
 
         # If loading from historic run, estimate timestamp when this activation was recorded
         # Otherwise, just use the current time
-        _timestamp = None
+        _timestamp: str | None = None
         if self._loading_historic_run:
             _timestamp = self._estimate_timestamp(float(data.get("Time (s)")))
 
@@ -601,7 +601,9 @@ class FDSRun(WrappedRun):
 
         super().launch()
 
-    def load(self, results_dir: pydantic.DirectoryPath, upload_files: list[str] = None):
+    def load(
+        self, results_dir: pydantic.DirectoryPath, upload_files: list[str] = None
+    ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
         Parameters
@@ -676,11 +678,11 @@ class FDSRun(WrappedRun):
         else:
             # If file was not found, no other way to obtain timestamps from when the simulation will run
             # Will default to using the last time the input file was edited for any time (t >= 0 ), with a warning
-            print(
+            logger.warning(
                 "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
                 "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
             )
-        if not self._timestamp_mapping:
+        if not self._timestamp_mapping.size:
             self._timestamp_mapping = numpy.array(
                 [
                     [
