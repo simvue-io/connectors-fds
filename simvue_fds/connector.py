@@ -297,7 +297,7 @@ class FDSRun(WrappedRun):
         if self._loading_historic_run:
             metric_timestamp = data.pop(
                 "timestamp",
-                self._estimate_timestamp(float(metric_time) if metric_time else None),
+                self._estimate_timestamp(float(metric_time)) if metric_time else None,
             )
         else:
             metric_timestamp = data.pop(
