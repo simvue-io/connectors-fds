@@ -48,7 +48,7 @@ class FDSRun(WrappedRun):
     fds_input_file_path: pydantic.FilePath = None
     workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
     upload_files: typing.List[str] = None
-    slice_parse_quantity: str = None
+    slice_parse_quantity: str | None = None
     slice_parse_interval: int = 1
     slice_parse_ignore_zeros: bool = False
     ulimit: typing.Union[str, int] = None
@@ -60,8 +60,8 @@ class FDSRun(WrappedRun):
     _parsing: bool = False
     _activation_times: bool = False
     _activation_times_data: typing.Dict[str, float] = {}
-    _chid: str = None
-    _results_prefix: str = None
+    _chid: str = ""
+    _results_prefix: str = ""
     _loading_historic_run: bool = False
     _timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
     _patterns: typing.List[typing.Dict[str, typing.Pattern]] = [
@@ -127,15 +127,16 @@ class FDSRun(WrappedRun):
         {"pattern": re.compile(r"^\s+Mesh\s+(\d+)"), "name": "mesh"},
     ]
 
-    def _soft_abort(self):
+    def _soft_abort(self) -> None:
         """Create a '.stop' file so that FDS simulation is stopped gracefully if an abort is triggered."""
         if (
             self._results_prefix
-            and not pathlib.Path(f"{self._results_prefix}.stop").exists()
+            and not (
+                _file_path := pathlib.Path(f"{self._results_prefix}.stop")
+            ).exists()
         ):
-            with open(f"{self._results_prefix}.stop", "w") as stop_file:
+            with _file_path.open("w") as stop_file:
                 stop_file.write("FDS simulation aborted due to Simvue Alert.")
-                stop_file.close()
 
     def _tidy_run(self) -> None:
         """Add correct start and end times.
@@ -419,22 +420,46 @@ class FDSRun(WrappedRun):
         label: str,
         name: float,
         ignore_zeros: bool,
-    ):
+    ) -> dict:
+        """Add metrics for a given slice at a specific time to a dictionary of metrics.
+
+        Parameters
+        ----------
+        metrics : dict
+            The dictionary of metrics to add to
+        sub_slice : numpy.ndarray
+            The slice to compute min, max, mean over
+        label : str
+            The dimension which this slice is calculated over
+        name : float
+            Position in space where the slice is calculated in the above dimension
+        ignore_zeros : bool
+            Whether to ignore zeros in the slices
+
+        Returns
+        -------
+        dict
+            The updated metrics
+
+        """
         sub_slice = sub_slice[~numpy.isnan(sub_slice)]
         if ignore_zeros:
             sub_slice = sub_slice[numpy.where(sub_slice != 0)]
-        metrics[
-            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.min"
-        ] = numpy.min(sub_slice)
-        metrics[
-            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.max"
-        ] = numpy.max(sub_slice)
-        metrics[
-            f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}.avg"
-        ] = numpy.mean(sub_slice)
+        _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
+        metrics[f"{_metric_label}.min"] = numpy.min(sub_slice)
+        metrics[f"{_metric_label}.max"] = numpy.max(sub_slice)
+        metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice)
         return metrics
 
-    def _parse_slice(self):
+    def _parse_slice(self) -> bool:
+        """Parse slices present in the FDS results files and extract data as metrics.
+
+        Returns
+        -------
+        bool
+            Whether the slice was successfuly extracted
+
+        """
         # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
         # data_abs is an array of all values, shape (X, Y, Z, times)
         # times_out is an array of in simulation times
@@ -450,7 +475,8 @@ class FDSRun(WrappedRun):
                 )
         except Exception as e:
             logger.error(
-                "Failed to collect 2D slice data - check that your slice quantity is valid. Slice parsing is disabled for this run. Enable debug logging for more info."
+                """Failed to collect 2D slice data - check that your slice quantity is valid.
+                Slice parsing is disabled for this run. Enable debug logging for more info."""
             )
             logger.debug(f"Exception is: {e}")
             logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
@@ -532,8 +558,8 @@ class FDSRun(WrappedRun):
         self._slice_processed_time = times_out[-1]
         return True
 
-    def _slice_parser(self):
-        """Read and process all 2D slice files, uploading min, max and mean as metrics."""
+    def _slice_parser(self) -> None:
+        """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         self._parsing = True
         while True:
             time.sleep(60 * self.slice_parse_interval)
@@ -603,9 +629,8 @@ class FDSRun(WrappedRun):
         )
 
         if self.slice_parse_quantity:
-            slice_parser = threading.Thread(target=self._slice_parser)
-            slice_parser.daemon = (
-                True  # So that it is stopped if the overall run is stopped
+            slice_parser = threading.Thread(
+                target=self._slice_parser, daemon=True, name="slice_parser"
             )
             slice_parser.start()
 
@@ -691,11 +716,11 @@ class FDSRun(WrappedRun):
         fds_input_file_path: pydantic.FilePath,
         workdir_path: typing.Union[str, pydantic.DirectoryPath] = None,
         clean_workdir: bool = False,
-        upload_files: list[str] = None,
-        slice_parse_quantity: str = None,
+        upload_files: list[str] | None = None,
+        slice_parse_quantity: str | None = None,
         slice_parse_interval: int = 1,
         slice_parse_ignore_zeros: bool = True,
-        ulimit: typing.Union[str, int] = "unlimited",
+        ulimit: typing.Literal["unlimited"] | int = "unlimited",
         fds_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
         num_processors: int = 1,
@@ -715,11 +740,11 @@ class FDSRun(WrappedRun):
         clean_workdir : bool, optional
             Whether to remove FDS related files from the working directory, by default False
             Useful when doing optimisation problems to remove results from previous runs.
-        upload_files : list[str], optional
+        upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the working directory specified above (if specified, otherwise relative to cwd)
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
-        slice_parse_quantity: str, optional
+        slice_parse_quantity: str | None, optional
             ***** WARNING: EXPERIMENTAL FEATURE*****
             The quantity for which to find any 2D slices saved by the simulation, and upload the min/max/average as metrics
             Default is None, which will disable this feature
@@ -727,7 +752,7 @@ class FDSRun(WrappedRun):
             Interval (in minutes) at which to parse and upload 2D slice data, default is 1
         slice_parse_ignore_zeros : bool, optional
             Whether to ignore values of zero in slices (useful if there are obstructions in the mesh), default is True
-        ulimit : typing.Union[str, int], optional
+        ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[typing.Dict[str, typing.Any]], optional
             Environment variables to provide to FDS when executed, by default None
@@ -800,7 +825,7 @@ class FDSRun(WrappedRun):
                 shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
 
             # Make sure xyz is enabled
-            if not nml["dump"]["write_xyz"]:
+            if not nml.get("dump", {}).get("write_xyz"):
                 raise ValueError(
                     "WRITE_XYZ must be enabled in your FDS file for slice parsing."
                 )
@@ -810,8 +835,8 @@ class FDSRun(WrappedRun):
     def load(
         self,
         results_dir: pydantic.DirectoryPath,
-        upload_files: list[str] = None,
-        slice_parse_quantity: str = None,
+        upload_files: list[str] | None = None,
+        slice_parse_quantity: str | None = None,
         slice_parse_ignore_zeros: bool = True,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
@@ -820,11 +845,11 @@ class FDSRun(WrappedRun):
         ----------
         results_dir : pydantic.DirectoryPath
             The directory where the results are stored
-        upload_files : list[str], optional
+        upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the results directory specified above
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
-        slice_parse_quantity: str, optional
+        slice_parse_quantity: str | None, optional
             ***** WARNING: EXPERIMENTAL FEATURE*****
             The quantity for which to find any 2D slices saved by the simulation, and upload the min/max/average as metrics
             Default is None, which will disable this feature
