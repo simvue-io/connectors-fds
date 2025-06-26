@@ -5,7 +5,7 @@ FDSVERSION
 FDS-6.9.1-0-g889da6a-release
 
 INPF
- /workdir/ci/activate_vents.fds
+ /home/wk9874/Documents/simvue/connectors-fds/examples/activate_vents.fds
 
 REVISION
 Revisio                                                                                                                                                                                                                                                        
@@ -462,6 +462,8 @@ VENT
 CVENT
     0
 
+XYZ
+ supply_exhaust_vents_1.xyz
 SMOKF3D     1   8700.000
  supply_exhaust_vents_1_1.s3d
  SOOT DENSITY
@@ -516,6 +518,8 @@ CLOSE_VENT    1
      1      0.00
 CLOSE_VENT    1
      2      0.00
+XYZ
+ supply_exhaust_vents_2.xyz
 SMOKF3D     2   8700.000
  supply_exhaust_vents_2_1.s3d
  SOOT DENSITY

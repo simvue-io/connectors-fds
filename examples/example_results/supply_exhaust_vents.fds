@@ -1,15 +1,13 @@
 # Define name of simulation, which will be the prefix of all output files
 &HEAD CHID='supply_exhaust_vents', TITLE='supply_exhaust_vents' /
 
-&MISC MAXIMUM_VISIBILITY=10. /
-
 # Define the room as a 3m x 4m x 3m cube
 &MESH XB= 0, 3, 0, 2, 0, 3, IJK= 30, 20, 30 /
 &MESH XB= 0, 3, 2, 4, 0, 3, IJK= 30, 20, 30 /
 
-# Simulate the fire for 60 seconds, output results every second
+# Simulate the fire for 10 seconds, output results every second
 &TIME T_END=10. /
-&DUMP NFRAMES=10 /
+&DUMP NFRAMES=10, WRITE_XYZ=.TRUE. /
 
 # Define the type of fuel for the fire
 &REAC ID = 'propane reaction',

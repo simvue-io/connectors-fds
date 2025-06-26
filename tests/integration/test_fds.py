@@ -4,7 +4,9 @@ import pytest
 import subprocess
 import pathlib
 import tempfile
+import numpy
 import simvue
+import time
 from simvue.sender import sender
 
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
@@ -28,6 +30,8 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     if offline:
         _id_mapping = sender()
         run_id = _id_mapping.get(run_id)
+        
+    time.sleep(2)
     
     client = simvue.Client()
     run_data = client.get_run(run_id)
@@ -65,12 +69,27 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     # Check metrics from log file
     assert metrics["max_pressure_error"]["count"] > 0
     assert metrics["max_divergence.mesh.2"]["count"] > 0
+    
+    # Check metrics from slice
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    
+    _retrieved = client.get_metric_values(run_ids=[run_id], metric_names = ["temperature.y.2_0.max", "temperature.y.2_0.min", "temperature.y.2_0.avg"], xaxis="time")
+    _max = numpy.array(list(_retrieved["temperature.y.2_0.max"].values()))
+    _min = numpy.array(list(_retrieved["temperature.y.2_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["temperature.y.2_0.avg"].values()))
+
+    # Check all max >= avg >= min
+    assert numpy.all(_max >= _avg)
+    assert numpy.all(_avg >= _min)
+    assert numpy.all(_min > 0)
 
     temp_dir = tempfile.TemporaryDirectory()
     
     # Check input file uploaded as input
     client.get_artifacts_as_files(run_id, "input", temp_dir.name)
-    assert pathlib.Path(temp_dir.name).joinpath("activate_vents.fds").exists()
+    assert pathlib.Path(temp_dir.name).joinpath("supply_exhaust_vents.fds").exists()
     
     # Check results uploaded as output
     client.get_artifacts_as_files(run_id, "output", temp_dir.name)
