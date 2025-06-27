@@ -54,6 +54,9 @@ class FDSRun(WrappedRun):
     ulimit: typing.Union[str, int] = None
     fds_env_vars: typing.Dict[str, typing.Any] = None
 
+    # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
+    upload_input_file: bool = True
+
     _slice_processed_time: int = -1
     _slice_step: int = 0
     _step_tracker: dict = {}
@@ -590,7 +593,7 @@ class FDSRun(WrappedRun):
         self.log_event("Starting FDS simulation")
 
         # Save the FDS input file for this run to the Simvue server
-        if pathlib.Path(self.fds_input_file_path).exists:
+        if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists:
             self.save_file(self.fds_input_file_path, "input")
 
         # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
