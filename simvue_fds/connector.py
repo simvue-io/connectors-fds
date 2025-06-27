@@ -58,6 +58,7 @@ class FDSRun(WrappedRun):
     _slice_step: int = 0
     _step_tracker: dict = {}
     _parsing: bool = False
+    _parse_time: float = datetime.now().timestamp()
     _activation_times: bool = False
     _activation_times_data: typing.Dict[str, float] = {}
     _chid: str = ""
@@ -552,7 +553,20 @@ class FDSRun(WrappedRun):
                     ignore_zeros=self.slice_parse_ignore_zeros,
                 )
 
-            self.log_metrics(metrics, time=float(time_val), step=self._slice_step)
+            # Need to estimate timestamp which this measurement would correspond to
+            # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
+            _timestamp_estimate: float = self._parse_time + (
+                datetime.now().timestamp() - self._parse_time
+            ) * ((time_idx + 1) / len(times_out))
+
+            self.log_metrics(
+                metrics,
+                time=float(time_val),
+                step=self._slice_step,
+                timestamp=datetime.fromtimestamp(_timestamp_estimate).strftime(
+                    DATETIME_FORMAT
+                ),
+            )
             self._slice_step += 1
 
         self._slice_processed_time = times_out[-1]
