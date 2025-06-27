@@ -571,7 +571,7 @@ class FDSRun(WrappedRun):
                 ),
             )
             self._slice_step += 1
-
+        self._parse_time = datetime.now().timestamp()
         self._slice_processed_time = times_out[-1]
         return True
 
