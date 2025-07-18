@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration Tests (Windows)
 
 on:
   push:
@@ -25,14 +25,20 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/firemodels/fds/releases/download/FDS-6.10.1/FDS-6.10.1_SMV-6.10.1_win.exe -OutFile FDSInstaller.exe
 
       - name: Install FDS silently
-        run: .\FDSInstaller.exe /S /D=C:\FDS
+        run: .\FDSInstaller.exe /S
 
-      - name: Add FDS to PATH
-        run: |
-          $env:PATH = "C:\FDS;" + $env:PATH
+      - name: List firemodels folder
+        run: dir "C:\Program Files\firemodels"
+
+      # - name: Add FDS to PATH
+      #   run: |
+      #     $env:PATH = "C:\FDS;" + $env:PATH
 
       - name: Run FDS version
-        run: C:\FDS\fds.exe --version
+        run: fds --version
+
+      - name: Run FDS version
+        run: '"C:\Program Files\firemodels\fds.exe" --version'
 
       - name: Setup Python
         uses: actions/setup-python@v5
