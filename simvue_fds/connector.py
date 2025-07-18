@@ -615,6 +615,7 @@ class FDSRun(WrappedRun):
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
+            self._trigger.set()
             if "ERROR" in std_err:
                 click.secho(
                     "[simvue] Run failed - FDS encountered an error: " f"{std_err}",
@@ -629,7 +630,6 @@ class FDSRun(WrappedRun):
                     state="critical",
                 )
                 self.kill_all_processes()
-                self._trigger.set()
 
         command = []
         if self.run_in_parallel:
@@ -642,7 +642,6 @@ class FDSRun(WrappedRun):
             "fds_simulation",
             *command,
             cwd=self.workdir_path,
-            completion_trigger=self._trigger,
             completion_callback=check_for_errors,
         )
 

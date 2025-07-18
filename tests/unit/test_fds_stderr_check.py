@@ -9,19 +9,19 @@ import uuid
 import pathlib
 import pytest
 import subprocess
+import sys
 
 @pytest.mark.parametrize("file_name", ("fds_invalid_config.stderr", "fds_no_file.stderr", "fds_too_few_meshes.stderr", "fds_expected.stderr"), ids=("invalid_config", "no_file", "cannot_mpi", "expected"))
 def test_fds_stderr_check(folder_setup, file_name):
 
     def mock_execute_process(*args, file_name=file_name, **kwargs):
         """Execute a process which sleeps for 2s, then passes the stderr from the example file into the completion callback"""
-        _result = subprocess.Popen(["sleep", "2"])
-        def mock_process(result=_result, completion_callback=args[3], trigger=args[4], file_name=file_name):
+        _result = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(2)"])
+        def mock_process(result=_result, completion_callback=args[3], file_name=file_name):
             while result.poll() is None:
                 time.sleep(1)
             std_err = pathlib.Path(__file__).parent.joinpath("example_data", file_name).read_text()
             completion_callback(0, "", std_err)
-            trigger.set()
         thread = threading.Thread(target=mock_process)
         thread.start()
         return _result, thread
