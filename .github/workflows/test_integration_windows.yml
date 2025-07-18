@@ -25,7 +25,7 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/firemodels/fds/releases/download/FDS-6.10.1/FDS-6.10.1_SMV-6.10.1_win.exe -OutFile FDSInstaller.exe
 
       - name: Install FDS silently
-        run: .\FDSInstaller.exe
+        run: echo yes | .\FDSInstaller.exe \S
 
       - name: List firemodels folder
         run: dir "C:\Program Files\firemodels"
