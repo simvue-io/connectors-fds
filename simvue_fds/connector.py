@@ -11,7 +11,6 @@ import os
 import pathlib
 import platform
 import re
-import resource
 import shutil
 import threading
 import time
@@ -598,6 +597,8 @@ class FDSRun(WrappedRun):
 
         # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
         if platform.system() != "Windows":
+            import resource
+
             if self.ulimit == "unlimited" and platform.system() == "Darwin":
                 self.log_event(
                     "Warning: Unlimited stack is not supported in MacOS - leaving unchanged."
