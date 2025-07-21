@@ -20,25 +20,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install 7z
+        run: choco install -y 7zip
+
       - name: Download FDS installer
         run: |
           Invoke-WebRequest -Uri https://github.com/firemodels/fds/releases/download/FDS-6.10.1/FDS-6.10.1_SMV-6.10.1_win.exe -OutFile FDSInstaller.exe
 
-      - name: Install FDS silently
-        run: echo yes | Start-Process -FilePath .\FDSInstaller.exe -ArgumentList '/S' -Wait -NoNewWindow
+      - name: Unpack Installer
+        run: 7z.exe x .\FDSInstaller.exe
 
       - name: List firemodels folder
-        run: dir "C:\Program Files\firemodels"
+        run: dir ".\firemodels"
 
-      # - name: Add FDS to PATH
-      #   run: |
-      #     $env:PATH = "C:\FDS;" + $env:PATH
-
-      - name: Run FDS version
-        run: fds --version
+      - name: Setup FDS
+        run: |
+          ".\firemodels\setup.bat a"
 
       - name: Run FDS version
-        run: '"C:\Program Files\firemodels\fds.exe" --version'
+        run: |
+          "& $(Get-ChildItem -Recurse -Filter 'fds_local.bat' 'D:\' | Select-Object -ExpandProperty FullName) -v"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -52,3 +53,4 @@ jobs:
           export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
           poetry install --all-extras
           poetry run pytest tests/integration/test_fds.py
+        shell: bash
