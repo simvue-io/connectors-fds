@@ -670,12 +670,12 @@ class FDSRun(WrappedRun):
                     fds_bin = f"{next(search)}"
                     break
         # If FDS binary not found, assume Windows and find BAT script
-        fds_bin = _get_fds_binary()
+        fds_bin: pathlib.Path = _get_fds_binary()
 
         if not fds_bin:
             raise FileNotFoundError("FDS is not installed on this system")
 
-        command += [fds_bin, str(self.fds_input_file_path)]
+        command += [f"{fds_bin}", str(self.fds_input_file_path)]
         command += format_command_env_vars(self.fds_env_vars)
 
         self.add_process(
