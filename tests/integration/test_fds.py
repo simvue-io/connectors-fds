@@ -24,10 +24,12 @@ def test_fds_connector(folder_setup, load, offline, parallel):
         else:
             run_id = load_runs_example(folder_setup, offline)
     else:
+        fds_bin = None
         if sys.platform.startswith("win"):
             search_paths = (
                 pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
                 pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
+                pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
                 pathlib.Path.home().joinpath("firemodels"),
             )
             for search_loc in search_paths:
@@ -132,4 +134,3 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     # Check results uploaded as output
     client.get_artifacts_as_files(run_id, "output", temp_dir.name)
     assert pathlib.Path(temp_dir.name).joinpath("supply_exhaust_vents.smv").exists()
-
