@@ -618,7 +618,7 @@ class FDSRun(WrappedRun):
             self._trigger.set()
             if "ERROR" in std_err:
                 click.secho(
-                    "[simvue] Run failed - FDS encountered an error: " f"{std_err}",
+                    f"[simvue] Run failed - FDS encountered an error: {std_err}",
                     fg="red" if self._term_color else None,
                     bold=self._term_color,
                 )
@@ -635,7 +635,14 @@ class FDSRun(WrappedRun):
         if self.run_in_parallel:
             command += ["mpiexec", "-n", str(self.num_processors)]
             command += format_command_env_vars(self.mpiexec_env_vars)
-        command += ["fds", str(self.fds_input_file_path)]
+
+        # If FDS binary not found, assume Windows and find BAT script
+        fds_bin = shutil.which("fds") or shutil.which("fds_local.bat")
+
+        if not fds_bin:
+            raise FileNotFoundError("FDS is not installed on this system")
+
+        command += [fds_bin, str(self.fds_input_file_path)]
         command += format_command_env_vars(self.fds_env_vars)
 
         self.add_process(
