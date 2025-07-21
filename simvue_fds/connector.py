@@ -10,6 +10,7 @@ import io
 import os
 import pathlib
 import platform
+import sys
 import re
 import shutil
 import threading
@@ -30,6 +31,25 @@ from loguru import logger
 from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
+
+
+def _get_fds_binary() -> pathlib.Path | None:
+    if fds_bin := shutil.which("fds"):
+        return pathlib.Path(fds_bin)
+
+    if sys.platform.startswith("win"):
+        search_paths = (
+            pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
+            pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
+            pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
+            pathlib.Path.home().joinpath("firemodels"),
+        )
+        for search_loc in search_paths:
+            if not search_loc.exists():
+                continue
+            if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
+                return next(search)
+    return None
 
 
 class FDSRun(WrappedRun):
@@ -636,8 +656,21 @@ class FDSRun(WrappedRun):
             command += ["mpiexec", "-n", str(self.num_processors)]
             command += format_command_env_vars(self.mpiexec_env_vars)
 
+        if sys.platform.startswith("win"):
+            search_paths = (
+                pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
+                pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
+                pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
+                pathlib.Path.home().joinpath("firemodels"),
+            )
+            for search_loc in search_paths:
+                if not search_loc.exists():
+                    continue
+                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
+                    fds_bin = f"{next(search)}"
+                    break
         # If FDS binary not found, assume Windows and find BAT script
-        fds_bin = shutil.which("fds") or shutil.which("fds_local.bat")
+        fds_bin = _get_fds_binary()
 
         if not fds_bin:
             raise FileNotFoundError("FDS is not installed on this system")
