@@ -32,26 +32,6 @@ from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
-
-def _get_fds_binary() -> pathlib.Path | None:
-    if fds_bin := shutil.which("fds"):
-        return pathlib.Path(fds_bin)
-
-    if sys.platform.startswith("win"):
-        search_paths = (
-            pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
-            pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
-            pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
-            pathlib.Path.home().joinpath("firemodels"),
-        )
-        for search_loc in search_paths:
-            if not search_loc.exists():
-                continue
-            if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
-                return next(search)
-    return None
-
-
 class FDSRun(WrappedRun):
     """Class for setting up Simvue tracking and monitoring of an FDS simulation.
 
@@ -615,6 +595,7 @@ class FDSRun(WrappedRun):
         if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists:
             self.save_file(self.fds_input_file_path, "input")
 
+        fds_bin = None
         # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
         if platform.system() != "Windows":
             import resource
@@ -632,6 +613,29 @@ class FDSRun(WrappedRun):
                 resource.setrlimit(
                     resource.RLIMIT_STACK, (int(self.ulimit), int(self.ulimit))
                 )
+            # Find path to FDS executable
+            fds_bin = shutil.which("fds")
+
+        else:
+            search_paths = [
+                pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
+                pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
+                pathlib.Path.home().joinpath("firemodels"),
+            ]
+            if os.environ.get("GITHUB_WORKSPACE"):
+                search_paths.append(pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"))
+
+            for search_loc in search_paths:
+                if not search_loc.exists():
+                    continue
+                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
+                    fds_bin = f"{next(search)}"
+                    break
+                
+        if not fds_bin:
+            raise EnvironmentError("FDS executable could not be found!")
+        
+        print(fds_bin)
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
@@ -652,31 +656,23 @@ class FDSRun(WrappedRun):
                 self.kill_all_processes()
 
         command = []
-        if self.run_in_parallel:
-            command += ["mpiexec", "-n", str(self.num_processors)]
-            command += format_command_env_vars(self.mpiexec_env_vars)
-
-        if sys.platform.startswith("win"):
-            search_paths = (
-                pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
-                pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
-                pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
-                pathlib.Path.home().joinpath("firemodels"),
-            )
-            for search_loc in search_paths:
-                if not search_loc.exists():
-                    continue
-                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
-                    fds_bin = f"{next(search)}"
-                    break
-        # If FDS binary not found, assume Windows and find BAT script
-        fds_bin: pathlib.Path = _get_fds_binary()
-
-        if not fds_bin:
-            raise FileNotFoundError("FDS is not installed on this system")
-
-        command += [f"{fds_bin}", str(self.fds_input_file_path)]
+        if platform.system() == "Windows":
+            if self.run_in_parallel:
+                command += [f"{fds_bin}", "-p", str(self.num_processors), str(self.fds_input_file_path)]
+            else:
+                command += [f"{fds_bin}", str(self.fds_input_file_path)]
+        else:
+            if self.run_in_parallel:
+                command += ["mpiexec", "-n", str(self.num_processors)]
+                command += format_command_env_vars(self.mpiexec_env_vars)
+            command += [f"{fds_bin}", str(self.fds_input_file_path)]
+        
         command += format_command_env_vars(self.fds_env_vars)
+        
+        # if self.run_in_parallel and platform.system() == "Windows":
+        #     command += ["-p", str(self.num_processors)]
+        
+        print(command)
 
         self.add_process(
             "fds_simulation",

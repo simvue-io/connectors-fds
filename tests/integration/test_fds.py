@@ -7,6 +7,7 @@ import pytest
 import subprocess
 import pathlib
 import sys
+import platform
 import tempfile
 import numpy
 import simvue
@@ -24,30 +25,27 @@ def test_fds_connector(folder_setup, load, offline, parallel):
         else:
             run_id = load_runs_example(folder_setup, offline)
     else:
-        fds_bin = None
-        if sys.platform.startswith("win"):
-            search_paths = (
+        if platform.system() != "Windows":
+            # Find path to FDS executable
+            fds_bin = shutil.which("fds")
+        else:
+            search_paths = [
                 pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
                 pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
-                pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"),
                 pathlib.Path.home().joinpath("firemodels"),
-            )
+            ]
+            if os.environ.get("GITHUB_WORKSPACE"):
+                search_paths.append(pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"))
+
             for search_loc in search_paths:
                 if not search_loc.exists():
                     continue
                 if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
                     fds_bin = f"{next(search)}"
                     break
-        else:
-            fds_bin = shutil.which("fds")
-        try:
-            if not fds_bin:
-                raise FileNotFoundError
-            subprocess.run(fds_bin)
-        except FileNotFoundError:
-            pytest.skip(
-                "You are attempting to run FDS Integration Tests without having FDS installed in your path."
-            )
+                
+        if not fds_bin:
+            raise pytest.skip("FDS executable could not be found!")
 
         run_id = fds_example(folder_setup, offline, parallel)
 
@@ -83,13 +81,12 @@ def test_fds_connector(folder_setup, load, offline, parallel):
     assert run_data.metadata["input_file"]["_grp_devc_1"]["id"] == "flow_volume_supply"
 
     # Check events from log
-    assert "Time Step: 1, Simulation Time: 0.092 s" in events
+    # Loosening requirement for this since Windows and Ubuntu will print slightly different times
+    assert any([event.startswith("Time Step: 1, Simulation Time: 0.092") for event in events])
 
     # Check events from DEVC/CTRL log
-    assert (
-        "DEVC 'timer' has been set to 'True' at time 2.00097E+00s, when it reached a value of 2.00097E+00s."
-        in events
-    )
+    # Loosening requirement for this since Windows and Ubuntu will print slightly different times
+    assert any([event.startswith("DEVC 'timer' has been set to 'True' at time 2.") for event in events])
 
     metrics = dict(run_data.metrics)
     # Check metrics from HRR file
