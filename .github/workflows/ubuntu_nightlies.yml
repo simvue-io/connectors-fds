@@ -25,7 +25,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "{{ matrix.python_version }}"
+          python-version: "${{ matrix.python_version }}"
       - name: Install poetry
         run: python3 -m pip install poetry
       - name: Install dependencies and run tests
