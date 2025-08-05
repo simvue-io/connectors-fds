@@ -21,6 +21,7 @@ def mock_fds_process(self, *_, **__):
     return True
 
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_file_upload(folder_setup, load):    
     """
@@ -53,7 +54,8 @@ def test_fds_file_upload(folder_setup, load):
         comparison = filecmp.dircmp(pathlib.Path(__file__).parent.joinpath("example_data", "fds_outputs"), str(retrieved_dir))
         assert not (comparison.diff_files or comparison.left_only or comparison.right_only)
 
-@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_file_specified_upload(folder_setup, load):    
     """
@@ -126,6 +128,7 @@ def abort(self):
     return True
     
 @patch.object(FDSRun, 'add_process', mock_aborted_fds_process)
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(Run, 'abort_trigger', abort) 
 def test_fds_file_upload_after_abort(folder_setup):
     """

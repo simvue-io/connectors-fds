@@ -74,6 +74,7 @@ def mock_fds_process(self, *_, **__):
 
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @pytest.mark.parametrize("file_name,num_meshes,expected_results", testdata, ids=("single_mesh", "multi_mesh"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_log_parser(folder_setup, load, file_name, num_meshes, expected_results):
     """

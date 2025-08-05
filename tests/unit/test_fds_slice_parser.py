@@ -26,6 +26,7 @@ def mock_post_sim(self, *_, **__):
 @pytest.mark.parametrize("ignore_zeros", (True, False), ids=("ignore_zeros", "include_zeros"))
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @patch.object(FDSRun, 'add_process', mock_fds_process)
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, '_during_simulation', mock_during_sim)
 @patch.object(FDSRun, '_post_simulation', mock_post_sim)
 def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_zeros, load):

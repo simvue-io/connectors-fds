@@ -21,7 +21,8 @@ def mock_fds_process(self, *_, **__):
     thread = threading.Thread(target=create_header, args=(self,))
     thread.start()
     
-@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)  
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_header_parser(folder_setup, load):
     """

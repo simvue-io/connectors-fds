@@ -16,7 +16,8 @@ def mock_fds_process(self, *_, **__):
     time.sleep(1)
     self._trigger.set()
     return True
-    
+
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_file_deletion(folder_setup):    
     """
@@ -46,6 +47,7 @@ def test_fds_file_deletion(folder_setup):
         assert sorted(comparison.left_only) == sorted(["fds_test.smv", "fds_test_1_1.s3d.sz", "fds_test_1_1.sf.bnd"])
         assert sorted(comparison.right_only) == sorted(["test.txt", "fds_input.fds"])
         
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None) 
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 def test_fds_no_file_deletion(folder_setup):    
     """

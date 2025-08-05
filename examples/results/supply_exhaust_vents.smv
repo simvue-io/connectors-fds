@@ -564,13 +564,3 @@ CLOSE_VENT    2
      1      0.00
 CLOSE_VENT    2
      2      0.00
-DEVICE_ACT     timer
-     1      2.00     1
-OPEN_VENT     1
-     1      2.02
-OPEN_VENT     1
-     2      2.02
-OPEN_VENT     2
-     1      2.02
-OPEN_VENT     2
-     2      2.02

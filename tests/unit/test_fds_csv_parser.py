@@ -50,6 +50,7 @@ def mock_ctrl_process(self, *_, **__):
     thread.start()
 
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_devc_process)
 def test_fds_devc_parser(folder_setup, load):
     """
@@ -98,6 +99,7 @@ def test_fds_devc_parser(folder_setup, load):
     assert expected_metric_last_values == actual_metric_last_values    
     
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_hrr_process)
 def test_fds_hrr_parser(folder_setup, load):    
     """
@@ -146,6 +148,7 @@ def test_fds_hrr_parser(folder_setup, load):
     assert expected_metric_last_values == actual_metric_last_values
     
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, 'add_process', mock_ctrl_process)
 def test_fds_ctrl_parser(folder_setup, load):    
     """

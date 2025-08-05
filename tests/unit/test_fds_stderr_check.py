@@ -12,6 +12,7 @@ import subprocess
 import sys
 
 @pytest.mark.parametrize("file_name", ("fds_invalid_config.stderr", "fds_no_file.stderr", "fds_too_few_meshes.stderr", "fds_expected.stderr"), ids=("invalid_config", "no_file", "cannot_mpi", "expected"))
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 def test_fds_stderr_check(folder_setup, file_name):
 
     def mock_execute_process(*args, file_name=file_name, **kwargs):

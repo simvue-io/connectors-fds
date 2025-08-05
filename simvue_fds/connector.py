@@ -10,14 +10,19 @@ import io
 import os
 import pathlib
 import platform
-import sys
 import re
 import shutil
+import sys
 import threading
 import time
 import typing
 from datetime import datetime
 from itertools import chain
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 import click
 import f90nml
@@ -32,6 +37,7 @@ from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
+
 class FDSRun(WrappedRun):
     """Class for setting up Simvue tracking and monitoring of an FDS simulation.
 
@@ -44,29 +50,6 @@ class FDSRun(WrappedRun):
         run.launch(...)
     """
 
-    fds_input_file_path: pydantic.FilePath = None
-    workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
-    upload_files: typing.List[str] = None
-    slice_parse_quantity: str | None = None
-    slice_parse_interval: int = 1
-    slice_parse_ignore_zeros: bool = False
-    ulimit: typing.Union[str, int] = None
-    fds_env_vars: typing.Dict[str, typing.Any] = None
-
-    # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
-    upload_input_file: bool = True
-
-    _slice_processed_time: int = -1
-    _slice_step: int = 0
-    _step_tracker: dict = {}
-    _parsing: bool = False
-    _parse_time: float = datetime.now().timestamp()
-    _activation_times: bool = False
-    _activation_times_data: typing.Dict[str, float] = {}
-    _chid: str = ""
-    _results_prefix: str = ""
-    _loading_historic_run: bool = False
-    _timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
     _patterns: typing.List[typing.Dict[str, typing.Pattern]] = [
         {"pattern": re.compile(r"\s+Time\sStep\s+(\d+)\s+([\w\s:,]+)"), "name": "step"},
         {
@@ -195,6 +178,51 @@ class FDSRun(WrappedRun):
             )
         # Convert to string
         return datetime.fromtimestamp(_timestamp).strftime(DATETIME_FORMAT)
+
+    def _find_fds_executable(self):
+        fds_bin = None
+        # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
+        if platform.system() != "Windows":
+            import resource
+
+            if self.ulimit == "unlimited" and platform.system() == "Darwin":
+                self.log_event(
+                    "Warning: Unlimited stack is not supported in MacOS - leaving unchanged."
+                )
+            elif self.ulimit == "unlimited":
+                resource.setrlimit(
+                    resource.RLIMIT_STACK,
+                    (resource.RLIM_INFINITY, resource.RLIM_INFINITY),
+                )
+            elif self.ulimit:
+                resource.setrlimit(
+                    resource.RLIMIT_STACK, (int(self.ulimit), int(self.ulimit))
+                )
+            # Find path to FDS executable
+            fds_bin = shutil.which("fds")
+
+        else:
+            search_paths = [
+                pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
+                pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
+                pathlib.Path.home().joinpath("firemodels"),
+            ]
+            if os.environ.get("GITHUB_WORKSPACE"):
+                search_paths.append(
+                    pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels")
+                )
+
+            for search_loc in search_paths:
+                if not search_loc.exists():
+                    continue
+                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
+                    fds_bin = f"{next(search)}"
+                    break
+
+        if not fds_bin:
+            raise EnvironmentError("FDS executable could not be found!")
+
+        return fds_bin
 
     def _log_parser(
         self, file_content: str, **__
@@ -586,6 +614,67 @@ class FDSRun(WrappedRun):
                 self._parsing = False
                 break
 
+    def __init__(
+        self,
+        mode: typing.Literal["online", "offline", "disabled"] = "online",
+        abort_callback: typing.Optional[typing.Callable[[Self], None]] = None,
+        server_token: typing.Optional[str] = None,
+        server_url: typing.Optional[str] = None,
+        debug: bool = False,
+    ):
+        """Initialize the FDSRun instance.
+
+        If `abort_callback` is provided the first argument must be this Run instance.
+
+        Parameters
+        ----------
+        mode : typing.Literal['online', 'offline', 'disabled'], optional
+            mode of running, by default 'online':
+                online - objects sent directly to Simvue server
+                offline - everything is written to disk for later dispatch
+                disabled - disable monitoring completelyby default "online"
+        abort_callback : typing.Optional[typing.Callable[[Self], None]], optional
+            callback executed when the run is aborted, by default None
+        server_token : typing.Optional[str], optional
+            overwrite value for server token, by default None
+        server_url : typing.Optional[str], optional
+            overwrite value for server URL, by default None
+        debug : bool, optional
+            run in debug mode, by default False
+
+        """
+        self.fds_input_file_path: pydantic.FilePath = None
+        self.workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
+        self.upload_files: typing.List[str] = None
+        self.slice_parse_quantity: str | None = None
+        self.slice_parse_interval: int = 1
+        self.slice_parse_ignore_zeros: bool = False
+        self.ulimit: typing.Union[str, int] = None
+        self.fds_env_vars: typing.Dict[str, typing.Any] = None
+
+        # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
+        self.upload_input_file: bool = True
+
+        self._slice_processed_time: int = -1
+        self._slice_step: int = 0
+        self._step_tracker: dict = {}
+        self._parsing: bool = False
+        self._parse_time: float = datetime.now().timestamp()
+        self._activation_times: bool = False
+        self._activation_times_data: typing.Dict[str, float] = {}
+        self._chid: str = ""
+        self._results_prefix: str = ""
+        self._loading_historic_run: bool = False
+        self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
+
+        super().__init__(
+            mode=mode,
+            abort_callback=abort_callback,
+            server_token=server_token,
+            server_url=server_url,
+            debug=debug,
+        )
+
     def _pre_simulation(self):
         """Start the FDS process."""
         super()._pre_simulation()
@@ -595,47 +684,7 @@ class FDSRun(WrappedRun):
         if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists:
             self.save_file(self.fds_input_file_path, "input")
 
-        fds_bin = None
-        # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
-        if platform.system() != "Windows":
-            import resource
-
-            if self.ulimit == "unlimited" and platform.system() == "Darwin":
-                self.log_event(
-                    "Warning: Unlimited stack is not supported in MacOS - leaving unchanged."
-                )
-            elif self.ulimit == "unlimited":
-                resource.setrlimit(
-                    resource.RLIMIT_STACK,
-                    (resource.RLIM_INFINITY, resource.RLIM_INFINITY),
-                )
-            elif self.ulimit:
-                resource.setrlimit(
-                    resource.RLIMIT_STACK, (int(self.ulimit), int(self.ulimit))
-                )
-            # Find path to FDS executable
-            fds_bin = shutil.which("fds")
-
-        else:
-            search_paths = [
-                pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
-                pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
-                pathlib.Path.home().joinpath("firemodels"),
-            ]
-            if os.environ.get("GITHUB_WORKSPACE"):
-                search_paths.append(pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels"))
-
-            for search_loc in search_paths:
-                if not search_loc.exists():
-                    continue
-                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
-                    fds_bin = f"{next(search)}"
-                    break
-                
-        if not fds_bin:
-            raise EnvironmentError("FDS executable could not be found!")
-        
-        print(fds_bin)
+        fds_bin = self._find_fds_executable()
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
@@ -658,7 +707,12 @@ class FDSRun(WrappedRun):
         command = []
         if platform.system() == "Windows":
             if self.run_in_parallel:
-                command += [f"{fds_bin}", "-p", str(self.num_processors), str(self.fds_input_file_path)]
+                command += [
+                    f"{fds_bin}",
+                    "-p",
+                    str(self.num_processors),
+                    str(self.fds_input_file_path),
+                ]
             else:
                 command += [f"{fds_bin}", str(self.fds_input_file_path)]
         else:
@@ -666,13 +720,8 @@ class FDSRun(WrappedRun):
                 command += ["mpiexec", "-n", str(self.num_processors)]
                 command += format_command_env_vars(self.mpiexec_env_vars)
             command += [f"{fds_bin}", str(self.fds_input_file_path)]
-        
+
         command += format_command_env_vars(self.fds_env_vars)
-        
-        # if self.run_in_parallel and platform.system() == "Windows":
-        #     command += ["-p", str(self.num_processors)]
-        
-        print(command)
 
         self.add_process(
             "fds_simulation",

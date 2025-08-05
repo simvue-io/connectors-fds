@@ -16,6 +16,7 @@ def store_metadata(self, metadata):
 @patch.object(FDSRun, '_post_simulation', do_nothing)
 @patch.object(FDSRun, 'save_file', do_nothing)
 @patch.object(FDSRun, '_tidy_run', do_nothing)
+@patch.object(FDSRun, '_find_fds_executable', do_nothing)
 @patch.object(FDSRun, 'update_metadata', store_metadata)
 def test_chid_from_input_file():
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -35,6 +36,7 @@ def test_chid_from_input_file():
 @patch.object(FDSRun, '_post_simulation', do_nothing)
 @patch.object(FDSRun, 'save_file', do_nothing)
 @patch.object(FDSRun, '_tidy_run', do_nothing)
+@patch.object(FDSRun, '_find_fds_executable', do_nothing)
 @patch.object(FDSRun, 'update_metadata', store_metadata)
 def test_chid_from_results_files():
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -51,6 +53,7 @@ def test_chid_from_results_files():
 @patch.object(FDSRun, '_post_simulation', do_nothing)
 @patch.object(FDSRun, 'save_file', do_nothing)
 @patch.object(FDSRun, '_tidy_run', do_nothing)
+@patch.object(FDSRun, '_find_fds_executable', do_nothing)
 @patch.object(FDSRun, 'update_metadata', store_metadata)
 def test_chid_invalid_results_files():
     with tempfile.TemporaryDirectory() as temp_dir:
