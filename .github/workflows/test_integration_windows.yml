@@ -1,0 +1,56 @@
+name: Integration Tests (Windows)
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: [ "main", "dev"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  FDS:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install 7z
+        run: choco install -y 7zip
+
+      - name: Download FDS installer
+        run: |
+          Invoke-WebRequest -Uri https://github.com/firemodels/fds/releases/download/FDS-6.10.1/FDS-6.10.1_SMV-6.10.1_win.exe -OutFile FDSInstaller.exe
+
+      - name: Unpack Installer
+        run: 7z.exe x .\FDSInstaller.exe
+
+      - name: List firemodels folder
+        run: dir ".\firemodels"
+
+      - name: Setup FDS
+        run: |
+          ".\firemodels\setup.bat a"
+
+      - name: Run FDS version
+        run: |
+          "& $(Get-ChildItem -Recurse -Filter 'fds_local.bat' 'D:\' | Select-Object -ExpandProperty FullName) -v"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install poetry
+        run: python3 -m pip install poetry
+      - name: Install dependencies and run tests
+        run: |
+          export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
+          export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
+          poetry install --all-extras
+          poetry run pytest tests/integration/test_fds.py -v
+        shell: bash
