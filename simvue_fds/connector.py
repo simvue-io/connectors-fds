@@ -526,7 +526,7 @@ class FDSRun(WrappedRun):
 
         _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
 
-        metrics[_metric_label] = sub_slice
+        metrics[_metric_label] = sub_slice.T
         metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
         metrics[f"{_metric_label}.max"] = numpy.max(sub_slice_no_nan)
         metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice_no_nan)
@@ -1028,6 +1028,7 @@ class FDSRun(WrappedRun):
         self.slice_parse_quantity = slice_parse_quantity
         self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
         self._loading_historic_run = True
+        self._grids_defined = False
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
