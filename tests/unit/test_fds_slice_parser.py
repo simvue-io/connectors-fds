@@ -4,6 +4,8 @@ from simvue_fds.connector import FDSRun
 import simvue
 import time
 import numpy
+import requests
+
 from unittest.mock import patch
 def mock_fds_process(self, *_, **__):
     self.slice_parse_interval = 0.05
@@ -68,8 +70,18 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
         
         # Check all 4 metrics from slice have been created
         expected_metrics = [f"{_prefix}.x.1_5", f"{_prefix}.y.1_5", f"{_prefix}.z.1_5", f"{_prefix}.z.2_5"]
+        
+        # Mesh is 30x40x30 cells, this means 31x41x31 grid points
+        # The data is then transposed so that it is in (row, col) which is what multidimensional metrics expects
+        # This means the shapes below are flippedm eg for a slice at fixed x:
+            # y dimension = 41
+            # z dimension = 31
+            # Shape in geometric notation = (41, 31)
+            # Shape in row, col notation = (31, 41)
+        expected_slice_dims = [(31, 41), (31, 31), (41, 31), (41, 31)]
+        
         # Check at least 25 times recorded (since we stopped the sim at 25 - 26s)
-        for metric in expected_metrics:
+        for metric, slice_dims in zip(expected_metrics, expected_slice_dims):
             if not slice_parameter:
                 assert metric+".max" not in metrics_names
                 assert metric+".min" not in metrics_names
@@ -107,5 +119,16 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                     assert numpy.all(_avg[5:] < _avg[:-5])
                 else:
                     assert numpy.all(_avg[5:] > _avg[:-5])
+        
+                # Check multidimensional metrics are present
+                # TODO: Temporary solution since client mehods for multi-d metrics not yet available
+                # Check step at 0 (start), 10 (middle), and 25 (end) exists
+                for i in (0, 10, 25):
+                    response = requests.get(
+                        url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step=1",
+                        headers=run._sv_obj._headers,
+                    )
+                    assert response.status_code == 200   
+                    assert numpy.array(response.json().get("array")).shape == slice_dims
             
             
