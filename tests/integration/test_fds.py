@@ -64,7 +64,7 @@ def test_fds_connector(folder_setup, offline_cache_setup, load, offline, paralle
         run_data.description
         == "An example of using the FDSRun Connector to track an FDS simulation."
     )
-    assert run_data.tags == ["fds", "vents"]
+    assert sorted(run_data.tags) == ["fds", "vents"]
 
     # Check alert has been added
     assert "visibility_below_three_metres" in [
