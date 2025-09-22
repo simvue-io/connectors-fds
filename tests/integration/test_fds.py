@@ -18,7 +18,7 @@ from simvue.sender import sender
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
 @pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
-def test_fds_connector(folder_setup, load, offline, parallel):
+def test_fds_connector(folder_setup, offline_cache_setup, load, offline, parallel):
     if load:
         if parallel:
             pytest.skip("Parallel has no effect when loading from historic runs")
@@ -64,7 +64,7 @@ def test_fds_connector(folder_setup, load, offline, parallel):
         run_data.description
         == "An example of using the FDSRun Connector to track an FDS simulation."
     )
-    assert run_data.tags == ["fds", "vents"]
+    assert sorted(run_data.tags) == ["fds", "vents"]
 
     # Check alert has been added
     assert "visibility_below_three_metres" in [
