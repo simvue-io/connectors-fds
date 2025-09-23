@@ -34,4 +34,4 @@ jobs:
         export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
         export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
         poetry install --all-extras
-        poetry run pytest tests/unit/
+        poetry run pytest tests/unit/ -x -s
