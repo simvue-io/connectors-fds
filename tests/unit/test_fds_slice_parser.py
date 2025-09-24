@@ -19,6 +19,7 @@ def mock_during_sim(self, *_, **__):
 def mock_post_sim(self, *_, **__):
     if self.slice_parser:
         self.slice_parser.join()
+    time.sleep(2)
     return
 # Ran an FDS case and stopped it abruptly sometime after 25s simulation time
 # This is to simulate the parser reading slice files at ragular intervals
@@ -62,8 +63,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                 run.launch(
                     fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
                     workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                )
-        time.sleep(2)         
+                )       
            
         client = simvue.Client()
         
