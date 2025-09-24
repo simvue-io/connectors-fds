@@ -465,6 +465,7 @@ class FDSRun(WrappedRun):
             Positions in space where the slice is calculated in the above dimension
 
         """
+        print("in setup grids")
         for i, grid_index in enumerate(indices):
             if label == "x":
                 axes = [
@@ -490,6 +491,7 @@ class FDSRun(WrappedRun):
                 axes_ticks=axes,
                 axes_labels=axes_labels,
             )
+            print("created grid")
 
     def _add_slice_metrics(
         self,
@@ -520,6 +522,7 @@ class FDSRun(WrappedRun):
             The updated metrics
 
         """
+        print("Adding slice metrics")
         sub_slice_no_nan = sub_slice[~numpy.isnan(sub_slice)]
         if ignore_zeros:
             sub_slice_no_nan = sub_slice_no_nan[numpy.where(sub_slice_no_nan != 0)]
@@ -530,6 +533,7 @@ class FDSRun(WrappedRun):
         metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
         metrics[f"{_metric_label}.max"] = numpy.max(sub_slice_no_nan)
         metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice_no_nan)
+        print("Added slice metrics")
         return metrics
 
     def _parse_slice(self) -> bool:
@@ -544,6 +548,7 @@ class FDSRun(WrappedRun):
         # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
         # data_abs is an array of all values, shape (X, Y, Z, times)
         # times_out is an array of in simulation times
+        print("in parse slice")
         temp_stdout = io.StringIO()
         try:
             with contextlib.redirect_stdout(temp_stdout):
@@ -595,7 +600,7 @@ class FDSRun(WrappedRun):
         x_names = grid_abs[x_indices, 0, 0, 0]
         y_names = grid_abs[0, y_indices, 0, 1]
         z_names = grid_abs[0, 0, z_indices, 2]
-
+        print("procesed data")
         if not self._grids_defined:
             self._setup_grids(grid_abs, x_indices, "x", x_names)
             self._setup_grids(grid_abs, y_indices, "y", y_names)
@@ -638,6 +643,7 @@ class FDSRun(WrappedRun):
                     name=z_names[idx],
                     ignore_zeros=self.slice_parse_ignore_zeros,
                 )
+            print("added merics")
 
             # Need to estimate timestamp which this measurement would correspond to
             # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
@@ -654,19 +660,24 @@ class FDSRun(WrappedRun):
                 ),
             )
             self._slice_step += 1
+            print("logged metrics")
         self._parse_time = datetime.now().timestamp()
         self._slice_processed_time = times_out[-1]
         return True
 
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
+        print("In slice parser")
         self._parsing = True
         while True:
+            print("in while")
             time.sleep(60 * self.slice_parse_interval)
-
+            print("slept")
             slice_parsed = self._parse_slice()
+            print("Parsed")
 
             if self._trigger.is_set() or not slice_parsed:
+                print("Stopping")
                 self._parsing = False
                 break
 
