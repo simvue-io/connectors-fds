@@ -12,7 +12,7 @@ def mock_fds_process(self, *_, **__):
     return
 
 def mock_during_sim(self, *_, **__):
-    time.sleep(20)
+    time.sleep(5)
     self._trigger.set()
     return
 
