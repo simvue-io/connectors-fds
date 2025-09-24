@@ -12,7 +12,7 @@ def mock_fds_process(self, *_, **__):
     return
 
 def mock_during_sim(self, *_, **__):
-    time.sleep(5)
+    time.sleep(20)
     self._trigger.set()
     return
 
@@ -123,13 +123,13 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                 # Check multidimensional metrics are present
                 # TODO: Temporary solution since client mehods for multi-d metrics not yet available
                 # Check step at 0 (start), 10 (middle), and 25 (end) exists
-                # time.sleep(1)
-                # for i in (0, 10, 25):
-                #     response = requests.get(
-                #         url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
-                #         headers=run._sv_obj._headers,
-                #     )
-                #     assert response.status_code == 200   
-                #     assert numpy.array(response.json().get("array")).shape == slice_dims
+                time.sleep(1)
+                for i in (0, 10, 25):
+                    response = requests.get(
+                        url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
+                        headers=run._sv_obj._headers,
+                    )
+                    assert response.status_code == 200   
+                    assert numpy.array(response.json().get("array")).shape == slice_dims
             
             

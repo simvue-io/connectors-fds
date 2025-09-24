@@ -526,7 +526,7 @@ class FDSRun(WrappedRun):
 
         _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
 
-        # metrics[_metric_label] = sub_slice.T
+        metrics[_metric_label] = sub_slice.T
         metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
         metrics[f"{_metric_label}.max"] = numpy.max(sub_slice_no_nan)
         metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice_no_nan)
@@ -596,11 +596,11 @@ class FDSRun(WrappedRun):
         y_names = grid_abs[0, y_indices, 0, 1]
         z_names = grid_abs[0, 0, z_indices, 2]
 
-        # if not self._grids_defined:
-        #     self._setup_grids(grid_abs, x_indices, "x", x_names)
-        #     self._setup_grids(grid_abs, y_indices, "y", y_names)
-        #     self._setup_grids(grid_abs, z_indices, "z", z_names)
-        #     self._grids_defined = True
+        if not self._grids_defined:
+            self._setup_grids(grid_abs, x_indices, "x", x_names)
+            self._setup_grids(grid_abs, y_indices, "y", y_names)
+            self._setup_grids(grid_abs, z_indices, "z", z_names)
+            self._grids_defined = True
 
         # Take the 2D slices
         x_slices = data_abs[x_indices, :, :, :]
