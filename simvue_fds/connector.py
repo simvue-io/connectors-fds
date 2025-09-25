@@ -450,7 +450,7 @@ class FDSRun(WrappedRun):
         indices: numpy.ndarray,
         label: str,
         names: numpy.ndarray,
-    ):
+    ) -> None:
         """Create 3D metric grids for each slice being analysed.
 
         Parameters
