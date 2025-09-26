@@ -444,6 +444,53 @@ class FDSRun(WrappedRun):
         self.log_event(event_str, timestamp=_timestamp)
         self.update_metadata({data["ID"]: state})
 
+    def _setup_grids(
+        self,
+        grid_data: numpy.ndarray,
+        indices: numpy.ndarray,
+        label: str,
+        names: numpy.ndarray,
+    ) -> None:
+        """Create 3D metric grids for each slice being analysed.
+
+        Parameters
+        ----------
+        grid_data : numpy.ndarray
+            The slice to compute min, max, mean over
+        indices : numpy.ndarray
+            The indices in the grid data at which slices are found
+        label : str
+            The dimension which this slice is calculated over
+        names : numpy.ndarray
+            Positions in space where the slice is calculated in the above dimension
+
+        """
+        for i, grid_index in enumerate(indices):
+            if label == "x":
+                axes = [
+                    grid_data[grid_index, :, 0, 1].tolist(),
+                    grid_data[grid_index, 0, :, 2].tolist(),
+                ]
+                axes_labels = ["y", "z"]
+            elif label == "y":
+                axes = [
+                    grid_data[:, grid_index, 0, 0].tolist(),
+                    grid_data[0, grid_index, :, 2].tolist(),
+                ]
+                axes_labels = ["x", "z"]
+            elif label == "z":
+                axes = [
+                    grid_data[:, 0, grid_index, 0].tolist(),
+                    grid_data[0, :, grid_index, 1].tolist(),
+                ]
+                axes_labels = ["x", "y"]
+
+            self.assign_metric_to_grid(
+                metric_name=f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(names[i], 3)).replace('.', '_')}",
+                axes_ticks=axes,
+                axes_labels=axes_labels,
+            )
+
     def _add_slice_metrics(
         self,
         metrics: dict,
@@ -473,13 +520,16 @@ class FDSRun(WrappedRun):
             The updated metrics
 
         """
-        sub_slice = sub_slice[~numpy.isnan(sub_slice)]
+        sub_slice_no_nan = sub_slice[~numpy.isnan(sub_slice)]
         if ignore_zeros:
-            sub_slice = sub_slice[numpy.where(sub_slice != 0)]
+            sub_slice_no_nan = sub_slice_no_nan[numpy.where(sub_slice_no_nan != 0)]
+
         _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
-        metrics[f"{_metric_label}.min"] = numpy.min(sub_slice)
-        metrics[f"{_metric_label}.max"] = numpy.max(sub_slice)
-        metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice)
+
+        metrics[_metric_label] = sub_slice.T
+        metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
+        metrics[f"{_metric_label}.max"] = numpy.max(sub_slice_no_nan)
+        metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice_no_nan)
         return metrics
 
     def _parse_slice(self) -> bool:
@@ -545,6 +595,11 @@ class FDSRun(WrappedRun):
         x_names = grid_abs[x_indices, 0, 0, 0]
         y_names = grid_abs[0, y_indices, 0, 1]
         z_names = grid_abs[0, 0, z_indices, 2]
+        if not self._grids_defined:
+            self._setup_grids(grid_abs, x_indices, "x", x_names)
+            self._setup_grids(grid_abs, y_indices, "y", y_names)
+            self._setup_grids(grid_abs, z_indices, "z", z_names)
+            self._grids_defined = True
 
         # Take the 2D slices
         x_slices = data_abs[x_indices, :, :, :]
@@ -604,14 +659,11 @@ class FDSRun(WrappedRun):
 
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
-        self._parsing = True
         while True:
             time.sleep(60 * self.slice_parse_interval)
-
             slice_parsed = self._parse_slice()
 
             if self._trigger.is_set() or not slice_parsed:
-                self._parsing = False
                 break
 
     def __init__(
@@ -658,7 +710,6 @@ class FDSRun(WrappedRun):
         self._slice_processed_time: int = -1
         self._slice_step: int = 0
         self._step_tracker: dict = {}
-        self._parsing: bool = False
         self._parse_time: float = datetime.now().timestamp()
         self._activation_times: bool = False
         self._activation_times_data: typing.Dict[str, float] = {}
@@ -731,10 +782,10 @@ class FDSRun(WrappedRun):
         )
 
         if self.slice_parse_quantity:
-            slice_parser = threading.Thread(
+            self.slice_parser = threading.Thread(
                 target=self._slice_parser, daemon=True, name="slice_parser"
             )
-            slice_parser.start()
+            self.slice_parser.start()
 
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
@@ -806,9 +857,8 @@ class FDSRun(WrappedRun):
                     self.save_file(file, "output")
 
         # Then wait for slice parser to finish
-        while self._parsing:
-            time.sleep(10)
-
+        if self.slice_parser:
+            self.slice_parser.join()
         super()._post_simulation()
 
     @simvue.utilities.prettify_pydantic
@@ -853,7 +903,7 @@ class FDSRun(WrappedRun):
         slice_parse_interval : int, optional
             Interval (in minutes) at which to parse and upload 2D slice data, default is 1
         slice_parse_ignore_zeros : bool, optional
-            Whether to ignore values of zero in slices (useful if there are obstructions in the mesh), default is True
+            Whether to ignore values of zero in slices when calculating slice statistics (useful if there are obstructions in the mesh), default is True
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[typing.Dict[str, typing.Any]], optional
@@ -877,6 +927,7 @@ class FDSRun(WrappedRun):
         self.slice_parse_quantity = slice_parse_quantity
         self.slice_parse_interval = slice_parse_interval
         self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
+        self.slice_parser = None
         self.ulimit = ulimit
         self.fds_env_vars = fds_env_vars or {}
         self.run_in_parallel = run_in_parallel
@@ -885,6 +936,7 @@ class FDSRun(WrappedRun):
 
         self._activation_times = False
         self._activation_times_data = {}
+        self._grids_defined = False
 
         nml = f90nml.read(self.fds_input_file_path)
         self._chid = nml["head"]["chid"]
@@ -970,7 +1022,9 @@ class FDSRun(WrappedRun):
         self.upload_files = upload_files
         self.slice_parse_quantity = slice_parse_quantity
         self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
+        self.slice_parser = None
         self._loading_historic_run = True
+        self._grids_defined = False
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
