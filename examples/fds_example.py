@@ -77,6 +77,13 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
             rule="is below",
             threshold=3,
         )
+        run.create_metric_threshold_alert(
+            name="avg_temp_above_100",
+            metric="temperature.y.2_0.avg",
+            frequency=1,
+            rule="is above",
+            threshold=100,
+        )
 
         # Then call the .launch() method to start your FDS simulation, providing the path to the input file
         run.launch(
@@ -91,6 +98,7 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
         
         # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
         run.log_event("Deleting local copies of results...")
+        shutil.rmtree(pathlib.Path(__file__).parent.joinpath("results"))
         
         return run.id
 
