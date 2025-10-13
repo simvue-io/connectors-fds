@@ -179,7 +179,7 @@ class FDSRun(WrappedRun):
                 - self._timestamp_mapping[_index - 1, 1]
             )
         # Convert to string
-        return datetime.fromtimestamp(_timestamp)
+        return datetime.fromtimestamp(_timestamp, tz=timezone.utc)
 
     def _find_fds_executable(self):
         fds_bin = None
@@ -646,7 +646,7 @@ class FDSRun(WrappedRun):
                 metrics,
                 time=float(time_val),
                 step=self._slice_step,
-                timestamp=datetime.fromtimestamp(_timestamp_estimate),
+                timestamp=datetime.fromtimestamp(_timestamp_estimate, tz=timezone.utc),
             )
             self._slice_step += 1
         self._parse_time = datetime.now(timezone.utc).timestamp()
