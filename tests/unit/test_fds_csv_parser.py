@@ -73,7 +73,8 @@ def test_fds_devc_parser(folder_setup, load):
                 fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
                 workdir_path = temp_dir.name,
             )
-           
+    # Allow time for queued dispatcher to send final updates
+    time.sleep(1)
     client = simvue.Client()
         
     # Check that 9 metrics have been created, one for each metric in the CSV
@@ -122,7 +123,8 @@ def test_fds_hrr_parser(folder_setup, load):
                 fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
                 workdir_path = temp_dir.name,
             )
-           
+    # Allow time for queued dispatcher to send final updates
+    time.sleep(1)
     client = simvue.Client()
         
     # Check that 16 metrics have been created, one for each metric in the CSV
@@ -171,7 +173,8 @@ def test_fds_ctrl_parser(folder_setup, load):
                 fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
                 workdir_path = temp_dir.name,
             )
-           
+    # Allow time for queued dispatcher to send final updates
+    time.sleep(1)
     client = simvue.Client()
     
     # Check DEVC and CTRL events have been correctly added to events log
