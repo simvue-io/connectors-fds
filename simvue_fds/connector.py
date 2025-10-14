@@ -783,6 +783,9 @@ class FDSRun(WrappedRun):
             )
             self.slice_parser.start()
 
+        if self._concatenated_input_files:
+            self.fds_input_file_path = f"{self._results_prefix}.fds"
+
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
         # Upload data from input file as metadata
@@ -827,6 +830,10 @@ class FDSRun(WrappedRun):
     def _post_simulation(self):
         """Upload files selected by user to Simvue for storage."""
         self.update_metadata(self._activation_times_data)
+
+        # Upload updated FDS file if '&CATF' namespace in FDS file
+        if self._concatenated_input_files:
+            self.save_file(str(self.fds_input_file_path), "input")
 
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
@@ -886,7 +893,7 @@ class FDSRun(WrappedRun):
             If a directory does not already exist at this path, it will be created
             Uses the current working directory by default.
         clean_workdir : bool, optional
-            Whether to remove FDS related files from the working directory, by default False
+            Whether to remove all FDS related files from the working directory, by default False
             Useful when doing optimisation problems to remove results from previous runs.
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
@@ -934,8 +941,16 @@ class FDSRun(WrappedRun):
         self._activation_times_data = {}
         self._grids_defined = False
 
-        nml = f90nml.read(self.fds_input_file_path)
+        nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
+
+        # Need to find if this FDS input file will concatenate together other files
+        self._concatenated_input_files = []
+        for key in nml.keys():
+            if "catf" in key:
+                self._concatenated_input_files += nml[key]["other_files"]
+        if self._concatenated_input_files:
+            self._chid += "_cat"
 
         if self.workdir_path:
             pathlib.Path(self.workdir_path).mkdir(exist_ok=True)
@@ -945,9 +960,25 @@ class FDSRun(WrappedRun):
                     if (
                         pathlib.Path(file).absolute()
                         == pathlib.Path(self.fds_input_file_path).absolute()
+                        or file.name in self._concatenated_input_files
                     ):
                         continue
                     pathlib.Path(file).unlink()
+
+            # Copy files to concatenate together into working directory
+            for concat_file in self._concatenated_input_files:
+                concat_path = pathlib.Path(self.fds_input_file_path).parent.joinpath(
+                    concat_file
+                )
+                if (
+                    concat_path.exists()
+                    and concat_path.absolute()
+                    != pathlib.Path(self.workdir_path).joinpath(concat_file).absolute()
+                ):
+                    shutil.copy(
+                        concat_path,
+                        pathlib.Path(self.workdir_path).joinpath(concat_file),
+                    )
 
         self._results_prefix = (
             str(pathlib.Path(self.workdir_path).joinpath(self._chid))
