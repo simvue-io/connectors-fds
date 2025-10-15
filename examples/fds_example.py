@@ -77,7 +77,13 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
             rule="is below",
             threshold=3,
         )
-
+        run.create_metric_threshold_alert(
+            name="avg_temp_above_100",
+            metric="temperature.y.2_0.avg",
+            frequency=1,
+            rule="is above",
+            threshold=100,
+        )
         # Then call the .launch() method to start your FDS simulation, providing the path to the input file
         run.launch(
             fds_input_file_path = pathlib.Path(__file__).parent.joinpath("supply_exhaust_vents.fds"),

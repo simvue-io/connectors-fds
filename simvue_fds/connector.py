@@ -16,7 +16,7 @@ import sys
 import threading
 import time
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import chain
 
 try:
@@ -132,9 +132,11 @@ class FDSRun(WrappedRun):
         """
         super()._tidy_run()
         if self._loading_historic_run and self._timestamp_mapping.size:
-            self._sv_obj.started = datetime.fromtimestamp(self._timestamp_mapping[0, 1])
+            self._sv_obj.started = datetime.fromtimestamp(
+                self._timestamp_mapping[0, 1], tz=timezone.utc
+            )
             self._sv_obj.endtime = datetime.fromtimestamp(
-                self._timestamp_mapping[-1, 1]
+                self._timestamp_mapping[-1, 1], tz=timezone.utc
             )
             self._sv_obj.commit()
 
@@ -177,7 +179,7 @@ class FDSRun(WrappedRun):
                 - self._timestamp_mapping[_index - 1, 1]
             )
         # Convert to string
-        return datetime.fromtimestamp(_timestamp).strftime(DATETIME_FORMAT)
+        return datetime.fromtimestamp(_timestamp, tz=timezone.utc)
 
     def _find_fds_executable(self):
         fds_bin = None
@@ -275,9 +277,7 @@ class FDSRun(WrappedRun):
                         )
 
                         # Create new record, reset current mesh to None (to be set later)
-                        _out_record = {
-                            "timestamp": _timestamp.strftime(DATETIME_FORMAT)
-                        }
+                        _out_record = {"timestamp": _timestamp}
                         _current_mesh = None
 
                     # Define the name of the metric, then log the value as key/value pairs
@@ -292,7 +292,9 @@ class FDSRun(WrappedRun):
                     if pattern["name"] == "time":
                         self.log_event(
                             f"Time Step: {_out_record['step']}, Simulation Time: {_out_record['time']} s",
-                            timestamp=_out_record["timestamp"],
+                            timestamp=_out_record["timestamp"]
+                            if self._loading_historic_run
+                            else datetime.now(timezone.utc),
                         )
                         # If loading from historic runs, keep track of time to timestamp mapping
                         if self._loading_historic_run:
@@ -301,9 +303,7 @@ class FDSRun(WrappedRun):
                                     self._timestamp_mapping,
                                     [
                                         float(_out_record["time"]),
-                                        datetime.strptime(
-                                            _out_record["timestamp"], DATETIME_FORMAT
-                                        ).timestamp(),
+                                        _out_record["timestamp"].timestamp(),
                                     ],
                                 )
                             )
@@ -349,9 +349,7 @@ class FDSRun(WrappedRun):
                 self._estimate_timestamp(float(metric_time)) if metric_time else None,
             )
         else:
-            metric_timestamp = data.pop(
-                "timestamp", meta["timestamp"].replace(" ", "T")
-            )
+            metric_timestamp = data.pop("timestamp", datetime.now(timezone.utc))
 
         self.log_metrics(
             data, time=metric_time, step=metric_step, timestamp=metric_timestamp
@@ -641,19 +639,17 @@ class FDSRun(WrappedRun):
             # Need to estimate timestamp which this measurement would correspond to
             # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
             _timestamp_estimate: float = self._parse_time + (
-                datetime.now().timestamp() - self._parse_time
+                datetime.now(timezone.utc).timestamp() - self._parse_time
             ) * ((time_idx + 1) / len(times_out))
 
             self.log_metrics(
                 metrics,
                 time=float(time_val),
                 step=self._slice_step,
-                timestamp=datetime.fromtimestamp(_timestamp_estimate).strftime(
-                    DATETIME_FORMAT
-                ),
+                timestamp=datetime.fromtimestamp(_timestamp_estimate, tz=timezone.utc),
             )
             self._slice_step += 1
-        self._parse_time = datetime.now().timestamp()
+        self._parse_time = datetime.now(timezone.utc).timestamp()
         self._slice_processed_time = times_out[-1]
         return True
 
@@ -710,7 +706,7 @@ class FDSRun(WrappedRun):
         self._slice_processed_time: int = -1
         self._slice_step: int = 0
         self._step_tracker: dict = {}
-        self._parse_time: float = datetime.now().timestamp()
+        self._parse_time: float = datetime.now(timezone.utc).timestamp()
         self._activation_times: bool = False
         self._activation_times_data: typing.Dict[str, float] = {}
         self._chid: str = ""
@@ -1104,7 +1100,7 @@ class FDSRun(WrappedRun):
                         -1,
                         self.fds_input_file_path.stat().st_mtime
                         if self.fds_input_file_path
-                        else datetime.now().timestamp(),
+                        else datetime.now(timezone.utc).timestamp(),
                     ]
                 ]
             )

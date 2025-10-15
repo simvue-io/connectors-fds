@@ -1,5 +1,8 @@
 # Change log
 
+## [v1.2.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.2.1) - 2025-10-14
+* Fixes bug with alerting due to timestamps not being sent in UTC
+
 ## [v1.2.0](https://github.com/simvue-io/connectors-fds/releases/tag/v1.2.0) - 2025-09-22
 * Added functionality for uploading full 2D slices as 3D metrics
 * Fixes a number of bugs for Windows users related to identifying correct FDS binary
