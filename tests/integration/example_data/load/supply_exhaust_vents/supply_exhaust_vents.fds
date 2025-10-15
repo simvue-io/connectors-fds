@@ -5,9 +5,9 @@
 &MESH XB= 0, 3, 0, 2, 0, 3, IJK= 30, 20, 30 /
 &MESH XB= 0, 3, 2, 4, 0, 3, IJK= 30, 20, 30 /
 
-# Simulate the fire for 60 seconds, output results every second
-&TIME T_END=60. /
-&DUMP NFRAMES=60, WRITE_XYZ=.TRUE. /
+# Simulate the fire for 10 seconds, output results every second
+&TIME T_END=10. /
+&DUMP NFRAMES=10, WRITE_XYZ=.TRUE. /
 
 # Define the type of fuel for the fire
 &REAC ID = 'propane reaction',
@@ -30,7 +30,7 @@ FUEL='PROPANE'/
 &SURF ID='exhaust', VOLUME_FLOW=1.5, COLOR='BLUE' /
 
 # Add a timer device for supply and exhaust, activates the vents after 20 seconds
-&DEVC ID='timer', QUANTITY='TIME', XYZ = 1,1,1, SETPOINT=20, INITIAL_STATE=.FALSE. /
+&DEVC ID='timer', QUANTITY='TIME', XYZ = 1,1,1, SETPOINT=2, INITIAL_STATE=.FALSE. /
 
 
 # Define slice outputs - generates a 2D slice at y=2, showing the air velocity and temperature

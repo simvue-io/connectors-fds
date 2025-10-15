@@ -39,67 +39,46 @@ import shutil
 import uuid
 from simvue_fds.connector import FDSRun
 
-def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) -> str:
-    """Function demonstrating how to launch FDS runs with Simvue.
+# Delete old copies of results, if they exist:
+if pathlib.Path(__file__).parent.joinpath("results").exists():
+    shutil.rmtree(pathlib.Path(__file__).parent.joinpath("results"))
 
-    Parameters
-    ----------
-    run_folder : str
-        The folder/directory where the input file is stored
-    offline : bool, optional
-        Whether to run in offline mode, by default False
-    parallel : bool, optional
-        Whether to run FDS across multiple CPU cores in parallel, by default False
-    Returns
-    -------
-    str
-        The ID of the run
-    """
-    # Delete old copies of results, if they exist:
-    if pathlib.Path(__file__).parent.joinpath("results").exists():
-        shutil.rmtree(pathlib.Path(__file__).parent.joinpath("results"))
-
-    # Initialise the FDSRun class as a context manager
-    with FDSRun(mode="offline" if offline else "online") as run:
-        # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
-        run.init(
-            name="fds_simulation_vents-%s" % str(uuid.uuid4()),
-            description="An example of using the FDSRun Connector to track an FDS simulation.",
-            folder=run_folder,
-            tags=["fds", "vents"],
-        )
+# Initialise the FDSRun class as a context manager
+with FDSRun() as run:
+    # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
+    run.init(
+        name="fds_simulation_vents-%s" % str(uuid.uuid4()),
+        description="An example of using the FDSRun Connector to track an FDS simulation.",
+        folder="simvue_client_examples/fds",
+        tags=["fds", "vents"],
+    )
+    
+    # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
+    run.create_metric_threshold_alert(
+        name="visibility_below_three_metres",
+        metric="eye_level_visibility",
+        frequency=1,
+        rule="is below",
+        threshold=3,
+    )
+    run.create_metric_threshold_alert(
+        name="avg_temp_above_100",
+        metric="temperature.y.2_0.avg",
+        frequency=1,
+        rule="is above",
+        threshold=100,
+    )
+    # Then call the .launch() method to start your FDS simulation, providing the path to the input file
+    run.launch(
+        fds_input_file_path = pathlib.Path(__file__).parent.joinpath("supply_exhaust_vents.fds"),
+        workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
+        # You can optionally have the connector track slices in your simulation
+        slice_parse_quantity = "TEMPERATURE",
+        # And you can choose whether to run it in parallel
+        run_in_parallel = True,
+        num_processors = 2,
+    )
+    
+    # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
+    run.log_event("Deleting local copies of results...")
         
-        # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
-        run.create_metric_threshold_alert(
-            name="visibility_below_three_metres",
-            metric="eye_level_visibility",
-            frequency=1,
-            rule="is below",
-            threshold=3,
-        )
-        run.create_metric_threshold_alert(
-            name="avg_temp_above_100",
-            metric="temperature.y.2_0.avg",
-            frequency=1,
-            rule="is above",
-            threshold=100,
-        )
-        # Then call the .launch() method to start your FDS simulation, providing the path to the input file
-        run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("supply_exhaust_vents.fds"),
-            workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
-            # You can optionally have the connector track slices in your simulation
-            slice_parse_quantity = "TEMPERATURE",
-            # And you can choose whether to run it in parallel
-            run_in_parallel = parallel,
-            num_processors = 2,
-        )
-        
-        # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
-        run.log_event("Deleting local copies of results...")
-        
-        return run.id
-
-if __name__ == "__main__":
-    fds_example("/fds_example")
-

@@ -25,53 +25,24 @@ import shutil
 import uuid
 from simvue_fds.connector import FDSRun
 
-def load_runs_example(run_folder: str, offline: bool=False) -> str:
-    """Function demonstrating how to load pre-existing FDS results into Simvue.
 
-    Parameters
-    ----------
-    run_folder : str
-        The folder/directory where results are contained
-    offline : bool, optional
-        Whether to run in offline mode, by default False
+# Initialise the FDSRun class as a context manager
+with FDSRun() as run:
+    # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
+    run.init(
+        name="fds_simulation_vents-%s" % str(uuid.uuid4()),
+        description="An example of using the FDSRun Connector to load an FDS simulation.",
+        folder="/simvue_client_examples/fds",
+        tags=["fds", "vents"],
+    )
 
-    Returns
-    -------
-    str
-        The ID of the run
-    """
-
-    # Initialise the FDSRun class as a context manager
-    with FDSRun(mode="offline" if offline else "online") as run:
-        # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
-        run.init(
-            name="fds_simulation_vents-%s" % str(uuid.uuid4()),
-            description="An example of using the FDSRun Connector to track an FDS simulation.",
-            folder=run_folder,
-            tags=["fds", "vents"],
-        )
-        
-        # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
-        run.create_metric_threshold_alert(
-            name="visibility_below_three_metres",
-            metric="eye_level_visibility",
-            frequency=1,
-            rule="is below",
-            threshold=3,
-        )
-
-        # Then call the .load() method to load historic results, providing the path to the results directory
-        run.load(
-            results_dir = pathlib.Path(__file__).parent.joinpath("example_results"),
-            # You can optionally have the connector track slices in your simulation
-            slice_parse_quantity = "TEMPERATURE",
-        )
-        
-        # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
-        run.log_event("Finished uploading results stored in directory 'example_results'!")
-        
-        return run.id
-
-if __name__ == "__main__":
-    load_runs_example("/fds_example")
+    # Call the .load() method to load historic results, providing the path to the results directory
+    run.load(
+        results_dir = pathlib.Path(__file__).parent.joinpath("example_results"),
+        # You can optionally have the connector track slices in your simulation
+        slice_parse_quantity = "TEMPERATURE",
+    )
+    
+    # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
+    run.log_event("Finished uploading results stored in directory 'example_results'!")
 

@@ -673,7 +673,7 @@ class FDSRun(WrappedRun):
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
-            time.sleep(60 * self.slice_parse_interval)
+            time.sleep(self.slice_parse_interval)
             slice_parsed = self._parse_slice()
 
             if self._trigger.is_set() or not slice_parsed:
@@ -712,7 +712,7 @@ class FDSRun(WrappedRun):
         self.workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
         self.upload_files: typing.List[str] = None
         self.slice_parse_quantity: str | None = None
-        self.slice_parse_interval: int = 1
+        self.slice_parse_interval: int = 60
         self.slice_parse_ignore_zeros: bool = False
         self.ulimit: typing.Union[str, int] = None
         self.fds_env_vars: typing.Dict[str, typing.Any] = None
@@ -890,7 +890,7 @@ class FDSRun(WrappedRun):
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_quantity: str | None = None,
-        slice_parse_interval: int = 1,
+        slice_parse_interval: int = 60,
         slice_parse_ignore_zeros: bool = False,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
         fds_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
@@ -920,7 +920,7 @@ class FDSRun(WrappedRun):
             The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
             Default is None, which will disable this feature
         slice_parse_interval : int, optional
-            Interval (in minutes) at which to parse and upload 2D slice data, default is 1
+            Interval (in seconds) at which to parse and upload 2D slice data, default is 60
         slice_parse_ignore_zeros : bool, optional
             Whether to ignore values of zero in slices when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
         ulimit : typing.Literal["unlimited"] | int, optional
@@ -1022,7 +1022,11 @@ class FDSRun(WrappedRun):
                 shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
 
             # Make sure xyz is enabled
-            if not nml.get("dump", {}).get("write_xyz"):
+            write_xyz = False
+            for key in nml.keys():
+                if "dump" in key:
+                    write_xyz = write_xyz or nml[key].get("write_xyz", False)
+            if not write_xyz:
                 raise ValueError(
                     "WRITE_XYZ must be enabled in your FDS file for slice parsing."
                 )
