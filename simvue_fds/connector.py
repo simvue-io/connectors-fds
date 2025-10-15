@@ -1067,6 +1067,7 @@ class FDSRun(WrappedRun):
         self.slice_parser = None
         self._loading_historic_run = True
         self._grids_defined = False
+        self._concatenated_input_files = False
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
