@@ -517,12 +517,29 @@ class FDSRun(WrappedRun):
         dict
             The updated metrics
 
+        Raises
+        ------
+        ValueError
+            Raised of all values defined in a slice are NaN (likely due to a slice defined in an obstruction)
+
         """
         sub_slice_no_nan = sub_slice[~numpy.isnan(sub_slice)]
-        if ignore_zeros:
-            sub_slice_no_nan = sub_slice_no_nan[numpy.where(sub_slice_no_nan != 0)]
+        if sub_slice_no_nan.size == 0:
+            raise ValueError(
+                "Slice is not correctly defined - all values are NaN! Slice parsing has been disabled for this run."
+            )
 
         _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
+
+        if ignore_zeros:
+            sub_slice_no_nan = sub_slice_no_nan[numpy.where(sub_slice_no_nan != 0)]
+            if sub_slice_no_nan.size == 0:
+                logger.warning(
+                    f"""All values in slice '{_metric_label}' are zeros, but ignore_zeros is set to True!
+                Summary metrics for this slice will be set to zero.
+                You may wish to disable `slice_parse_ignore_zeros` in future runs."""
+                )
+                sub_slice_no_nan = numpy.zeros(1)
 
         metrics[_metric_label] = sub_slice.T
         metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
@@ -555,7 +572,7 @@ class FDSRun(WrappedRun):
         except Exception as e:
             logger.error(
                 """Failed to collect 2D slice data - check that your slice quantity is valid.
-                Slice parsing is disabled for this run. Enable debug logging for more info."""
+                Slice parsing has been disabled for this run. Enable debug logging for more info."""
             )
             logger.debug(f"Exception is: {e}")
             logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
@@ -783,6 +800,9 @@ class FDSRun(WrappedRun):
             )
             self.slice_parser.start()
 
+        if self._concatenated_input_files:
+            self.fds_input_file_path = f"{self._results_prefix}.fds"
+
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
         # Upload data from input file as metadata
@@ -828,6 +848,10 @@ class FDSRun(WrappedRun):
         """Upload files selected by user to Simvue for storage."""
         self.update_metadata(self._activation_times_data)
 
+        # Upload updated FDS file if '&CATF' namespace in FDS file
+        if self._concatenated_input_files:
+            self.save_file(str(self.fds_input_file_path), "input")
+
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
                 if (
@@ -867,7 +891,7 @@ class FDSRun(WrappedRun):
         upload_files: list[str] | None = None,
         slice_parse_quantity: str | None = None,
         slice_parse_interval: int = 1,
-        slice_parse_ignore_zeros: bool = True,
+        slice_parse_ignore_zeros: bool = False,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
         fds_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
@@ -886,20 +910,19 @@ class FDSRun(WrappedRun):
             If a directory does not already exist at this path, it will be created
             Uses the current working directory by default.
         clean_workdir : bool, optional
-            Whether to remove FDS related files from the working directory, by default False
+            Whether to remove all FDS related files from the working directory, by default False
             Useful when doing optimisation problems to remove results from previous runs.
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the working directory specified above (if specified, otherwise relative to cwd)
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_quantity: str | None, optional
-            ***** WARNING: EXPERIMENTAL FEATURE*****
-            The quantity for which to find any 2D slices saved by the simulation, and upload the min/max/average as metrics
+            The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
             Default is None, which will disable this feature
         slice_parse_interval : int, optional
             Interval (in minutes) at which to parse and upload 2D slice data, default is 1
         slice_parse_ignore_zeros : bool, optional
-            Whether to ignore values of zero in slices when calculating slice statistics (useful if there are obstructions in the mesh), default is True
+            Whether to ignore values of zero in slices when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[typing.Dict[str, typing.Any]], optional
@@ -934,8 +957,16 @@ class FDSRun(WrappedRun):
         self._activation_times_data = {}
         self._grids_defined = False
 
-        nml = f90nml.read(self.fds_input_file_path)
+        nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
+
+        # Need to find if this FDS input file will concatenate together other files
+        self._concatenated_input_files = []
+        for key in nml.keys():
+            if "catf" in key:
+                self._concatenated_input_files += nml[key]["other_files"]
+        if self._concatenated_input_files:
+            self._chid += "_cat"
 
         if self.workdir_path:
             pathlib.Path(self.workdir_path).mkdir(exist_ok=True)
@@ -945,9 +976,25 @@ class FDSRun(WrappedRun):
                     if (
                         pathlib.Path(file).absolute()
                         == pathlib.Path(self.fds_input_file_path).absolute()
+                        or file.name in self._concatenated_input_files
                     ):
                         continue
                     pathlib.Path(file).unlink()
+
+            # Copy files to concatenate together into working directory
+            for concat_file in self._concatenated_input_files:
+                concat_path = pathlib.Path(self.fds_input_file_path).parent.joinpath(
+                    concat_file
+                )
+                if (
+                    concat_path.exists()
+                    and concat_path.absolute()
+                    != pathlib.Path(self.workdir_path).joinpath(concat_file).absolute()
+                ):
+                    shutil.copy(
+                        concat_path,
+                        pathlib.Path(self.workdir_path).joinpath(concat_file),
+                    )
 
         self._results_prefix = (
             str(pathlib.Path(self.workdir_path).joinpath(self._chid))
@@ -987,7 +1034,7 @@ class FDSRun(WrappedRun):
         results_dir: pydantic.DirectoryPath,
         upload_files: list[str] | None = None,
         slice_parse_quantity: str | None = None,
-        slice_parse_ignore_zeros: bool = True,
+        slice_parse_ignore_zeros: bool = False,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
@@ -1000,12 +1047,11 @@ class FDSRun(WrappedRun):
             These should be supplied as relative to the results directory specified above
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_quantity: str | None, optional
-            ***** WARNING: EXPERIMENTAL FEATURE*****
-            The quantity for which to find any 2D slices saved by the simulation, and upload the min/max/average as metrics
+            The quantity for which to find any 2D slices saved by the simulation, and upload as metrics
             Default is None, which will disable this feature
             Note that the XYZ files must have been recorded when running the simulation for this to work.
         slice_parse_ignore_zeros : bool, optional
-            Whether to ignore values of zero in slices (useful if there are obstructions in the mesh), default is True
+            Whether to ignore values of zero when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
 
         Raises
         ------
@@ -1021,6 +1067,7 @@ class FDSRun(WrappedRun):
         self.slice_parser = None
         self._loading_historic_run = True
         self._grids_defined = False
+        self._concatenated_input_files = False
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
