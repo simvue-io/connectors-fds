@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
 ```
 You can also load results from previously run FDS simulations in a similar way:
-```
+```python
 from simvue_fds.connector import FDSRun
 
 ...
