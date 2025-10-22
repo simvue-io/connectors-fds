@@ -97,6 +97,7 @@ if __name__ == "__main__":
         )
 
         # Can use the base Simvue Run() methods to upload extra information, eg:
+        import os
         run.save_file(os.path.abspath(__file__), "code")
 
         # Can add alerts specific to your simulation, eg:
@@ -112,11 +113,11 @@ if __name__ == "__main__":
 
         # Launch the FDS simulation
         run.launch(
-            fds_input_path='path/to/my/input_file.fds', # Path to your FDS input file
+            fds_input_file_path='path/to/my/input_file.fds', # Path to your FDS input file
             workdir_path='path/to/my/results_dir',      # Path where results should be created
             run_in_parallel=True,                       # Whether to run in parallel using MPI
             num_processors=2                            # Number of cores to use if in parallel
-            slice_parse_quantity="TEMPERATURE"          # Parse any 2D slices of temperature data
+            slice_parse_quantity="TEMPERATURE"          # Parse 2D slices of temperature data
             )
 
 ```
