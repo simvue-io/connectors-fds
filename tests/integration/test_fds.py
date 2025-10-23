@@ -10,6 +10,8 @@ import time
 from simvue.sender import sender
 from simvue_fds.connector import FDSRun
 import uuid
+import requests
+from simvue.config.user import SimvueConfiguration
 
 @pytest.fixture
 def find_bin():
@@ -96,9 +98,11 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
             )
         
         # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
-        run.log_event("Deleting local copies of results...")
+        run.log_event("Test...")
         
         run_id = run.id
+        
+        time.sleep(1)
         
         if offline:
             _id_mapping = sender(throw_exceptions=True)
@@ -109,24 +113,26 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
 @pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
-def test_fds_launch_supply_exhaust(folder_setup, offline_cache_setup, load, offline, parallel):
+def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, parallel):
     if load:
         if parallel:
             pytest.skip("Parallel has no effect when loading from historic runs")
         file_path = pathlib.Path(__file__).parent.joinpath("example_data", "load", "supply_exhaust_vents")
     else:
         file_path = pathlib.Path(__file__).parent.joinpath("example_data", "launch", "supply_exhaust_vents.fds")
+    try:
+        run_id = run_fds(
+            file_path=file_path, 
+            run_folder=folder_setup, 
+            parallel=parallel, 
+            offline=offline, 
+            slice_var='TEMPERATURE',
+            load=load
+            )
+    except Exception as e:
+        raise e
 
-    run_id = run_fds(
-        file_path=file_path, 
-        run_folder=folder_setup, 
-        parallel=parallel, 
-        offline=offline, 
-        slice_var='TEMPERATURE',
-        load=load
-        )
-
-    time.sleep(2)
+    time.sleep(1)
 
     client = simvue.Client()
     run_data = client.get_run(run_id)
@@ -194,6 +200,19 @@ def test_fds_launch_supply_exhaust(folder_setup, offline_cache_setup, load, offl
     assert numpy.all(_max >= _avg)
     assert numpy.all(_avg >= _min)
     assert numpy.all(_min > 0)
+    
+    # Check slice uploaded as 3D metric
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=4",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (41, 31)
 
     temp_dir = tempfile.TemporaryDirectory()
 
@@ -209,7 +228,7 @@ def test_fds_launch_supply_exhaust(folder_setup, offline_cache_setup, load, offl
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
 @pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
 @pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
-def test_fds_launch_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, load):
+def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, load):
     if load:
         if parallel:
             pytest.skip("Parallel has no effect when loading from historic runs")
