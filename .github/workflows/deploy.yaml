@@ -114,3 +114,14 @@ jobs:
           gh release upload
           '${{ github.ref_name }}' dist/**
           --repo '${{ github.repository }}'
+      - name: Create a Zip of example results for docs example
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'example_results.zip'
+          path: 'examples/example_results'
+      - name: Upload example zip file
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "example_results.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
