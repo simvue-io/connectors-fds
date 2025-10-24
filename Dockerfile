@@ -1,4 +1,5 @@
 FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND="noninteractive"
 WORKDIR /workdir
 RUN apt update -y && \
 apt upgrade -y && \
@@ -16,11 +17,13 @@ apt install -y \
     libxext6 && \
 apt-get install wget && \
 apt clean
-COPY examples /workdir
-RUN python3 -m pip install simvue-fds && \
+COPY . /workdir/connectors-fds
+RUN python3 -m pip install ./connectors-fds && \
 wget https://github.com/firemodels/fds/releases/download/FDS-6.9.1/FDS-6.9.1_SMV-6.9.1_lnx.sh && \
 bash FDS-6.9.1_SMV-6.9.1_lnx.sh y && \
 echo 'source /root/FDS/FDS6/bin/FDS6VARS.sh' >> /root/.bashrc && \
 echo 'source /root/FDS/FDS6/bin/SMV6VARS.sh' >> /root/.bashrc && \
 echo 'alias python=python3' >> ~/.bashrc && \
-rm FDS-6.9.1_SMV-6.9.1_lnx.sh
+rm FDS-6.9.1_SMV-6.9.1_lnx.sh && \
+rm -rf ./connectors-fds
+COPY examples /workdir
