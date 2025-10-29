@@ -28,4 +28,7 @@ FUEL='PROPANE'/
 # Define device outputs
 &DEVC XB=1.5,1.5,0,0,1.5,1.5, QUANTITY='VISIBILITY', ID='eye_level_visibility' /
 &DEVC XYZ=1.5,0,1.5, QUANTITY='TEMPERATURE', ID='air_temperature' /
+&DEVC XB=1.5,1.5,0,4,1.5,1.5, QUANTITY='TEMPERATURE', ID='temp_line', POINTS=20,
+STATISTICS_START=10., STATISTICS_END=30. /
+
 &TAIL /

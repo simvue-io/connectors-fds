@@ -19,6 +19,8 @@ import typing
 from datetime import datetime, timezone
 from itertools import chain
 
+import pandas
+
 try:
     from typing import Self
 except ImportError:
@@ -228,7 +230,6 @@ class FDSRun(WrappedRun):
 
     def _map_line_var_coords(self):
         """Map DEVC line variables to their coordinates."""
-        self._line_var_coords = {}
         _coords = ("x", "y", "z")
         _axis_label = None
         # Loop through input dict and find all DEVC devices
@@ -495,6 +496,10 @@ class FDSRun(WrappedRun):
         self.log_event(event_str, timestamp=_timestamp)
 
         self.update_metadata({str(data["ID"]): state})
+
+    def _line_parser(self, file_path: str, **__):
+        df = pandas.read_csv(file_path)
+        return {}, df.to_dict(orient="list")
 
     def _line_callback(self, data, meta):
         # Generate devc to coord mapping if it doesnt exist:
@@ -901,9 +906,8 @@ class FDSRun(WrappedRun):
         # Track line.csv file, can be entirely overwritten on each time step
         self.file_monitor.track(
             path_glob_exprs=f"{self._results_prefix}_line.csv",
-            parser_func=mp_file_parser.record_csv,
+            parser_func=mp_file_parser.file_parser(self._line_parser),
             callback=self._line_callback,
-            static=True,
         )
         self.file_monitor.tail(
             path_glob_exprs=f"{self._results_prefix}.out",
@@ -1040,6 +1044,7 @@ class FDSRun(WrappedRun):
         self._activation_times = False
         self._activation_times_data = {}
         self._grids_defined = False
+        self._line_var_coords = {}
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
