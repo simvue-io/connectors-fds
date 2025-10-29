@@ -226,6 +226,55 @@ class FDSRun(WrappedRun):
 
         return fds_bin
 
+    def _map_line_var_coords(self):
+        """Map DEVC line variables to their coordinates."""
+        self._line_var_coords = {}
+        _coords = ("x", "y", "z")
+        _axis_label = None
+        # Loop through input dict and find all DEVC devices
+        for key, devc in self._input_dict.items():
+            if "devc" in key:
+                # If devc device does not have an ID, continue
+                if not (_devc_id := devc.get("id")):
+                    continue
+                # Figure out which axes it varies along
+                _devc_coords = devc.get("xb") or devc.get("xbp")
+                if not _devc_coords:
+                    _axis_label = None
+                    self._line_var_coords[_devc_id] = _axis_label
+                    continue
+
+                _devc_coords_change = [
+                    _devc_coords[1] - _devc_coords[0],
+                    _devc_coords[3] - _devc_coords[2],
+                    _devc_coords[5] - _devc_coords[4],
+                ]
+                _devc_coords_labels = [
+                    _coords[idx]
+                    for idx, val in enumerate(_devc_coords_change)
+                    if abs(val) > 0
+                ]
+
+                if len(_devc_coords_labels) != 1:
+                    # Not varying in 1D, currently not supported # TODO
+                    _axis_label = None
+                    self._line_var_coords[_devc_id] = _axis_label
+                    continue
+
+                # If hide coordinates, use label from previous device
+                if devc.get("hide_coordinates"):
+                    pass
+
+                # Else, try to use user specified ID
+                elif _custom_id := devc.get(f"{_devc_coords_labels[0]}_id"):
+                    _axis_label = _custom_id
+
+                # Finally, use default
+                else:
+                    _axis_label = f"{_devc_id}-{_devc_coords_labels[0]}"
+
+                self._line_var_coords[_devc_id] = _axis_label
+
     def _log_parser(
         self, file_content: str, **__
     ) -> tuple[dict[str, typing.Any], list[dict[str, typing.Any]]]:
@@ -326,6 +375,10 @@ class FDSRun(WrappedRun):
             _out_data += [_out_record]
 
         return {}, _out_data
+
+    def _input_file_callback(self, data: typing.Dict, meta: typing.Dict):
+        self._input_dict = {k: v for k, v in data.items() if v}
+        (self.update_metadata({"input_file": self._input_dict}),)
 
     def _metrics_callback(self, data: typing.Dict, meta: typing.Dict):
         """Log metrics extracted from a log file to Simvue.
@@ -442,6 +495,30 @@ class FDSRun(WrappedRun):
         self.log_event(event_str, timestamp=_timestamp)
 
         self.update_metadata({str(data["ID"]): state})
+
+    def _line_callback(self, data, meta):
+        # Generate devc to coord mapping if it doesnt exist:
+        if not self._line_var_coords:
+            self._map_line_var_coords()
+
+        # Create metric data
+        _metric_data = {}
+
+        # For each key, check if it is a DEVC device we can track
+        for key, values in data.items():
+            if (_coord_key := self._line_var_coords.get(key)) and (
+                _coords := data.get(_coord_key)
+            ):
+                # Assign to grid if required
+                if key not in self._grids:
+                    self.assign_metric_to_grid(
+                        metric_name=key,
+                        axes_ticks=_coords,
+                        axes_labels=_coord_key,
+                    )
+                _metric_data[key] = values
+
+        self._metrics_callback(_metric_data, meta)
 
     def _setup_grids(
         self,
@@ -731,6 +808,7 @@ class FDSRun(WrappedRun):
         self._results_prefix: str = ""
         self._loading_historic_run: bool = False
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
+        self._input_dict: dict = {}
 
         super().__init__(
             mode=mode,
@@ -809,9 +887,7 @@ class FDSRun(WrappedRun):
         # Upload data from input file as metadata
         self.file_monitor.track(
             path_glob_exprs=str(self.fds_input_file_path),
-            callback=lambda data, meta: self.update_metadata(
-                {"input_file": {k: v for k, v in data.items() if v}}
-            ),
+            callback=self._input_file_callback,
             file_type="fortran",
             static=True,
         )
@@ -820,6 +896,13 @@ class FDSRun(WrappedRun):
             path_glob_exprs=f"{self._results_prefix}.out",
             parser_func=mp_file_parser.file_parser(self._header_metadata),
             callback=lambda data, meta: self.update_metadata({**data, **meta}),
+            static=True,
+        )
+        # Track line.csv file, can be entirely overwritten on each time step
+        self.file_monitor.track(
+            path_glob_exprs=f"{self._results_prefix}_line.csv",
+            parser_func=mp_file_parser.record_csv,
+            callback=self._line_callback,
             static=True,
         )
         self.file_monitor.tail(
