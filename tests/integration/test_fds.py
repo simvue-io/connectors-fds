@@ -201,6 +201,11 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert numpy.all(_avg >= _min)
     assert numpy.all(_min > 0)
     
+    # From smokeview, min = 20, max = 574.316
+    # Check our calculations are within 0.1 of this
+    numpy.testing.assert_allclose(_max.max(), 574.316, atol=0.1)
+    numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
+    
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
     response = requests.get(
@@ -299,3 +304,123 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
     # Check results uploaded as output
     client.get_artifacts_as_files(run_id, "output", temp_dir.name)
     assert pathlib.Path(temp_dir.name).joinpath("spruce_N2_50_cat.smv").exists()
+    
+    
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
+@pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
+def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, load):
+    if load:
+        if parallel:
+            pytest.skip("Parallel has no effect when loading from historic runs")
+        file_path = pathlib.Path(__file__).parent.joinpath("example_data", "load", "BRE_spray")
+    else:
+        file_path = pathlib.Path(__file__).parent.joinpath("example_data", "launch", "BRE_Spray_A_1.fds")
+
+    run_id = run_fds(
+        file_path=file_path, 
+        run_folder=folder_setup, 
+        parallel=parallel, 
+        offline=offline, 
+        slice_var="INTEGRATED INTENSITY",
+        load=load
+        )
+    time.sleep(2)
+
+    client = simvue.Client()
+    run_data = client.get_run(run_id)
+    events = [event["message"] for event in client.get_events(run_id)]
+
+    # Check run description and tags from init have been added
+    assert (
+        run_data.description
+        == "An example of using the FDSRun Connector to track an FDS simulation."
+    )
+    assert sorted(run_data.tags) == ["fds", "integration", "test"]
+
+    # Check alert has been added
+    assert "avg_temp_above_100" in [
+        alert["name"] for alert in run_data.get_alert_details()
+    ]
+    
+    # Check metadata from header
+    if parallel:
+        assert run_data.metadata["fds"]["mpi_processes"] == "2"
+    else:
+        assert run_data.metadata["fds"]["mpi_processes"] == "1"
+
+    # Check metadata from input file
+    assert run_data.metadata["input_file"]["time"]["t_end"] == 10
+    
+    # Check metadata from input file
+    assert run_data.metadata["input_file"]["spec"]["id"] == "WATER VAPOR"
+
+    # Check events from log
+    assert any([event.startswith("Time Step: 1, Simulation Time: 0.05") for event in events])
+    
+    # Check events from CTRL log
+    assert any([event.startswith("DEVC '1' has been set to 'True' at time 4.0") for event in events])
+    
+    # Check metadata from CTRL log
+    assert run_data.metadata["1"] == True
+
+    metrics = dict(run_data.metrics)
+    # Check metrics from HRR file
+    assert metrics["HRR"]["count"] > 0
+
+    # Check metrics from DEVC file
+    assert metrics["flux"]["count"] > 0
+
+    # Check metrics from log file
+    assert metrics["max_pressure_error"]["count"] > 0
+    assert metrics["max_divergence.mesh.2"]["count"] > 0
+    
+    # Check metrics from slice
+    assert metrics["integrated_intensity.y.0_0.min"]["count"] > 0
+    assert metrics["integrated_intensity.y.0_0.max"]["count"] > 0
+    assert metrics["integrated_intensity.y.0_0.avg"]["count"] > 0
+
+    _retrieved = client.get_metric_values(
+        run_ids=[run_id],
+        metric_names=[
+            "integrated_intensity.y.0_0.max",
+            "integrated_intensity.y.0_0.min",
+            "integrated_intensity.y.0_0.avg",
+        ],
+        xaxis="time",
+    )
+    _max = numpy.array(list(_retrieved["integrated_intensity.y.0_0.max"].values()))
+    _min = numpy.array(list(_retrieved["integrated_intensity.y.0_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["integrated_intensity.y.0_0.avg"].values()))
+
+    # Check all max >= avg >= min
+    assert numpy.all(_max >= _avg)
+    assert numpy.all(_avg >= _min)
+    assert numpy.all(_min > 0)
+    
+    # From smokeview, min = 1.67033, max = 204.723
+    numpy.testing.assert_allclose(_max.max(), 204.723, atol=0.1)
+    numpy.testing.assert_allclose(_min.min(), 1.66951, atol=0.1)
+    
+    # Check slice uploaded as 3D metric
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/integrated_intensity.y.0_0/values?step=200",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (81, 61)
+
+    temp_dir = tempfile.TemporaryDirectory()
+
+    # Check input file uploaded as input
+    client.get_artifacts_as_files(run_id, "input", temp_dir.name)
+    assert pathlib.Path(temp_dir.name).joinpath("BRE_Spray_A_1.fds").exists()
+
+    # Check results uploaded as output
+    client.get_artifacts_as_files(run_id, "output", temp_dir.name)
+    assert pathlib.Path(temp_dir.name).joinpath("BRE_Spray_A_1.smv").exists()

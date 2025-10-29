@@ -440,7 +440,8 @@ class FDSRun(WrappedRun):
             _timestamp = self._estimate_timestamp(float(data.get("Time (s)")))
 
         self.log_event(event_str, timestamp=_timestamp)
-        self.update_metadata({data["ID"]: state})
+
+        self.update_metadata({str(data["ID"]): state})
 
     def _setup_grids(
         self,
