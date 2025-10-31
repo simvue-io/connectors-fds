@@ -411,11 +411,6 @@ class FDSRun(WrappedRun):
         # Since we don't have 'step' information from CSV files, just increment on each reading, starting from 0
         self._step_tracker[meta["file_name"]] = int(metric_step) + 1
 
-    def _devc_callback(self, data: typing.Dict, meta: typing.Dict):
-        # Record time from point DEVC devices for use in line DEVC device metrics
-        self._devc_time = data.get("Time")
-        self._metrics_callback(data, meta)
-
     def _header_metadata(
         self, input_file: str, **__
     ) -> tuple[dict[str, typing.Any], list[dict[str, typing.Any]]]:
@@ -520,8 +515,6 @@ class FDSRun(WrappedRun):
                 _coords := data.get(_coord_key)
             ):
                 # Assign to grid if required
-                logger.info(key)
-                logger.info(self._grids.keys())
                 if key not in self._grids.keys():
                     logger.info("Adding")
                     self.assign_metric_to_grid(
@@ -533,7 +526,8 @@ class FDSRun(WrappedRun):
                     _metric_data[key] = numpy.array(values)
 
         if _metric_data:
-            _metric_data["time"] = self._devc_time
+            # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
+            _metric_data["time"] = 1
             self._metrics_callback(_metric_data, meta)
 
     def _setup_grids(
@@ -935,7 +929,7 @@ class FDSRun(WrappedRun):
             path_glob_exprs=f"{self._results_prefix}_devc.csv",
             parser_func=mp_tail_parser.record_csv,
             parser_kwargs={"header_pattern": "Time"},
-            callback=self._devc_callback,
+            callback=self._metrics_callback,
         )
         self.file_monitor.tail(
             path_glob_exprs=f"{self._results_prefix}_devc_ctrl_log.csv",
@@ -1056,7 +1050,6 @@ class FDSRun(WrappedRun):
         self._activation_times_data = {}
         self._grids_defined = False
         self._line_var_coords = {}
-        self._devc_time = 0
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
