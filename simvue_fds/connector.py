@@ -235,14 +235,20 @@ class FDSRun(WrappedRun):
         # Loop through input dict and find all DEVC devices
         for key, devc in self._input_dict.items():
             if "devc" in key:
-                # If devc device does not have an ID, continue
+                # If devc device does not have an ID, cannot add to mapping, so ignore
                 if not (_devc_id := devc.get("id")):
+                    continue
+                # If hide coordinates, use label from previous device
+                if devc.get("hide_coordinates"):
+                    self._line_var_coords[_devc_id] = _axis_label
                     continue
                 # Figure out which axes it varies along
                 _devc_coords = devc.get("xb") or devc.get("xbp")
                 if not _devc_coords:
-                    _axis_label = None
-                    self._line_var_coords[_devc_id] = _axis_label
+                    # If it is a point device using XYZ, dont add to mapping and just continue
+                    if not devc.get("xyz"):
+                        _axis_label = None
+                        self._line_var_coords[_devc_id] = _axis_label
                     continue
 
                 _devc_coords_change = [
@@ -256,21 +262,19 @@ class FDSRun(WrappedRun):
                     if abs(val) > 0
                 ]
 
-                if len(_devc_coords_labels) != 1:
-                    # Not varying in 1D, currently not supported # TODO
-                    _axis_label = None
-                    self._line_var_coords[_devc_id] = _axis_label
+                if len(_devc_coords_labels) == 0:
+                    # Indicates a point DEVC device using XB or XBP definition - dont add to mapping, just continue
                     continue
 
-                # If hide coordinates, use label from previous device
-                if devc.get("hide_coordinates"):
-                    pass
+                elif len(_devc_coords_labels) > 1:
+                    # Not varying in 1D, currently not supported # TODO
+                    _axis_label = None
 
-                # Else, try to use user specified ID
+                # Try to use user specified ID
                 elif _custom_id := devc.get(f"{_devc_coords_labels[0]}_id"):
                     _axis_label = _custom_id
 
-                # Finally, use default
+                # Or if not provided, use default
                 else:
                     _axis_label = f"{_devc_id}-{_devc_coords_labels[0]}"
 

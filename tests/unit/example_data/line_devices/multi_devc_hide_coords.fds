@@ -1,0 +1,15 @@
+# Add some non-DEVC namespaces, to check parser ignores these:
+&HEAD CHID='no_vents', TITLE='no_vents' /
+
+&MESH XB= 0, 3, 0, 4, 0, 3, IJK= 30, 40, 30 /
+&OBST XB= 1.25, 1.75, 1.25, 1.75, 1.25, 1.75/
+
+&TIME T_END=60. /
+&DUMP NFRAMES=60, WRITE_XYZ=.TRUE. /
+
+# Define two line DEVC device, using XB and XBP, no coordinate IDs
+&DEVC XB=2,2,1,3,2,2, QUANTITY='TEMPERATURE', ID='temp_line_y', POINTS=20,
+STATISTICS_START=20., STATISTICS_END=40. /
+
+&DEVC QUANTITY='U-VELOCITY', ID='velocity_line_y', HIDE_COORDINATES=T
+STATISTICS_START=20., STATISTICS_END=40. /
