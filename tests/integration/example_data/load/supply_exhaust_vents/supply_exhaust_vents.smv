@@ -5,7 +5,7 @@ FDSVERSION
 FDS-6.9.1-0-g889da6a-release
 
 INPF
- /home/wk9874/Documents/simvue/connectors-fds/examples/activate_vents.fds
+ supply_exhaust_vents.fds
 
 REVISION
 Revisio                                                                                                                                                                                                                                                        
