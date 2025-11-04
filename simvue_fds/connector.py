@@ -281,7 +281,8 @@ class FDSRun(WrappedRun):
 
                         # If R_ID provided, user wants ticks in terms of distance from the origin
                         elif r_id := devc.get("r_id"):
-                            _fixed_dims = [0, 1, 2].remove(_devc_coords_idx[0])
+                            _fixed_dims = [0, 1, 2]
+                            _fixed_dims.remove(_devc_coords_idx[0])
                             _fixed_dim_positions = [
                                 _devc_coords[idx * 2] for idx in _fixed_dims
                             ]
@@ -528,24 +529,24 @@ class FDSRun(WrappedRun):
 
         # Create metric data
         _metric_data = {}
-
         # For each key, check if it is a DEVC device we can track
         for key, values in data.items():
             if _axes := self._line_var_coords.get(key):
                 # Assign to grid if required
                 if key not in self._grids.keys():
-                    logger.info("Adding")
                     self.assign_metric_to_grid(
                         metric_name=key,
                         axes_ticks=[_axes["ticks"]],
                         axes_labels=[_axes["label"]],
                     )
-                if numpy.any(values):
-                    _metric_data[key] = numpy.array(values)
-
+                metric = numpy.array(values)
+                metric = metric[~numpy.isnan(metric)]
+                if numpy.any(metric):
+                    _metric_data[key] = metric
         if _metric_data:
             # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
             _metric_data["time"] = 1
+            logger.info("ADDING METRIC")
             self._metrics_callback(_metric_data, meta)
 
     def _setup_grids(
@@ -1191,7 +1192,7 @@ class FDSRun(WrappedRun):
         if not _fds_files:
             # Give a warning that no input file was found
             logger.warning(
-                "No FDS input file found in your results directory - input metadata will not be stored."
+                "No FDS input file found in your results directory - input metadata will not be uploaded."
             )
 
             # Try to deduce CHID by common prefix within directory
@@ -1215,9 +1216,9 @@ class FDSRun(WrappedRun):
             self.save_file(self.fds_input_file_path, "input")
 
             # Load input file, upload as metadata
-            _nml = f90nml.read(self.fds_input_file_path).todict()
-            self._chid = _nml["head"]["chid"]
-            self.update_metadata({"input_file": _nml})
+            self._input_dict = f90nml.read(self.fds_input_file_path).todict()
+            self._chid = self._input_dict["head"]["chid"]
+            self.update_metadata({"input_file": self._input_dict})
 
             if (
                 self.slice_parse_quantity
@@ -1289,6 +1290,20 @@ class FDSRun(WrappedRun):
                         key: val.replace(" ", "") for key, val in _metric.items() if val
                     }
                     self._ctrl_log_callback(data=_metric)
+
+        # Extract line DEVC devices
+        if pathlib.Path(f"{self._results_prefix}_line.csv").exists():
+            if not _fds_files:
+                logger.warning(
+                    "Line DEVC devices cannot be parsed without an input file available."
+                )
+            else:
+                self._line_var_coords = {}
+                self._map_line_var_coords()
+                _, data = self._line_parser(f"{self._results_prefix}_line.csv")
+                self._line_callback(
+                    data, {"file_name": f"{self._results_prefix}_line.csv"}
+                )
 
         if self.slice_parse_quantity:
             if not _fds_files:

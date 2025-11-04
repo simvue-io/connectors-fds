@@ -102,7 +102,7 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
         
         run_id = run.id
         
-        time.sleep(1)
+        time.sleep(2)
         
         if offline:
             _id_mapping = sender(throw_exceptions=True)
@@ -424,3 +424,140 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     # Check results uploaded as output
     client.get_artifacts_as_files(run_id, "output", temp_dir.name)
     assert pathlib.Path(temp_dir.name).joinpath("BRE_Spray_A_1.smv").exists()
+    
+@pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))
+@pytest.mark.parametrize("parallel", (True, False), ids=("parallel", "serial"))
+@pytest.mark.parametrize("offline", (True, False), ids=("offline", "online"))
+def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, load):
+    if load:
+        if parallel:
+            pytest.skip("Parallel has no effect when loading from historic runs")
+        file_path = pathlib.Path(__file__).parent.joinpath("example_data", "load", "pohlhausen")
+    else:
+        file_path = pathlib.Path(__file__).parent.joinpath("example_data", "launch", "Pohlhausen_Pr_1.fds")
+
+    run_id = run_fds(
+        file_path=file_path, 
+        run_folder=folder_setup, 
+        parallel=parallel, 
+        offline=offline,
+        slice_var="TEMPERATURE",
+        load=load
+        )
+    time.sleep(2)
+
+    client = simvue.Client()
+    run_data = client.get_run(run_id)
+    events = [event["message"] for event in client.get_events(run_id)]
+
+    # Check run description and tags from init have been added
+    assert (
+        run_data.description
+        == "An example of using the FDSRun Connector to track an FDS simulation."
+    )
+    assert sorted(run_data.tags) == ["fds", "integration", "test"]
+
+    # Check alert has been added
+    assert "avg_temp_above_100" in [
+        alert["name"] for alert in run_data.get_alert_details()
+    ]
+    
+    # Check metadata from header
+    if parallel:
+        assert run_data.metadata["fds"]["mpi_processes"] == "2"
+    else:
+        assert run_data.metadata["fds"]["mpi_processes"] == "1"
+
+    # Check metadata from input file
+    assert run_data.metadata["input_file"]["time"]["t_end"] == 60
+    
+    # Check metadata from input file
+    assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "T_out"
+
+    # Check events from log
+    assert any([event.startswith("Time Step: 1, Simulation Time: 0.27") for event in events])
+
+    metrics = dict(run_data.metrics)
+    # Check metrics from HRR file
+    assert metrics["HRR"]["count"] > 0
+
+    # Check metrics from DEVC file
+    assert metrics["T_out"]["count"] > 0
+
+    # Check metrics from log file
+    assert metrics["max_pressure_error"]["count"] > 0
+    assert metrics["max_divergence.mesh.2"]["count"] > 0
+    
+    # Check metrics from DEVC line file
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/h_wall/values?step=0",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (100,)
+    
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/Uz/values?step=0",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (50,)
+    
+    # Check metrics from slice
+    assert metrics["temperature.y.0_1.min"]["count"] > 0
+    assert metrics["temperature.y.0_1.max"]["count"] > 0
+    assert metrics["temperature.y.0_1.avg"]["count"] > 0
+
+    _retrieved = client.get_metric_values(
+        run_ids=[run_id],
+        metric_names=[
+            "temperature.y.0_1.max",
+            "temperature.y.0_1.min",
+            "temperature.y.0_1.avg",
+        ],
+        xaxis="time",
+    )
+    _max = numpy.array(list(_retrieved["temperature.y.0_1.max"].values()))
+    _min = numpy.array(list(_retrieved["temperature.y.0_1.min"].values()))
+    _avg = numpy.array(list(_retrieved["temperature.y.0_1.avg"].values()))
+
+    # Check all max >= avg >= min
+    assert numpy.all(_max >= _avg)
+    assert numpy.all(_avg >= _min)
+    assert numpy.all(_min > 0)
+    
+    # From smokeview, min = 20.0, max = 20.6971
+    numpy.testing.assert_allclose(_max.max(), 20.6971, atol=0.1)
+    numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
+    
+    # Check slice uploaded as 3D metric
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_1/values?step=10",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (11, 9)
+
+    temp_dir = tempfile.TemporaryDirectory()
+
+    # Check input file uploaded as input
+    client.get_artifacts_as_files(run_id, "input", temp_dir.name)
+    assert pathlib.Path(temp_dir.name).joinpath("Pohlhausen_Pr_1.fds").exists()
+
+    # Check results uploaded as output
+    client.get_artifacts_as_files(run_id, "output", temp_dir.name)
+    assert pathlib.Path(temp_dir.name).joinpath("Pohlhausen_Pr_1.smv").exists()
