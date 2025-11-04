@@ -230,25 +230,16 @@ class FDSRun(WrappedRun):
 
     def _map_line_var_coords(self):
         """Map DEVC line variables to their coordinates."""
-        _coords = ("x", "y", "z")
-        _axis_label = None
+        _labels = ("x", "y", "z")
         # Loop through input dict and find all DEVC devices
         for key, devc in self._input_dict.items():
             if "devc" in key:
                 # If devc device does not have an ID, cannot add to mapping, so ignore
                 if not (_devc_id := devc.get("id")):
                     continue
-                # If hide coordinates, use label from previous device
-                if devc.get("hide_coordinates"):
-                    self._line_var_coords[_devc_id] = _axis_label
-                    continue
                 # Figure out which axes it varies along
                 _devc_coords = devc.get("xb") or devc.get("xbp")
                 if not _devc_coords:
-                    # If it is a point device using XYZ, dont add to mapping and just continue
-                    if not devc.get("xyz"):
-                        _axis_label = None
-                        self._line_var_coords[_devc_id] = _axis_label
                     continue
 
                 _devc_coords_change = [
@@ -256,29 +247,54 @@ class FDSRun(WrappedRun):
                     _devc_coords[3] - _devc_coords[2],
                     _devc_coords[5] - _devc_coords[4],
                 ]
-                _devc_coords_labels = [
-                    _coords[idx]
-                    for idx, val in enumerate(_devc_coords_change)
-                    if abs(val) > 0
+
+                _devc_coords_idx = [
+                    idx for idx, val in enumerate(_devc_coords_change) if abs(val) > 0
                 ]
 
-                if len(_devc_coords_labels) == 0:
+                if len(_devc_coords_idx) == 0:
                     # Indicates a point DEVC device using XB or XBP definition - dont add to mapping, just continue
                     continue
 
-                elif len(_devc_coords_labels) > 1:
+                elif len(_devc_coords_idx) > 1:
                     # Not varying in 1D, currently not supported # TODO
-                    _axis_label = None
-
-                # Try to use user specified ID
-                elif _custom_id := devc.get(f"{_devc_coords_labels[0]}_id"):
-                    _axis_label = _custom_id
-
-                # Or if not provided, use default
+                    logger.warning(
+                        f"Multi-dimensional DEVC device '{_devc_id}' detected - these are currently not supported and will be ignored."
+                    )
+                    continue
                 else:
-                    _axis_label = f"{_devc_id}-{_devc_coords_labels[0]}"
+                    _devc_coord_label = _labels[_devc_coords_idx[0]]
+                    _devc_coord_id = devc.get(f"{_devc_coord_label}_id")
+                    # Check if specific points chosen by user
+                    _axes_ticks = devc.get(f"points_array_{_devc_coord_label}")
+                    if not _axes_ticks:
+                        # Create linear spacing
+                        _low = _devc_coords[_devc_coords_idx[0] * 2]
+                        _high = _devc_coords[_devc_coords_idx[0] * 2 + 1]
+                        _num = devc.get("points")
+                        _axes_ticks = numpy.linspace(_low, _high, _num)
 
-                self._line_var_coords[_devc_id] = _axis_label
+                        # If D_ID provided, user wants ticks in terms of distance from first point
+                        if d_id := devc.get("d_id"):
+                            _axes_ticks = _axes_ticks - _axes_ticks[0]
+                            _devc_coord_id = d_id
+
+                        # If R_ID provided, user wants ticks in terms of distance from the origin
+                        elif r_id := devc.get("r_id"):
+                            _fixed_dims = [0, 1, 2].remove(_devc_coords_idx[0])
+                            _fixed_dim_positions = [
+                                _devc_coords[idx * 2] for idx in _fixed_dims
+                            ]
+                            _axes_ticks = numpy.sqrt(
+                                _axes_ticks**2
+                                + sum(val**2 for val in _fixed_dim_positions)
+                            )
+                            _devc_coord_id = r_id
+
+                self._line_var_coords[_devc_id] = {
+                    "label": _devc_coord_id or _devc_coord_label,
+                    "ticks": list(_axes_ticks),
+                }
 
     def _log_parser(
         self, file_content: str, **__
@@ -515,16 +531,14 @@ class FDSRun(WrappedRun):
 
         # For each key, check if it is a DEVC device we can track
         for key, values in data.items():
-            if (_coord_key := self._line_var_coords.get(key)) and (
-                _coords := data.get(_coord_key)
-            ):
+            if _axes := self._line_var_coords.get(key):
                 # Assign to grid if required
                 if key not in self._grids.keys():
                     logger.info("Adding")
                     self.assign_metric_to_grid(
                         metric_name=key,
-                        axes_ticks=[_coords],
-                        axes_labels=[_coord_key],
+                        axes_ticks=[_axes["ticks"]],
+                        axes_labels=[_axes["label"]],
                     )
                 if numpy.any(values):
                     _metric_data[key] = numpy.array(values)
