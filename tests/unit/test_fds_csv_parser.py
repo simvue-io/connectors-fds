@@ -160,6 +160,7 @@ def test_fds_ctrl_parser(folder_setup, load):
     temp_dir = tempfile.TemporaryDirectory(prefix="fds_test")
     with FDSRun() as run:
         run.config(disable_resources_metrics=True)
+        run._dispatch_mode = "direct"
         run.init(name=name,folder=folder_setup)
         run_id = run.id
         if load:
@@ -173,14 +174,13 @@ def test_fds_ctrl_parser(folder_setup, load):
                 fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
                 workdir_path = temp_dir.name,
             )
-    # Allow time for queued dispatcher to send final updates
-    time.sleep(1)
+
     client = simvue.Client()
     
     # Check DEVC and CTRL events have been correctly added to events log
     events = [event['message'] for event in client.get_events(run_id)]
     assert "DEVC 'Ceiling_Thermocouple.Back_Right' has been set to 'True' at time 4.25244E+01s, when it reached a value of 2.00162E+02C." in events
-    assert "CTRL 'MONITOR_HRR' has been set to 'True' at time 5.63386E+00s" in events
+    assert "CTRL 'KILL_TEMP_TOO_HIGH' has been set to 'True' at time 4.25244E+01s" in events
     
     # Check metadata has been added correctly
     metadata = client.get_run(run_id).metadata
