@@ -1,0 +1,801 @@
+
+ Fire Dynamics Simulator
+
+ Current Date     : October 28, 2025  18:07:40
+ Revision         : FDS-6.9.1-0-g889da6a-release
+ Revision Date    : Sun Apr 7 17:05:06 2024 -0400
+ Compiler         : Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.7.1 Build 20221019_000000
+ Compilation Date : Apr 09, 2024 13:24:51
+
+ Number of MPI Processes:  1
+
+ MPI version: 3.1
+ MPI library version: Intel(R) MPI Library 2021.6 for Linux* OS
+
+
+ Job TITLE        : Radiation atten. test (Murrel et al. 1995)
+ Job ID string    : BRE_Spray_A_1
+
+
+ Grid Dimensions, Mesh     1
+
+   Cells in the X Direction            40
+   Cells in the Y Direction            10
+   Cells in the Z Direction            30
+   Number of Grid Cells             12000
+
+
+ Physical Dimensions, Mesh     1
+
+   Length (m)                       4.000
+   Width  (m)                       1.000
+   Height (m)                       3.000
+
+ Grid Dimensions, Mesh     2
+
+   Cells in the X Direction            40
+   Cells in the Y Direction            10
+   Cells in the Z Direction            30
+   Number of Grid Cells             12000
+
+
+ Physical Dimensions, Mesh     2
+
+   Length (m)                       4.000
+   Width  (m)                       1.000
+   Height (m)                       3.000
+
+ Miscellaneous Parameters
+
+   Total Number of Grid Cells       24000
+   Maximum Cell Aspect Ratio        1.000
+   Initial Time Step (s)            0.050
+   CFL Velocity Norm                    2
+   Simulation Start Time (s)          0.0
+   Simulation End Time (s)           10.0
+   Background Pressure (Pa)     101325.00
+   Ambient Temperature (C)          20.00
+
+   3D Cartesian
+   VLES Calculation
+   Eddy Viscosity Model:  Deardorff (C_DEARDORFF = 0.10)
+   Surface INERT Eddy Viscosity Model:  WALE (C_WALE = 0.60)
+   Surface HOT Eddy Viscosity Model:  WALE (C_WALE = 0.60)
+   Surface COOL Eddy Viscosity Model:  WALE (C_WALE = 0.60)
+   Turbulent Prandtl Number:         0.50
+   Turbulent Schmidt Number:         0.50
+
+
+ Pressure solver information
+
+   Solver:                            FFT
+   Velocity tolerance (m/s):    5.000E-02
+   Press eqn res tol (1/s^2):   2.000E+03
+   Max pressure iterations:            10
+
+
+ Background Stratification
+
+      Z (m)     P_0 (Pa)    TMP_0 (C)
+   ------------------------------------
+        2.95    101290.42     20.00
+        2.85    101291.59     20.00
+        2.75    101292.77     20.00
+        2.65    101293.93     20.00
+        2.55    101295.11     20.00
+        2.45    101296.28     20.00
+        2.35    101297.45     20.00
+        2.25    101298.62     20.00
+        2.15    101299.80     20.00
+        2.05    101300.96     20.00
+        1.95    101302.14     20.00
+        1.85    101303.31     20.00
+        1.75    101304.48     20.00
+        1.65    101305.65     20.00
+        1.55    101306.83     20.00
+        1.45    101308.00     20.00
+        1.35    101309.17     20.00
+        1.25    101310.34     20.00
+        1.15    101311.51     20.00
+        1.05    101312.69     20.00
+        0.95    101313.86     20.00
+        0.85    101315.03     20.00
+        0.75    101316.20     20.00
+        0.65    101317.38     20.00
+        0.55    101318.54     20.00
+        0.45    101319.72     20.00
+        0.35    101320.89     20.00
+        0.25    101322.06     20.00
+        0.15    101323.23     20.00
+        0.05    101324.41     20.00
+
+
+ Mass Fraction Transformation Matrix to Convert Species Mixtures (Columns) to Primitive Species (Rows)
+
+                         AIR       WATER VA
+   NITROGEN              0.762470  0.000000
+   OXYGEN                0.230997  0.000000
+   CARBON DIOXIDE        0.000591  0.000000
+   WATER VAPOR           0.005941  1.000000
+
+
+ Primitive Species Information
+
+   NITROGEN
+   Gas Species
+   Molecular Weight (g/mol)                28.01340
+   Ambient Density (kg/m^3)                1.165
+           Enthalpy of Formation (J/kg)  0.000E+00
+
+   OXYGEN
+   Gas Species
+   Molecular Weight (g/mol)                31.99880
+   Ambient Density (kg/m^3)                1.330
+           Enthalpy of Formation (J/kg)  0.000E+00
+
+   CARBON DIOXIDE
+   Gas Species
+   Molecular Weight (g/mol)                44.00950
+   Ambient Density (kg/m^3)                1.830
+           Enthalpy of Formation (J/kg) -8.941E+06
+
+   WATER VAPOR
+   Gas Species
+   Molecular Weight (g/mol)                18.01528
+   Ambient Density (kg/m^3)                0.749
+           Enthalpy of Formation (J/kg) -1.342E+07
+
+
+ Tracked (Lumped) Species Information
+
+   AIR
+   Molecular Weight (g/mol)            28.75198
+   Ambient Density (kg/m^3)            1.195
+   Initial Mass Fraction               1.000
+   Enthalpy of Formation (J/kg)     -8.504E+04
+
+   Sub Species                    Mass Fraction     Mole Fraction
+   NITROGEN                       7.624699E-01      7.825727E-01
+   OXYGEN                         2.309974E-01      2.075588E-01
+   CARBON DIOXIDE                 5.914650E-04      3.864118E-04
+   WATER VAPOR                    5.941209E-03      9.482037E-03
+ 
+     Viscosity (kg/m/s) Ambient,  293 K:  1.796E-05
+                                  500 K:  2.612E-05
+                                 1000 K:  4.125E-05
+                                 1500 K:  5.371E-05
+                                 2000 K:  6.476E-05
+   Therm. Cond. (W/m/K) Ambient,  293 K:  2.556E-02
+                                  500 K:  3.814E-02
+                                 1000 K:  6.686E-02
+                                 1500 K:  9.249E-02
+                                 2000 K:  1.153E-01
+        Enthalpy (J/kg) Ambient,  293 K: -9.012E+04
+                                  500 K:  1.222E+05
+                                 1000 K:  6.721E+05
+                                 1500 K:  1.270E+06
+                                 2000 K:  1.896E+06
+    Spec. Heat (J/kg/K) Ambient,  293 K:  1.016E+03
+                                  500 K:  1.042E+03
+                                 1000 K:  1.156E+03
+                                 1500 K:  1.229E+03
+                                 2000 K:  1.270E+03
+   Diff. Coeff. (m^2/s) Ambient,  293 K:  1.991E-05
+                                  500 K:  4.961E-05
+                                 1000 K:  1.580E-04
+                                 1500 K:  3.095E-04
+                                 2000 K:  4.984E-04
+ Gibbs Energy Amb. (kJ/mol),  293 K: -5.873E+01
+                                  500 K: -1.007E+02
+                                 1000 K: -2.117E+02
+                                 1500 K: -3.312E+02
+                                 2000 K: -4.568E+02
+
+   WATER VAPOR
+   Molecular Weight (g/mol)            18.01528
+   Ambient Density (kg/m^3)            0.749
+   Initial Mass Fraction               0.000
+   Enthalpy of Formation (J/kg)     -1.342E+07
+
+   Sub Species                    Mass Fraction     Mole Fraction
+   WATER VAPOR                    1.000000E+00      1.000000E+00
+ 
+     Viscosity (kg/m/s) Ambient,  293 K:  1.052E-05
+                                  500 K:  1.770E-05
+                                 1000 K:  3.583E-05
+                                 1500 K:  5.206E-05
+                                 2000 K:  6.615E-05
+   Therm. Cond. (W/m/K) Ambient,  293 K:  1.961E-02
+                                  500 K:  3.460E-02
+                                 1000 K:  8.212E-02
+                                 1500 K:  1.367E-01
+                                 2000 K:  1.900E-01
+        Enthalpy (J/kg) Ambient,  293 K: -1.343E+07
+                                  500 K: -1.304E+07
+                                 1000 K: -1.198E+07
+                                 1500 K: -1.075E+07
+                                 2000 K: -9.369E+06
+    Spec. Heat (J/kg/K) Ambient,  293 K:  1.863E+03
+                                  500 K:  1.955E+03
+                                 1000 K:  2.292E+03
+                                 1500 K:  2.627E+03
+                                 2000 K:  2.873E+03
+   Diff. Coeff. (m^2/s) Ambient,  293 K:  2.095E-05
+                                  500 K:  5.775E-05
+                                 1000 K:  1.976E-04
+                                 1500 K:  3.947E-04
+                                 2000 K:  6.404E-04
+ Gibbs Energy Amb. (kJ/mol),  293 K: -2.972E+02
+                                  500 K: -3.382E+02
+                                 1000 K: -4.486E+02
+                                 1500 K: -5.696E+02
+                                 2000 K: -6.986E+02
+ 
+   Liq. Enthalpy (J/kg)     Melt  273 K: -1.598E+07
+                                  323 K: -1.577E+07
+                            Boil  373 K: -1.556E+07
+ 
+   Liq. Spec. Heat (J/kg/K) Melt  273 K:  4.228E+03
+                                  323 K:  4.181E+03
+                            Boil  373 K:  4.217E+03
+ 
+   Heat of Vapor. (J/kg)    Melt  273 K:  2.501E+06
+                                  323 K:  2.385E+06
+                            Boil  373 K:  2.269E+06
+
+
+ Material Information
+
+
+ Surface Conditions
+
+   0 INERT (DEFAULT)
+
+   1 HOT
+     Wall or Vent Temperature (C)   900.0
+
+   2 COOL
+     Wall or Vent Temperature (C)    20.0
+
+   3 OPEN
+     Passive Vent to Atmosphere
+
+   4 MIRROR
+     Symmetry Plane
+
+   5 INTERPOLATED
+
+   6 PERIODIC
+
+   7 HVAC
+
+   8 MASSLESS TRACER
+
+   9 DROPLET
+
+  10 MASSLESS TARGET
+
+  11 PERIODIC FLOW ONLY
+
+
+ Lagrangian Particle Classes
+
+   1 water drops
+     SURFace ID: DROPLET
+     # Reals: 144
+     # Integers: 48
+     # Logicals: 10
+
+
+ PROPerty Information
+
+   1 Nozzle
+     Flow Rate (L/min)               0.35
+     Particle Class              water drops
+     Smokeview ID                nozzle
+
+   2 pdpa_d43
+     Smokeview ID                sensor
+
+   3 pdpa_w
+     Smokeview ID                sensor
+
+
+ Cut-off Density and Temperature
+
+    Minimum Temperature:  -218.3 C
+    Maximum Temperature:  2726.8 C
+    Minimum Density:  1.195E-01 kg/m3
+    Maximum Density:  1.279E+01 kg/m3
+
+
+ Device Information
+
+   1 ID: null
+     QUANTITY: TIME
+     Coordinates (X,Y,Z):    0.000000E+00   -1.000000E-03    2.240000E+00
+     TEMPORAL STATISTIC: TIME AVERAGE
+  Property ID: Nozzle
+   2 ID: flux
+     QUANTITY: GAUGE HEAT FLUX
+     Coordinates (X,Y,Z):    1.999000E+00   -1.000000E-03    1.500000E+00
+     TEMPORAL STATISTIC: TIME AVERAGE
+   3 ID: d43
+     QUANTITY: PDPA
+     Coordinates (X,Y,Z):    0.000000E+00   -1.000000E-03    1.200000E+00
+     TEMPORAL STATISTIC: TIME AVERAGE
+  Property ID: pdpa_d43
+   4 ID: w
+     QUANTITY: PDPA
+     Coordinates (X,Y,Z):    0.000000E+00   -1.000000E-03    1.200000E+00
+     TEMPORAL STATISTIC: TIME AVERAGE
+  Property ID: pdpa_w
+
+
+ Slice File Information, Mesh     1
+
+   1 Nodes:   0  40  10  10   0  30, Quantity: INTEGRATED INTENSITY
+   2 Nodes:   0  40  10  10   0  30, Quantity: water drops MPUV
+
+
+ Slice File Information, Mesh     2
+
+   1 Nodes:   0  40   0   0   0  30, Quantity: INTEGRATED INTENSITY
+   2 Nodes:   0  40   0   0   0  30, Quantity: water drops MPUV
+
+
+ Radiation Model Information
+
+   Number of control angles 1000
+   Time step increment         2
+   Angle increment             5
+   Theta band N_phi   Solid angle
+     1:        4     0.013
+     2:       12     0.013
+     3:       20     0.013
+     4:       28     0.013
+     5:       36     0.013
+     6:       44     0.012
+     7:       48     0.013
+     8:       56     0.012
+     9:       60     0.012
+    10:       64     0.012
+    11:       64     0.013
+    12:       64     0.013
+    13:       64     0.013
+    14:       64     0.013
+    15:       64     0.012
+    16:       60     0.012
+    17:       56     0.012
+    18:       48     0.013
+    19:       44     0.012
+    20:       36     0.013
+    21:       28     0.013
+    22:       20     0.013
+    23:       12     0.013
+    24:        4     0.013
+   Using gray gas absorption.
+   Mean beam length  1.000E-01 m
+ 
+ 
+
+ Run Time Diagnostics
+
+       Time Step        1   October 28, 2025  18:07:40
+       Step Size:    0.500E-01 s, Total Time:      0.050 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.12E-01 on Mesh 1 at (3,10,16)
+       Maximum Pressure Error:  0.42E-05 on Mesh 2 at (2,3,20)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.13E-01 at (4,9,13)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.82E-02 at (1,7,19)
+       Radiation Loss to Boundaries:         9.915 kW
+       Mesh    2
+       Max CFL number:  0.13E-01 at (2,5,27)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,30)
+       Max VN number:   0.87E-02 at (40,4,15)
+       Radiation Loss to Boundaries:         9.915 kW
+ 
+       Time Step        2   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:      0.100 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.10E-01 on Mesh 1 at (1,10,16)
+       Maximum Pressure Error:  0.15E-02 on Mesh 2 at (1,2,16)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.13E-01 at (4,9,13)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.92E-02 at (1,7,19)
+       Radiation Loss to Boundaries:         9.914 kW
+       Mesh    2
+       Max CFL number:  0.13E-01 at (2,5,27)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,30)
+       Max VN number:   0.88E-02 at (40,4,15)
+       Radiation Loss to Boundaries:         9.914 kW
+ 
+       Time Step        3   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.15 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.96E-02 on Mesh 1 at (1,10,16)
+       Maximum Pressure Error:  0.26E-02 on Mesh 2 at (2,1,16)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.13E-01 at (3,9,19)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.12E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.913 kW
+       Mesh    2
+       Max CFL number:  0.13E-01 at (1,5,19)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,30)
+       Max VN number:   0.88E-02 at (40,4,15)
+       Radiation Loss to Boundaries:         9.913 kW
+ 
+       Time Step        4   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.20 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.60E-02 on Mesh 2 at (1,0,16)
+       Maximum Pressure Error:  0.22E-02 on Mesh 2 at (1,1,16)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.14E-01 at (3,9,19)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.15E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.912 kW
+       Mesh    2
+       Max CFL number:  0.15E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,30)
+       Max VN number:   0.88E-02 at (40,4,15)
+       Radiation Loss to Boundaries:         9.912 kW
+ 
+       Time Step        5   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.25 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.36E-02 on Mesh 1 at (4,10,11)
+       Maximum Pressure Error:  0.22E-02 on Mesh 1 at (1,6,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.15E-01 at (3,9,19)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.18E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.911 kW
+       Mesh    2
+       Max CFL number:  0.17E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,30)
+       Max VN number:   0.87E-02 at (40,4,15)
+       Radiation Loss to Boundaries:         9.911 kW
+ 
+       Time Step        6   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.30 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.59E-02 on Mesh 1 at (1,10,12)
+       Maximum Pressure Error:  0.31E-02 on Mesh 1 at (1,8,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.18E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.21E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.910 kW
+       Mesh    2
+       Max CFL number:  0.21E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence:  0.18E-03 at (1,10,1)
+       Max VN number:   0.11E-01 at (1,2,17)
+       Radiation Loss to Boundaries:         9.910 kW
+ 
+       Time Step        7   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.35 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.95E-02 on Mesh 1 at (1,10,14)
+       Maximum Pressure Error:  0.53E-02 on Mesh 1 at (1,9,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.22E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.23E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.909 kW
+       Mesh    2
+       Max CFL number:  0.24E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence:  0.18E-03 at (1,10,1)
+       Max VN number:   0.15E-01 at (1,2,20)
+       Radiation Loss to Boundaries:         9.909 kW
+ 
+       Time Step        8   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.40 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.12E-01 on Mesh 1 at (1,10,14)
+       Maximum Pressure Error:  0.76E-02 on Mesh 1 at (1,9,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.26E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.24E-01 at (1,6,16)
+       Radiation Loss to Boundaries:         9.908 kW
+       Mesh    2
+       Max CFL number:  0.28E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence:  0.18E-03 at (1,10,1)
+       Max VN number:   0.21E-01 at (1,2,20)
+       Radiation Loss to Boundaries:         9.908 kW
+ 
+       Time Step        9   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.45 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.12E-01 on Mesh 1 at (1,10,14)
+       Maximum Pressure Error:  0.10E-01 on Mesh 2 at (1,1,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.30E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,30)
+       Max VN number:   0.27E-01 at (1,8,20)
+       Radiation Loss to Boundaries:         9.907 kW
+       Mesh    2
+       Max CFL number:  0.31E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,1)
+       Max VN number:   0.26E-01 at (1,2,20)
+       Radiation Loss to Boundaries:         9.907 kW
+ 
+       Time Step       10   October 28, 2025  18:07:41
+       Step Size:    0.500E-01 s, Total Time:       0.50 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.10E-01 on Mesh 1 at (1,10,14)
+       Maximum Pressure Error:  0.12E-01 on Mesh 1 at (1,10,11)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.34E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,1)
+       Max VN number:   0.32E-01 at (1,9,20)
+       Radiation Loss to Boundaries:         9.906 kW
+       Mesh    2
+       Max CFL number:  0.35E-01 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.18E-03 at (1,10,1)
+       Max VN number:   0.30E-01 at (1,2,20)
+       Radiation Loss to Boundaries:         9.906 kW
+ 
+       Time Step       20   October 28, 2025  18:07:42
+       Step Size:    0.500E-01 s, Total Time:       1.00 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.59E-02 on Mesh 1 at (1,10,15)
+       Maximum Pressure Error:  0.77E-02 on Mesh 2 at (1,1,12)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.99E-01 at (1,10,21)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.18E-03 at (1,1,1)
+       Max VN number:   0.17E-01 at (1,9,10)
+       Radiation Loss to Boundaries:         9.897 kW
+       Mesh    2
+       Max CFL number:  0.10E+00 at (1,3,21)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence:  0.17E-03 at (1,10,1)
+       Max VN number:   0.19E-01 at (1,4,13)
+       Radiation Loss to Boundaries:         9.897 kW
+ 
+       Time Step       30   October 28, 2025  18:07:44
+       Step Size:    0.500E-01 s, Total Time:       1.50 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.77E-02 on Mesh 2 at (1,0,21)
+       Maximum Pressure Error:  0.12E-01 on Mesh 1 at (1,6,21)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.20E+00 at (1,10,15)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence:  0.17E-03 at (1,1,1)
+       Max VN number:   0.37E-01 at (1,10,10)
+       Radiation Loss to Boundaries:         9.888 kW
+       Mesh    2
+       Max CFL number:  0.20E+00 at (1,2,21)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.17E-03 at (1,10,1)
+       Max VN number:   0.37E-01 at (1,1,10)
+       Radiation Loss to Boundaries:         9.888 kW
+ 
+       Time Step       40   October 28, 2025  18:07:45
+       Step Size:    0.500E-01 s, Total Time:       2.00 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.25E-01 on Mesh 1 at (1,10,22)
+       Maximum Pressure Error:  0.73E-01 on Mesh 2 at (2,1,20)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.34E+00 at (1,10,22)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence: -0.25E-04 at (1,6,22)
+       Max VN number:   0.65E-01 at (1,6,21)
+       Radiation Loss to Boundaries:         9.880 kW
+       Mesh    2
+       Max CFL number:  0.35E+00 at (1,2,22)
+       Max divergence:  0.47E-01 at (1,1,16)
+       Min divergence:  0.17E-03 at (1,10,1)
+       Max VN number:   0.62E-01 at (1,5,21)
+       Radiation Loss to Boundaries:         9.880 kW
+ 
+       Time Step       50   October 28, 2025  18:07:46
+       Step Size:    0.500E-01 s, Total Time:       2.50 s
+       Pressure Iterations: 2
+       Maximum Velocity Error:  0.32E-01 on Mesh 1 at (1,10,23)
+       Maximum Pressure Error:  0.19E+01 on Mesh 1 at (1,7,21)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.52E+00 at (1,10,24)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence: -0.44E-02 at (1,6,24)
+       Max VN number:   0.79E-01 at (1,6,23)
+       Radiation Loss to Boundaries:         9.869 kW
+       Mesh    2
+       Max CFL number:  0.52E+00 at (1,1,24)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence: -0.43E-02 at (1,5,24)
+       Max VN number:   0.78E-01 at (1,6,14)
+       Radiation Loss to Boundaries:         9.869 kW
+ 
+       Time Step       60   October 28, 2025  18:07:47
+       Step Size:    0.500E-01 s, Total Time:       3.00 s
+       Pressure Iterations: 2
+       Maximum Velocity Error:  0.47E-01 on Mesh 1 at (1,10,21)
+       Maximum Pressure Error:  0.66E+01 on Mesh 1 at (1,8,23)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.74E+00 at (1,10,27)
+       Max divergence:  0.47E-01 at (1,10,14)
+       Min divergence: -0.19E-01 at (1,9,23)
+       Max VN number:   0.88E-01 at (1,6,25)
+       Radiation Loss to Boundaries:         9.863 kW
+       Mesh    2
+       Max CFL number:  0.75E+00 at (1,1,27)
+       Max divergence:  0.47E-01 at (1,1,14)
+       Min divergence: -0.23E-01 at (1,2,22)
+       Max VN number:   0.94E-01 at (1,5,25)
+       Radiation Loss to Boundaries:         9.862 kW
+ 
+       Time Step       70   October 28, 2025  18:07:48
+       Step Size:    0.500E-01 s, Total Time:       3.50 s
+       Pressure Iterations: 4
+       Maximum Velocity Error:  0.40E-01 on Mesh 1 at (1,10,26)
+       Maximum Pressure Error:  0.13E+02 on Mesh 1 at (1,9,29)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.92E+00 at (1,8,30)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence: -0.35E-01 at (1,10,29)
+       Max VN number:   0.11E+00 at (2,5,28)
+       Radiation Loss to Boundaries:         9.857 kW
+       Mesh    2
+       Max CFL number:  0.95E+00 at (1,2,30)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence: -0.40E-01 at (1,2,26)
+       Max VN number:   0.11E+00 at (2,6,28)
+       Radiation Loss to Boundaries:         9.857 kW
+ 
+       Time Step       80   October 28, 2025  18:07:49
+       Step Size:    0.500E-01 s, Total Time:       4.00 s
+       Pressure Iterations: 4
+       Maximum Velocity Error:  0.29E-01 on Mesh 1 at (1,10,27)
+       Maximum Pressure Error:  0.39E+01 on Mesh 2 at (1,3,29)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.86E+00 at (1,10,30)
+       Max divergence:  0.47E-01 at (1,10,15)
+       Min divergence: -0.68E-02 at (1,6,29)
+       Max VN number:   0.95E-01 at (2,5,30)
+       Radiation Loss to Boundaries:         9.840 kW
+       Mesh    2
+       Max CFL number:  0.86E+00 at (1,1,30)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence: -0.17E-01 at (1,2,26)
+       Max VN number:   0.96E-01 at (2,6,30)
+       Radiation Loss to Boundaries:         9.840 kW
+ 
+       Time Step       90   October 28, 2025  18:07:50
+       Step Size:    0.500E-01 s, Total Time:       4.50 s
+       Pressure Iterations: 3
+       Maximum Velocity Error:  0.39E-01 on Mesh 2 at (1,0,29)
+       Maximum Pressure Error:  0.71E+01 on Mesh 2 at (1,1,29)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.87E+00 at (1,10,30)
+       Max divergence:  0.13E-01 at (1,9,22)
+       Min divergence: -0.36E-01 at (1,10,30)
+       Max VN number:   0.92E-01 at (1,8,24)
+       No. of Lagrangian Particles:  2018
+       Radiation Loss to Boundaries:         3.091 kW
+       Mesh    2
+       Max CFL number:  0.79E+00 at (2,1,29)
+       Max divergence:  0.16E-01 at (1,2,22)
+       Min divergence: -0.75E-02 at (20,1,20)
+       Max VN number:   0.87E-01 at (1,3,24)
+       No. of Lagrangian Particles:  1982
+       Radiation Loss to Boundaries:         3.091 kW
+ 
+       Time Step      100   October 28, 2025  18:07:51
+       Step Size:    0.500E-01 s, Total Time:       5.00 s
+       Pressure Iterations: 2
+       Maximum Velocity Error:  0.43E-01 on Mesh 1 at (21,10,20)
+       Maximum Pressure Error:  0.19E+00 on Mesh 2 at (1,2,29)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.85E+00 at (21,10,18)
+       Max divergence:  0.14E-01 at (1,9,22)
+       Min divergence: -0.11E-01 at (20,10,17)
+       Max VN number:   0.37E+00 at (21,10,19)
+       No. of Lagrangian Particles:  4287
+       Radiation Loss to Boundaries:        -0.038 kW
+       Mesh    2
+       Max CFL number:  0.84E+00 at (20,1,21)
+       Max divergence:  0.14E-01 at (1,2,22)
+       Min divergence: -0.15E-01 at (20,1,17)
+       Max VN number:   0.33E+00 at (20,1,21)
+       No. of Lagrangian Particles:  4125
+       Radiation Loss to Boundaries:        -0.038 kW
+ 
+       Time Step      200   October 28, 2025  18:08:04
+       Step Size:    0.500E-01 s, Total Time:       9.72 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.33E-01 on Mesh 1 at (20,10,22)
+       Maximum Pressure Error:  0.99E-02 on Mesh 2 at (21,1,1)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.73E+00 at (20,10,3)
+       Max divergence:  0.44E-01 at (1,8,16)
+       Min divergence: -0.59E-02 at (20,10,5)
+       Max VN number:   0.26E+00 at (20,10,21)
+       No. of Lagrangian Particles:  5138
+       Radiation Loss to Boundaries:         8.092 kW
+       Mesh    2
+       Max CFL number:  0.72E+00 at (20,1,1)
+       Max divergence:  0.43E-01 at (1,3,17)
+       Min divergence: -0.46E-02 at (20,1,9)
+       Max VN number:   0.27E+00 at (21,1,21)
+       No. of Lagrangian Particles:  4912
+       Radiation Loss to Boundaries:         8.086 kW
+ 
+       Time Step      206   October 28, 2025  18:08:05
+       Step Size:    0.296E-01 s, Total Time:      10.00 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.32E-01 on Mesh 1 at (21,10,21)
+       Maximum Pressure Error:  0.13E-01 on Mesh 1 at (18,1,30)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.42E+00 at (20,10,6)
+       Max divergence:  0.47E-01 at (1,10,16)
+       Min divergence: -0.43E-02 at (20,10,12)
+       Max VN number:   0.16E+00 at (20,10,21)
+       No. of Lagrangian Particles:  5271
+       Radiation Loss to Boundaries:         9.966 kW
+       Mesh    2
+       Max CFL number:  0.42E+00 at (20,1,1)
+       Max divergence:  0.47E-01 at (1,1,15)
+       Min divergence: -0.50E-02 at (20,1,5)
+       Max VN number:   0.15E+00 at (21,1,21)
+       No. of Lagrangian Particles:  5056
+       Radiation Loss to Boundaries:         9.965 kW
+ 
+
+
+ DEVICE Activation Times
+
+         1    null                      T           4.050
+
+
+ Time Stepping Wall Clock Time (s):       24.941
+ Total Elapsed Wall Clock Time (s):       28.362
+
+STOP: FDS completed successfully (CHID: BRE_Spray_A_1)
