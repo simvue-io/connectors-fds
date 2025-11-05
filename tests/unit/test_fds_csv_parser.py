@@ -180,7 +180,7 @@ def test_fds_ctrl_parser(folder_setup, load):
     # Check DEVC and CTRL events have been correctly added to events log
     events = [event['message'] for event in client.get_events(run_id)]
     assert "DEVC 'Ceiling_Thermocouple.Back_Right' has been set to 'True' at time 4.25244E+01s, when it reached a value of 2.00162E+02C." in events
-    assert "CTRL 'KILL_TEMP_TOO_HIGH' has been set to 'True' at time 4.25244E+01s" in events
+    assert "CTRL 'MONITOR_HRR' has been set to 'True' at time 5.63386E+00s" in events
     
     # Check metadata has been added correctly
     metadata = client.get_run(run_id).metadata
