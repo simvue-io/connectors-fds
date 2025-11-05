@@ -546,7 +546,6 @@ class FDSRun(WrappedRun):
         if _metric_data:
             # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
             _metric_data["time"] = 1
-            logger.info("ADDING METRIC")
             self._metrics_callback(_metric_data, meta)
 
     def _setup_grids(
