@@ -23,7 +23,7 @@ To run this example on your own system with FDS installed:
     - Install Poetry: pip install poetry
     - Install required modules: poetry install
     - Run the example script: poetry run python fds_example.py
-    
+
 For a more in depth example, see: https://docs.simvue.io/examples/fds/
 
 This example is set to only simulate 10 seconds of the fire - to see more,
@@ -38,6 +38,7 @@ import pathlib
 import shutil
 import uuid
 from simvue_fds.connector import FDSRun
+
 
 def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) -> str:
     """Function demonstrating how to launch FDS runs with Simvue.
@@ -68,7 +69,7 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
             folder=run_folder,
             tags=["fds", "vents"],
         )
-        
+
         # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
         run.create_metric_threshold_alert(
             name="visibility_below_three_metres",
@@ -86,20 +87,24 @@ def fds_example(run_folder: str, offline: bool = False, parallel: bool = False) 
         )
         # Then call the .launch() method to start your FDS simulation, providing the path to the input file
         run.launch(
-            fds_input_file_path = pathlib.Path(__file__).parent.joinpath("supply_exhaust_vents.fds"),
-            workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
+            fds_input_file_path=pathlib.Path(__file__).parent.joinpath(
+                "supply_exhaust_vents.fds"
+            ),
+            workdir_path=str(pathlib.Path(__file__).parent.joinpath("results")),
             # You can optionally have the connector track slices in your simulation
-            slice_parse_quantity = "TEMPERATURE",
+            slice_parse_quantity="TEMPERATURE",
             # And you can choose whether to run it in parallel
-            run_in_parallel = parallel,
-            num_processors = 2,
+            run_in_parallel=parallel,
+            num_processors=2,
+            run_smokeview=True,
+            smokeview_smoke_types=["TEMPERATURE", "SOOT DENSITY"],
         )
-        
+
         # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
         run.log_event("Deleting local copies of results...")
-        
+
         return run.id
+
 
 if __name__ == "__main__":
     fds_example("/fds_example")
-

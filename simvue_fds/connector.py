@@ -12,12 +12,10 @@ import pathlib
 import platform
 import re
 import shutil
-import sys
 import threading
 import time
 import typing
 from datetime import datetime, timezone
-from itertools import chain
 
 try:
     from typing import Self
@@ -33,9 +31,9 @@ import pydantic
 import pyfdstools
 import simvue
 from loguru import logger
-from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
+from simvue_fds.smokeview import Smokeview, SimvueSmokeviewConfig
 
 
 class FDSRun(WrappedRun):
@@ -279,6 +277,8 @@ class FDSRun(WrappedRun):
                         # Create new record, reset current mesh to None (to be set later)
                         _out_record = {"timestamp": _timestamp}
                         _current_mesh = None
+
+                        self._smokeview_snapshot(int(match.group(1)) - 1)
 
                     # Define the name of the metric, then log the value as key/value pairs
                     # This also adds the 'time' and 'step' for this set of metrics to the dict
@@ -682,11 +682,11 @@ class FDSRun(WrappedRun):
     def __init__(
         self,
         mode: typing.Literal["online", "offline", "disabled"] = "online",
-        abort_callback: typing.Optional[typing.Callable[[Self], None]] = None,
-        server_token: typing.Optional[str] = None,
-        server_url: typing.Optional[str] = None,
+        abort_callback: typing.Callable[[Self], None] | None = None,
+        server_token: str | None = None,
+        server_url: str | None = None,
         debug: bool = False,
-    ):
+    ) -> None:
         """Initialize the FDSRun instance.
 
         If `abort_callback` is provided the first argument must be this Run instance.
@@ -708,14 +708,14 @@ class FDSRun(WrappedRun):
             run in debug mode, by default False
 
         """
-        self.fds_input_file_path: pydantic.FilePath = None
-        self.workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
-        self.upload_files: typing.List[str] = None
+        self.fds_input_file_path: pydantic.FilePath | None = None
+        self.workdir_path: str | pydantic.DirectoryPath | None = None
+        self.upload_files: list[str] | None = None
         self.slice_parse_quantity: str | None = None
         self.slice_parse_interval: int = 1
         self.slice_parse_ignore_zeros: bool = False
-        self.ulimit: typing.Union[str, int] = None
-        self.fds_env_vars: typing.Dict[str, typing.Any] = None
+        self.ulimit: str | int | None = None
+        self.fds_env_vars: dict[str, typing.Any] | None = None
 
         # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
         self.upload_input_file: bool = True
@@ -730,6 +730,7 @@ class FDSRun(WrappedRun):
         self._results_prefix: str = ""
         self._loading_historic_run: bool = False
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
+        self._smokeview: Smokeview | None = None
 
         super().__init__(
             mode=mode,
@@ -897,6 +898,17 @@ class FDSRun(WrappedRun):
         run_in_parallel: bool = False,
         num_processors: int = 1,
         mpiexec_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        run_smokeview: bool = False,
+        smokeview_load_particles: bool = False,
+        smokeview_smoke_types: (
+            list[
+                typing.Literal[
+                    "TEMPERATURE", "SOOT DENSITY", "CARBON DIOXIDE DENSITY", "HRRPUV"
+                ]
+            ]
+            | None
+        ) = None,
+        smokeview_logs: bool = False,
     ):
         """Command to launch the FDS simulation and track it with Simvue.
 
@@ -1027,7 +1039,40 @@ class FDSRun(WrappedRun):
                     "WRITE_XYZ must be enabled in your FDS file for slice parsing."
                 )
 
+        if run_smokeview:
+            self._smokeview = Smokeview(
+                fds_input_file=self.fds_input_file_path,
+                results_directory=self.workdir_path,
+                output_directory=self.workdir_path or pathlib.Path.cwd(),
+                simvue_sv_config=SimvueSmokeviewConfig(
+                    smoke_types=smokeview_smoke_types,
+                    load_particles=smokeview_load_particles,
+                ),
+                show_logs=smokeview_logs,
+            )
         super().launch()
+
+    def _smokeview_snapshot(self, time_index: int) -> None:
+        """Take and upload a Smokeview snapshot."""
+        _out_file: pathlib.Path = self._smokeview.snapshot(time_index)
+
+        if not _out_file:
+            return
+        self.save_file(_out_file, category="output")
+
+        if self._smokeview.session_file_read:
+            return
+
+        with (
+            _session_file := pathlib.Path(self.workdir_path).joinpath(
+                f"{self.fds_input_file_path.stem}.ssf"
+            )
+        ).open("w") as out_f:
+            out_f.write(self._smokeview._render_script("{{ time_step }}"))
+
+        self.save_file(_session_file, category="input")
+        self._smokeview.session_file_read = True
+        _session_file.unlink()
 
     def load(
         self,
@@ -1035,6 +1080,17 @@ class FDSRun(WrappedRun):
         upload_files: list[str] | None = None,
         slice_parse_quantity: str | None = None,
         slice_parse_ignore_zeros: bool = False,
+        run_smokeview: bool = False,
+        smokeview_load_particles: bool = False,
+        smokeview_smoke_types: (
+            list[
+                typing.Literal[
+                    "TEMPERATURE", "SOOT DENSITY", "CARBON DIOXIDE DENSITY", "HRRPUV"
+                ]
+            ]
+            | None
+        ) = None,
+        smokeview_logs: bool = False,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
@@ -1113,6 +1169,18 @@ class FDSRun(WrappedRun):
                 shutil.copy(
                     self.fds_input_file_path,
                     pathlib.Path(results_dir).joinpath(f"{self._chid}.fds"),
+                )
+
+            if run_smokeview:
+                self._smokeview = Smokeview(
+                    fds_input_file=self.fds_input_file_path,
+                    results_directory=self.workdir_path,
+                    output_directory=self.workdir_path or pathlib.Path.cwd(),
+                    simvue_sv_config=SimvueSmokeviewConfig(
+                        smoke_types=smokeview_smoke_types,
+                        load_particles=smokeview_load_particles,
+                    ),
+                    show_logs=smokeview_logs,
                 )
 
         self._results_prefix = str(pathlib.Path(results_dir).joinpath(self._chid))
