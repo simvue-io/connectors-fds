@@ -14,7 +14,7 @@ def folder_setup():
     if client.get_folder(folder):
         # Avoid trying to delete folder while one of the runs is still closing
         time.sleep(1)
-        client.delete_folder(folder, remove_runs=True)
+        #client.delete_folder(folder, remove_runs=True)
         
 @pytest.fixture()
 def offline_cache_setup(monkeypatch):

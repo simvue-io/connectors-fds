@@ -1,0 +1,127 @@
+&HEAD CHID='spruce_N2_50_cat', TITLE='(Concatenated) Spruce cone calorimeter N2.' /
+
+&MESH IJK=3,3,3, XB=-0.15,0.15,-0.15,0.15,0,0.3 /
+&MESH IJK=3,3,3, XB=-0.15,0.15,-0.15,0.15,0.3,0.6 /
+
+&TIME T_END=1750., DT = 0.5, WALL_INCREMENT = 1 /
+
+&MISC TMPA=27,
+      Y_O2_INFTY=0.00001,
+      SOLID_PHASE_ONLY = .TRUE. /
+
+&SURF ID = 'SAMPLE',
+      EXTERNAL_FLUX = 50
+      THICKNESS(1:2)	    = 0.02,0.013,
+      STRETCH_FACTOR(1:2)   = 1.2,2.0
+      CELL_SIZE_FACTOR(1:2) = 1.0,1.0
+      HEAT_TRANSFER_COEFFICIENT = 15.,
+      MINIMUM_LAYER_THICKNESS = 1E-10
+      BACKING='EXPOSED',
+      MATL_ID(1,:)='MOISTURE','SPRUCE'
+      MATL_ID(2,1)='CERAMIC',
+      MATL_MASS_FRACTION(1,:) = 0.09, 0.91 /
+
+
+# Start of file output.txt :
+
+&DUMP DT_DEVC=10. /
+&DUMP DT_HRR=10. /
+&DUMP WRITE_XYZ=.TRUE./
+
+&DEVC ID='HRRPUA', QUANTITY='HRRPUV', XB=-0.15,0.15,-0.15,0.15,0,0.3, SPATIAL_STATISTIC='VOLUME INTEGRAL', CONVERSION_FACTOR=100., UNITS='kW/m2' /
+&DEVC ID='MLRPUA', QUANTITY='BURNING RATE', XB=-0.15,0.15,-0.15,0.15,0,0.3, SPATIAL_STATISTIC='SURFACE INTEGRAL', SURF_ID='SAMPLE', CONVERSION_FACTOR=100., UNITS='kg/m2/s' /
+
+# Start of file spruce.txt :
+
+&REAC FUEL='PYROLYZATE', C=6, H=10, O=5, SOOT_YIELD=0.01, HEAT_OF_COMBUSTION = 13750., RADIATIVE_FRACTION=0 /
+
+&MATL ID                    = 'SPRUCE'
+      EMISSIVITY            = 0.9
+      DENSITY               = 408.
+      CONDUCTIVITY_RAMP     = 'wood_k'
+      SPECIFIC_HEAT_RAMP    = 'wood_cp'
+      HEAT_OF_REACTION(1)   = 112.
+      A(1)                  = 2.12E11
+      E(1)                  = 1.91E5
+      N_S(1)                = 1.89
+      NU_SPEC(1,1)          = 0.85
+      SPEC_ID(1,1)          = 'PYROLYZATE'
+      NU_MATL(1,1)          = 0.15
+      MATL_ID(1,1)          = 'CHAR' /
+
+&MATL ID                    = 'CHAR'
+      EMISSIVITY            = 0.84
+      DENSITY               = 52.5
+      CONDUCTIVITY_RAMP     = 'char_k'
+      SPECIFIC_HEAT_RAMP    = 'char_cp'
+      HEAT_OF_REACTION      = -32000.
+      A(1)                  = 3.75
+      E(1)                  = 27685.
+      N_O2(1)               = 0.68
+      GAS_DIFFUSION_DEPTH   = 0.0001
+      SPEC_ID               = 'PRODUCTS','AIR',
+      NU_SPEC               = 12.58455,-11.58455 /
+
+&RAMP ID = 'wood_k', T = 20,  F = 0.062 /
+&RAMP ID = 'wood_k', T = 300, F = 0.151 /
+
+# Start of file common.txt :
+
+&SPEC ID='WATER VAPOR' /
+&SPEC ID='CARBON DIOXIDE' /
+
+&VENT MB='YMIN', SURF_ID='OPEN' /
+&VENT MB='YMAX', SURF_ID='OPEN' /
+&VENT MB='XMIN', SURF_ID='OPEN' /
+&VENT MB='XMAX', SURF_ID='OPEN' /
+&VENT MB='ZMAX', SURF_ID='OPEN' /
+&VENT XB=-0.05,0.05,-0.05,0.05,0,0, SURF_ID='SAMPLE' /
+
+&MATL ID                = 'MOISTURE'
+      DENSITY           = 1000.
+      CONDUCTIVITY      = 0.6
+      EMISSIVITY        = 0.9
+      SPECIFIC_HEAT     = 4.2
+      A(1)              = 8.37E12
+      E(1)              = 1.21E5
+      NU_SPEC           = 1.0
+      SPEC_ID           = 'WATER VAPOR'
+      HEAT_OF_REACTION  = 2500./
+
+&MATL ID = 'CERAMIC',
+      DENSITY= 128.,
+      CONDUCTIVITY_RAMP= 'KC_RAMP',
+      SPECIFIC_HEAT= 1.13 /
+
+&RAMP ID = 'KC_RAMP' T = 20., F = 0.04 /
+&RAMP ID = 'KC_RAMP' T =200., F = 0.05 /
+&RAMP ID = 'KC_RAMP' T =400., F = 0.08 /
+&RAMP ID = 'KC_RAMP' T =600., F = 0.12 /
+&RAMP ID = 'KC_RAMP' T =800., F = 0.18 /
+&RAMP ID = 'KC_RAMP' T =1000., F = 0.25 /
+
+&RAMP ID = 'char_k', T = 20, F = 0.115038 /
+&RAMP ID = 'char_k', T = 900, F = 0.187198 /
+
+&RAMP ID = 'wood_cp', T = 30, F = 0.92 /
+&RAMP ID = 'wood_cp', T = 230, F = 1.8 /
+&RAMP ID = 'wood_cp', T = 800, F = 4.308 /
+
+&RAMP ID = 'char_cp', T = 20., F = 0.6823 /
+&RAMP ID = 'char_cp', T = 40., F = 0.7947 /
+&RAMP ID = 'char_cp', T = 60., F = 0.8887 /
+&RAMP ID = 'char_cp', T = 80., F = 0.9684 /
+&RAMP ID = 'char_cp', T = 100., F = 1.0368 /
+&RAMP ID = 'char_cp', T = 140., F = 1.1478 /
+&RAMP ID = 'char_cp', T = 180., F = 1.2344 /
+&RAMP ID = 'char_cp', T = 220., F = 1.3041 /
+&RAMP ID = 'char_cp', T = 260., F = 1.3617 /
+&RAMP ID = 'char_cp', T = 300., F = 1.4106 /
+&RAMP ID = 'char_cp', T = 350., F = 1.4627 /
+&RAMP ID = 'char_cp', T = 400., F = 1.5074 /
+&RAMP ID = 'char_cp', T = 500., F = 1.5820 /
+&RAMP ID = 'char_cp', T = 600., F = 1.6440 /
+&RAMP ID = 'char_cp', T = 700., F = 1.6982 /
+&RAMP ID = 'char_cp', T = 800., F = 1.7474 /
+
+&TAIL /
