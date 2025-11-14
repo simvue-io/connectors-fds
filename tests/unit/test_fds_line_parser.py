@@ -25,7 +25,7 @@ def extract_line_metrics(run, scenario_name):
     
 def get_line_metrics(run_id, scenario_name, metric):
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/{metric}/values?step=0",
         headers={

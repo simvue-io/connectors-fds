@@ -207,7 +207,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
     
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=4",
         headers={
@@ -403,7 +403,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     numpy.testing.assert_allclose(_min.min(), 1.66951, atol=0.1)
     
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/integrated_intensity.y.0_0/values?step=200",
         headers={
@@ -489,7 +489,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
     assert metrics["max_divergence.mesh.2"]["count"] > 0
     
     # Check metrics from DEVC line file
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/h_wall/values?step=0",
         headers={
@@ -540,7 +540,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
     numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
     
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch()
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_1/values?step=10",
         headers={
