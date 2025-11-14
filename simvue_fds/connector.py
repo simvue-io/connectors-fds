@@ -52,7 +52,7 @@ class FDSRun(WrappedRun):
         run.launch(...)
     """
 
-    _patterns: typing.List[typing.Dict[str, typing.Pattern]] = [
+    _patterns: list[dict[str, typing.Pattern]] = [
         {"pattern": re.compile(r"\s+Time\sStep\s+(\d+)\s+([\w\s:,]+)"), "name": "step"},
         {
             "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.]+)\ss.*"),
@@ -183,7 +183,20 @@ class FDSRun(WrappedRun):
         # Convert to string
         return datetime.fromtimestamp(_timestamp, tz=timezone.utc)
 
-    def _find_fds_executable(self):
+    def _find_fds_executable(self) -> str:
+        """Locates the FDS executable on the user's system.
+
+        Returns
+        -------
+        str
+            The path to the executable
+
+        Raises
+        ------
+        EnvironmentError
+            FDS executable could not be found
+
+        """
         fds_bin = None
         # Set stack limit - analogous to 'ulimit -s' recommended in FDS documentation
         if platform.system() != "Windows":
@@ -228,74 +241,73 @@ class FDSRun(WrappedRun):
 
         return fds_bin
 
-    def _map_line_var_coords(self):
+    def _map_line_var_coords(self) -> None:
         """Map DEVC line variables to their coordinates."""
         _labels = ("x", "y", "z")
         # Loop through input dict and find all DEVC devices
         for key, devc in self._input_dict.items():
-            if "devc" in key:
-                # If devc device does not have an ID, cannot add to mapping, so ignore
-                if not (_devc_id := devc.get("id")):
-                    continue
-                # Figure out which axes it varies along
-                _devc_coords = devc.get("xb") or devc.get("xbp")
-                if not _devc_coords:
-                    continue
+            if "devc" not in key:
+                continue
+            # If devc device does not have an ID, cannot add to mapping, so ignore
+            if not (_devc_id := devc.get("id")):
+                continue
+            # Figure out which axes it varies along
+            _devc_coords: list[float] = devc.get("xb") or devc.get("xbp")
+            if not _devc_coords:
+                continue
 
-                _devc_coords_change = [
-                    _devc_coords[1] - _devc_coords[0],
-                    _devc_coords[3] - _devc_coords[2],
-                    _devc_coords[5] - _devc_coords[4],
-                ]
+            _devc_coords_change = [
+                _devc_coords[1] - _devc_coords[0],
+                _devc_coords[3] - _devc_coords[2],
+                _devc_coords[5] - _devc_coords[4],
+            ]
 
-                _devc_coords_idx = [
-                    idx for idx, val in enumerate(_devc_coords_change) if abs(val) > 0
-                ]
+            _devc_coords_idx = [
+                idx for idx, val in enumerate(_devc_coords_change) if abs(val) > 0
+            ]
 
-                if len(_devc_coords_idx) == 0:
-                    # Indicates a point DEVC device using XB or XBP definition - dont add to mapping, just continue
-                    continue
+            if len(_devc_coords_idx) == 0:
+                # Indicates a point DEVC device using XB or XBP definition - dont add to mapping, just continue
+                continue
 
-                elif len(_devc_coords_idx) > 1:
-                    # Not varying in 1D, currently not supported # TODO
-                    logger.warning(
-                        f"Multi-dimensional DEVC device '{_devc_id}' detected - these are currently not supported and will be ignored."
+            elif len(_devc_coords_idx) > 1:
+                # Not varying in 1D, currently not supported # TODO
+                logger.warning(
+                    f"Multi-dimensional DEVC device '{_devc_id}' detected - these are currently not supported and will be ignored."
+                )
+                continue
+            _devc_coord_label = _labels[_devc_coords_idx[0]]
+            _devc_coord_id = devc.get(f"{_devc_coord_label}_id")
+            # Check if specific points chosen by user
+            _axes_ticks = devc.get(f"points_array_{_devc_coord_label}")
+            if not _axes_ticks:
+                # Create linear spacing
+                _low = _devc_coords[_devc_coords_idx[0] * 2]
+                _high = _devc_coords[_devc_coords_idx[0] * 2 + 1]
+                _num = devc.get("points")
+                _axes_ticks = numpy.linspace(_low, _high, _num)
+
+                # If D_ID provided, user wants ticks in terms of distance from first point
+                if d_id := devc.get("d_id"):
+                    _axes_ticks = _axes_ticks - _axes_ticks[0]
+                    _devc_coord_id = d_id
+
+                # If R_ID provided, user wants ticks in terms of distance from the origin
+                elif r_id := devc.get("r_id"):
+                    _fixed_dims = [0, 1, 2]
+                    _fixed_dims.remove(_devc_coords_idx[0])
+                    _fixed_dim_positions = [
+                        _devc_coords[idx * 2] for idx in _fixed_dims
+                    ]
+                    _axes_ticks = numpy.sqrt(
+                        _axes_ticks**2 + sum(val**2 for val in _fixed_dim_positions)
                     )
-                    continue
-                else:
-                    _devc_coord_label = _labels[_devc_coords_idx[0]]
-                    _devc_coord_id = devc.get(f"{_devc_coord_label}_id")
-                    # Check if specific points chosen by user
-                    _axes_ticks = devc.get(f"points_array_{_devc_coord_label}")
-                    if not _axes_ticks:
-                        # Create linear spacing
-                        _low = _devc_coords[_devc_coords_idx[0] * 2]
-                        _high = _devc_coords[_devc_coords_idx[0] * 2 + 1]
-                        _num = devc.get("points")
-                        _axes_ticks = numpy.linspace(_low, _high, _num)
+                    _devc_coord_id = r_id
 
-                        # If D_ID provided, user wants ticks in terms of distance from first point
-                        if d_id := devc.get("d_id"):
-                            _axes_ticks = _axes_ticks - _axes_ticks[0]
-                            _devc_coord_id = d_id
-
-                        # If R_ID provided, user wants ticks in terms of distance from the origin
-                        elif r_id := devc.get("r_id"):
-                            _fixed_dims = [0, 1, 2]
-                            _fixed_dims.remove(_devc_coords_idx[0])
-                            _fixed_dim_positions = [
-                                _devc_coords[idx * 2] for idx in _fixed_dims
-                            ]
-                            _axes_ticks = numpy.sqrt(
-                                _axes_ticks**2
-                                + sum(val**2 for val in _fixed_dim_positions)
-                            )
-                            _devc_coord_id = r_id
-
-                self._line_var_coords[_devc_id] = {
-                    "label": _devc_coord_id or _devc_coord_label,
-                    "ticks": list(_axes_ticks),
-                }
+            self._line_var_coords[_devc_id] = {
+                "label": _devc_coord_id or _devc_coord_label,
+                "ticks": list(_axes_ticks),
+            }
 
     def _log_parser(
         self, file_content: str, **__
@@ -398,18 +410,18 @@ class FDSRun(WrappedRun):
 
         return {}, _out_data
 
-    def _input_file_callback(self, data: typing.Dict, meta: typing.Dict):
+    def _input_file_callback(self, data: dict, meta: dict):
         self._input_dict = {k: v for k, v in data.items() if v}
-        (self.update_metadata({"input_file": self._input_dict}),)
+        self.update_metadata({"input_file": self._input_dict})
 
-    def _metrics_callback(self, data: typing.Dict, meta: typing.Dict):
+    def _metrics_callback(self, data: dict, meta: dict) -> None:
         """Log metrics extracted from a log file to Simvue.
 
         Parameters
         ----------
-        data : typing.Dict
+        data : dict
             Dictionary of data to log to Simvue as metrics
-        meta: typing.Dict
+        meta: dict
             Dictionary of metadata added by Multiparser about this data
 
         """
@@ -484,12 +496,12 @@ class FDSRun(WrappedRun):
 
         return {}, _output_metadata
 
-    def _ctrl_log_callback(self, data: typing.Dict, *_):
+    def _ctrl_log_callback(self, data: dict, *_) -> None:
         """Log metrics extracted from the CTRL log file to Simvue.
 
         Parameters
         ----------
-        data : typing.Dict
+        data : dict
             Dictionary of data from the latest line of the CTRL log file.
         *_
             Additional unused arguments
@@ -518,11 +530,13 @@ class FDSRun(WrappedRun):
 
         self.update_metadata({str(data["ID"]): state})
 
-    def _line_parser(self, input_file: str, **__):
+    def _line_parser(
+        self, input_file: str, **__
+    ) -> tuple[dict, dict[str, list[float]]]:
         df = pandas.read_csv(input_file, skiprows=1)
         return {}, df.to_dict(orient="list")
 
-    def _line_callback(self, data, meta):
+    def _line_callback(self, data, meta) -> None:
         # Generate devc to coord mapping if it doesnt exist:
         if not self._line_var_coords:
             self._map_line_var_coords()
@@ -531,18 +545,19 @@ class FDSRun(WrappedRun):
         _metric_data = {}
         # For each key, check if it is a DEVC device we can track
         for key, values in data.items():
-            if _axes := self._line_var_coords.get(key):
-                # Assign to grid if required
-                if key not in self._grids.keys():
-                    self.assign_metric_to_grid(
-                        metric_name=key,
-                        axes_ticks=[_axes["ticks"]],
-                        axes_labels=[_axes["label"]],
-                    )
-                metric = numpy.array(values)
-                metric = metric[~numpy.isnan(metric)]
-                if numpy.any(metric):
-                    _metric_data[key] = metric
+            if not (_axes := self._line_var_coords.get(key)):
+                continue
+            # Assign to grid if required
+            if key not in self._grids.keys():
+                self.assign_metric_to_grid(
+                    metric_name=key,
+                    axes_ticks=[_axes["ticks"]],
+                    axes_labels=[_axes["label"]],
+                )
+            metric = numpy.array(values)
+            metric = metric[~numpy.isnan(metric)]
+            if numpy.any(metric):
+                _metric_data[key] = metric
         if _metric_data:
             # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
             _metric_data["time"] = 1
@@ -815,13 +830,13 @@ class FDSRun(WrappedRun):
 
         """
         self.fds_input_file_path: pydantic.FilePath = None
-        self.workdir_path: typing.Union[str, pydantic.DirectoryPath] = None
-        self.upload_files: typing.List[str] = None
+        self.workdir_path: str | pydantic.DirectoryPath = None
+        self.upload_files: list[str] = None
         self.slice_parse_quantity: str | None = None
         self.slice_parse_interval: int = 60
         self.slice_parse_ignore_zeros: bool = False
-        self.ulimit: typing.Union[str, int] = None
-        self.fds_env_vars: typing.Dict[str, typing.Any] = None
+        self.ulimit: str | int = None
+        self.fds_env_vars: dict[str, typing.Any] = None
 
         # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
         self.upload_input_file: bool = True
@@ -831,7 +846,7 @@ class FDSRun(WrappedRun):
         self._step_tracker: dict = {}
         self._parse_time: float = datetime.now(timezone.utc).timestamp()
         self._activation_times: bool = False
-        self._activation_times_data: typing.Dict[str, float] = {}
+        self._activation_times_data: dict[str, float] = {}
         self._chid: str = ""
         self._results_prefix: str = ""
         self._loading_historic_run: bool = False
@@ -997,17 +1012,17 @@ class FDSRun(WrappedRun):
     def launch(
         self,
         fds_input_file_path: pydantic.FilePath,
-        workdir_path: typing.Union[str, pydantic.DirectoryPath] = None,
+        workdir_path: str | pydantic.DirectoryPath = None,
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_quantity: str | None = None,
         slice_parse_interval: int = 60,
         slice_parse_ignore_zeros: bool = False,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
-        fds_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        fds_env_vars: typing.Optional[dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
         num_processors: int = 1,
-        mpiexec_env_vars: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        mpiexec_env_vars: typing.Optional[dict[str, typing.Any]] = None,
     ):
         """Command to launch the FDS simulation and track it with Simvue.
 
@@ -1015,7 +1030,7 @@ class FDSRun(WrappedRun):
         ----------
         fds_input_file_path : pydantic.FilePath
             Path to the FDS input file to use in the simulation
-        workdir_path : typing.Union[str, pydantic.DirectoryPath], optional
+        workdir_path : str | pydantic.DirectoryPath, optional
             Path to a directory which you would like FDS to run in, by default None
             This is where FDS will generate the results from the simulation
             If a directory does not already exist at this path, it will be created
@@ -1036,13 +1051,13 @@ class FDSRun(WrappedRun):
             Whether to ignore values of zero in slices when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
-        fds_env_vars : typing.Optional[typing.Dict[str, typing.Any]], optional
+        fds_env_vars : typing.Optional[dict[str, typing.Any]], optional
             Environment variables to provide to FDS when executed, by default None
         run_in_parallel: bool, optional
             Whether to run the FDS simulation in parallel, by default False
         num_processors : int, optional
             The number of processors to run a parallel FDS job across, by default 1
-        mpiexec_env_vars : typing.Optional[typing.Dict[str, typing.Any]]
+        mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
         Raises
