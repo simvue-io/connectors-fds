@@ -322,7 +322,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
         run_folder=folder_setup, 
         parallel=parallel, 
         offline=offline, 
-        slice_var="INTEGRATED INTENSITY",
+        slice_var="TEMPERATURE",
         load=load
         )
     time.sleep(2)
@@ -376,36 +376,36 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     assert metrics["max_divergence.mesh.2"]["count"] > 0
     
     # Check metrics from slice
-    assert metrics["integrated_intensity.y.0_0.min"]["count"] > 0
-    assert metrics["integrated_intensity.y.0_0.max"]["count"] > 0
-    assert metrics["integrated_intensity.y.0_0.avg"]["count"] > 0
+    assert metrics["temperature.y.0_0.min"]["count"] > 0
+    assert metrics["temperature.y.0_0.max"]["count"] > 0
+    assert metrics["temperature.y.0_0.avg"]["count"] > 0
 
     _retrieved = client.get_metric_values(
         run_ids=[run_id],
         metric_names=[
-            "integrated_intensity.y.0_0.max",
-            "integrated_intensity.y.0_0.min",
-            "integrated_intensity.y.0_0.avg",
+            "temperature.y.0_0.max",
+            "temperature.y.0_0.min",
+            "temperature.y.0_0.avg",
         ],
         xaxis="time",
     )
-    _max = numpy.array(list(_retrieved["integrated_intensity.y.0_0.max"].values()))
-    _min = numpy.array(list(_retrieved["integrated_intensity.y.0_0.min"].values()))
-    _avg = numpy.array(list(_retrieved["integrated_intensity.y.0_0.avg"].values()))
+    _max = numpy.array(list(_retrieved["temperature.y.0_0.max"].values()))
+    _min = numpy.array(list(_retrieved["temperature.y.0_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["temperature.y.0_0.avg"].values()))
 
     # Check all max >= avg >= min
     assert numpy.all(_max >= _avg)
     assert numpy.all(_avg >= _min)
     assert numpy.all(_min > 0)
     
-    # From smokeview, min = 1.67033, max = 204.723
-    numpy.testing.assert_allclose(_max.max(), 204.723, atol=0.1)
-    numpy.testing.assert_allclose(_min.min(), 1.66951, atol=0.1)
+    # From smokeview, min = 18.5283, max = 49.4416
+    numpy.testing.assert_allclose(_max.max(), 49.4416, atol=0.1)
+    numpy.testing.assert_allclose(_min.min(), 18.5283, atol=0.1)
     
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/integrated_intensity.y.0_0/values?step=200",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_0/values?step=200",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",

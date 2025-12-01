@@ -1,7 +1,7 @@
 
  Fire Dynamics Simulator
 
- Current Date     : October 28, 2025  18:07:40
+ Current Date     : December  1, 2025  16:14:47
  Revision         : FDS-6.9.1-0-g889da6a-release
  Revision Date    : Sun Apr 7 17:05:06 2024 -0400
  Compiler         : Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.7.1 Build 20221019_000000
@@ -334,14 +334,16 @@
 
  Slice File Information, Mesh     1
 
-   1 Nodes:   0  40  10  10   0  30, Quantity: INTEGRATED INTENSITY
-   2 Nodes:   0  40  10  10   0  30, Quantity: water drops MPUV
+   1 Nodes:   0  40  10  10   0  30, Quantity: TEMPERATURE
+   2 Nodes:   0  40  10  10   0  30, Quantity: INTEGRATED INTENSITY
+   3 Nodes:   0  40  10  10   0  30, Quantity: water drops MPUV
 
 
  Slice File Information, Mesh     2
 
-   1 Nodes:   0  40   0   0   0  30, Quantity: INTEGRATED INTENSITY
-   2 Nodes:   0  40   0   0   0  30, Quantity: water drops MPUV
+   1 Nodes:   0  40   0   0   0  30, Quantity: TEMPERATURE
+   2 Nodes:   0  40   0   0   0  30, Quantity: INTEGRATED INTENSITY
+   3 Nodes:   0  40   0   0   0  30, Quantity: water drops MPUV
 
 
  Radiation Model Information
@@ -381,7 +383,7 @@
 
  Run Time Diagnostics
 
-       Time Step        1   October 28, 2025  18:07:40
+       Time Step        1   December  1, 2025  16:14:47
        Step Size:    0.500E-01 s, Total Time:      0.050 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.12E-01 on Mesh 1 at (3,10,16)
@@ -400,7 +402,7 @@
        Max VN number:   0.87E-02 at (40,4,15)
        Radiation Loss to Boundaries:         9.915 kW
  
-       Time Step        2   October 28, 2025  18:07:41
+       Time Step        2   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:      0.100 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.10E-01 on Mesh 1 at (1,10,16)
@@ -419,7 +421,7 @@
        Max VN number:   0.88E-02 at (40,4,15)
        Radiation Loss to Boundaries:         9.914 kW
  
-       Time Step        3   October 28, 2025  18:07:41
+       Time Step        3   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.15 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.96E-02 on Mesh 1 at (1,10,16)
@@ -438,7 +440,7 @@
        Max VN number:   0.88E-02 at (40,4,15)
        Radiation Loss to Boundaries:         9.913 kW
  
-       Time Step        4   October 28, 2025  18:07:41
+       Time Step        4   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.20 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.60E-02 on Mesh 2 at (1,0,16)
@@ -457,7 +459,7 @@
        Max VN number:   0.88E-02 at (40,4,15)
        Radiation Loss to Boundaries:         9.912 kW
  
-       Time Step        5   October 28, 2025  18:07:41
+       Time Step        5   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.25 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.36E-02 on Mesh 1 at (4,10,11)
@@ -476,7 +478,7 @@
        Max VN number:   0.87E-02 at (40,4,15)
        Radiation Loss to Boundaries:         9.911 kW
  
-       Time Step        6   October 28, 2025  18:07:41
+       Time Step        6   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.30 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.59E-02 on Mesh 1 at (1,10,12)
@@ -495,7 +497,7 @@
        Max VN number:   0.11E-01 at (1,2,17)
        Radiation Loss to Boundaries:         9.910 kW
  
-       Time Step        7   October 28, 2025  18:07:41
+       Time Step        7   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.35 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.95E-02 on Mesh 1 at (1,10,14)
@@ -514,7 +516,7 @@
        Max VN number:   0.15E-01 at (1,2,20)
        Radiation Loss to Boundaries:         9.909 kW
  
-       Time Step        8   October 28, 2025  18:07:41
+       Time Step        8   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.40 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.12E-01 on Mesh 1 at (1,10,14)
@@ -533,7 +535,7 @@
        Max VN number:   0.21E-01 at (1,2,20)
        Radiation Loss to Boundaries:         9.908 kW
  
-       Time Step        9   October 28, 2025  18:07:41
+       Time Step        9   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.45 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.12E-01 on Mesh 1 at (1,10,14)
@@ -552,7 +554,7 @@
        Max VN number:   0.26E-01 at (1,2,20)
        Radiation Loss to Boundaries:         9.907 kW
  
-       Time Step       10   October 28, 2025  18:07:41
+       Time Step       10   December  1, 2025  16:14:48
        Step Size:    0.500E-01 s, Total Time:       0.50 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.10E-01 on Mesh 1 at (1,10,14)
@@ -571,7 +573,7 @@
        Max VN number:   0.30E-01 at (1,2,20)
        Radiation Loss to Boundaries:         9.906 kW
  
-       Time Step       20   October 28, 2025  18:07:42
+       Time Step       20   December  1, 2025  16:14:49
        Step Size:    0.500E-01 s, Total Time:       1.00 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.59E-02 on Mesh 1 at (1,10,15)
@@ -590,7 +592,7 @@
        Max VN number:   0.19E-01 at (1,4,13)
        Radiation Loss to Boundaries:         9.897 kW
  
-       Time Step       30   October 28, 2025  18:07:44
+       Time Step       30   December  1, 2025  16:14:50
        Step Size:    0.500E-01 s, Total Time:       1.50 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.77E-02 on Mesh 2 at (1,0,21)
@@ -609,7 +611,7 @@
        Max VN number:   0.37E-01 at (1,1,10)
        Radiation Loss to Boundaries:         9.888 kW
  
-       Time Step       40   October 28, 2025  18:07:45
+       Time Step       40   December  1, 2025  16:14:51
        Step Size:    0.500E-01 s, Total Time:       2.00 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.25E-01 on Mesh 1 at (1,10,22)
@@ -628,7 +630,7 @@
        Max VN number:   0.62E-01 at (1,5,21)
        Radiation Loss to Boundaries:         9.880 kW
  
-       Time Step       50   October 28, 2025  18:07:46
+       Time Step       50   December  1, 2025  16:14:52
        Step Size:    0.500E-01 s, Total Time:       2.50 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.32E-01 on Mesh 1 at (1,10,23)
@@ -647,7 +649,7 @@
        Max VN number:   0.78E-01 at (1,6,14)
        Radiation Loss to Boundaries:         9.869 kW
  
-       Time Step       60   October 28, 2025  18:07:47
+       Time Step       60   December  1, 2025  16:14:53
        Step Size:    0.500E-01 s, Total Time:       3.00 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.47E-01 on Mesh 1 at (1,10,21)
@@ -666,7 +668,7 @@
        Max VN number:   0.94E-01 at (1,5,25)
        Radiation Loss to Boundaries:         9.862 kW
  
-       Time Step       70   October 28, 2025  18:07:48
+       Time Step       70   December  1, 2025  16:14:54
        Step Size:    0.500E-01 s, Total Time:       3.50 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.40E-01 on Mesh 1 at (1,10,26)
@@ -685,7 +687,7 @@
        Max VN number:   0.11E+00 at (2,6,28)
        Radiation Loss to Boundaries:         9.857 kW
  
-       Time Step       80   October 28, 2025  18:07:49
+       Time Step       80   December  1, 2025  16:14:55
        Step Size:    0.500E-01 s, Total Time:       4.00 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.29E-01 on Mesh 1 at (1,10,27)
@@ -704,7 +706,7 @@
        Max VN number:   0.96E-01 at (2,6,30)
        Radiation Loss to Boundaries:         9.840 kW
  
-       Time Step       90   October 28, 2025  18:07:50
+       Time Step       90   December  1, 2025  16:14:56
        Step Size:    0.500E-01 s, Total Time:       4.50 s
        Pressure Iterations: 3
        Maximum Velocity Error:  0.39E-01 on Mesh 2 at (1,0,29)
@@ -725,7 +727,7 @@
        No. of Lagrangian Particles:  1982
        Radiation Loss to Boundaries:         3.091 kW
  
-       Time Step      100   October 28, 2025  18:07:51
+       Time Step      100   December  1, 2025  16:14:57
        Step Size:    0.500E-01 s, Total Time:       5.00 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.43E-01 on Mesh 1 at (21,10,20)
@@ -746,7 +748,7 @@
        No. of Lagrangian Particles:  4125
        Radiation Loss to Boundaries:        -0.038 kW
  
-       Time Step      200   October 28, 2025  18:08:04
+       Time Step      200   December  1, 2025  16:15:09
        Step Size:    0.500E-01 s, Total Time:       9.72 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.33E-01 on Mesh 1 at (20,10,22)
@@ -767,7 +769,7 @@
        No. of Lagrangian Particles:  4912
        Radiation Loss to Boundaries:         8.086 kW
  
-       Time Step      206   October 28, 2025  18:08:05
+       Time Step      206   December  1, 2025  16:15:10
        Step Size:    0.296E-01 s, Total Time:      10.00 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.32E-01 on Mesh 1 at (21,10,21)
@@ -795,7 +797,7 @@
          1    null                      T           4.050
 
 
- Time Stepping Wall Clock Time (s):       24.941
- Total Elapsed Wall Clock Time (s):       28.362
+ Time Stepping Wall Clock Time (s):       22.865
+ Total Elapsed Wall Clock Time (s):       26.098
 
 STOP: FDS completed successfully (CHID: BRE_Spray_A_1)

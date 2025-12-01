@@ -5,7 +5,7 @@ FDSVERSION
 FDS-6.9.1-0-g889da6a-release
 
 INPF
- BRE_Spray_A_1.fds
+ ./input.fds
 
 REVISION
 Revisio                                                                                                                                                                                                                                                        
@@ -487,11 +487,16 @@ XYZ
  BRE_Spray_A_1_1.xyz
 SLCF     1 # STRUCTURED &     0    40    10    10     0    30 !      1      0
  BRE_Spray_A_1_1_1.sf
+ TEMPERATURE
+ temp
+ C
+SLCF     1 # STRUCTURED &     0    40    10    10     0    30 !      2      0
+ BRE_Spray_A_1_1_2.sf
  INTEGRATED INTENSITY
  U
  kW/m2
-SLCF     1 # STRUCTURED &     0    40    10    10     0    30 !      2      0
- BRE_Spray_A_1_1_2.sf
+SLCF     1 # STRUCTURED &     0    40    10    10     0    30 !      3      0
+ BRE_Spray_A_1_1_3.sf
  water drops MPUV
  mpuv
  kg/m3
@@ -511,11 +516,16 @@ XYZ
  BRE_Spray_A_1_2.xyz
 SLCF     2 # STRUCTURED &     0    40     0     0     0    30 !      1      0
  BRE_Spray_A_1_2_1.sf
+ TEMPERATURE
+ temp
+ C
+SLCF     2 # STRUCTURED &     0    40     0     0     0    30 !      2      0
+ BRE_Spray_A_1_2_2.sf
  INTEGRATED INTENSITY
  U
  kW/m2
-SLCF     2 # STRUCTURED &     0    40     0     0     0    30 !      2      0
- BRE_Spray_A_1_2_2.sf
+SLCF     2 # STRUCTURED &     0    40     0     0     0    30 !      3      0
+ BRE_Spray_A_1_2_3.sf
  water drops MPUV
  mpuv
  kg/m3

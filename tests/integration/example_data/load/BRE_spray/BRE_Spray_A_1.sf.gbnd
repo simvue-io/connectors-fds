@@ -1,4 +1,6 @@
-BRE_Spray_A_1_1_1.sf  1.670301 117.714996 ! U
-BRE_Spray_A_1_1_2.sf  0.000000 0.025056 ! mpuv
-BRE_Spray_A_1_2_1.sf  1.670333 204.723312 ! U
-BRE_Spray_A_1_2_2.sf  0.000000 0.027285 ! mpuv
+BRE_Spray_A_1_1_1.sf  18.528271 49.441631 ! temp
+BRE_Spray_A_1_1_2.sf  1.670301 117.714996 ! U
+BRE_Spray_A_1_1_3.sf  0.000000 0.025056 ! mpuv
+BRE_Spray_A_1_2_1.sf  18.528275 49.441628 ! temp
+BRE_Spray_A_1_2_2.sf  1.670333 204.723297 ! U
+BRE_Spray_A_1_2_3.sf  0.000000 0.027285 ! mpuv
