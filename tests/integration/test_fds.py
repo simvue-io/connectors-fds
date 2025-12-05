@@ -209,7 +209,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=4",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",
@@ -405,7 +405,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_0/values?step=200",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_0/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",
@@ -542,7 +542,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_1/values?step=10",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_1/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",

@@ -15,10 +15,10 @@ import datetime
 def write_to_log(self, example_file, temp_logfile):
     for line in example_file:
         temp_logfile.write(line)
-        time.sleep(0.1)
+        time.sleep(0.2)
     temp_logfile.flush()
-    time.sleep(1)
     temp_logfile.close()
+    time.sleep(2)
     self._trigger.set()
     return
 
@@ -60,7 +60,6 @@ def test_fds_devc_parser(folder_setup, load):
     temp_dir = tempfile.TemporaryDirectory(prefix="fds_test")
     with FDSRun() as run:
         run.config(disable_resources_metrics=True)
-        run._dispatch_mode = "direct"
         run.init(name=name, folder=folder_setup)
         run_id = run.id
         if load:
@@ -111,7 +110,6 @@ def test_fds_hrr_parser(folder_setup, load):
     temp_dir = tempfile.TemporaryDirectory(prefix="fds_test")
     with FDSRun() as run:
         run.config(disable_resources_metrics=True)
-        run._dispatch_mode = "direct"
         run.init(name=name, folder=folder_setup)
         run_id = run.id
         if load:
@@ -147,7 +145,7 @@ def test_fds_hrr_parser(folder_setup, load):
     actual_metric_names.sort()
     actual_metric_last_values = [value["last"] for value in metrics.values()]
     actual_metric_last_values.sort()
-        
+
     assert expected_metric_names == actual_metric_names
     assert expected_metric_last_values == actual_metric_last_values
     
@@ -162,7 +160,6 @@ def test_fds_ctrl_parser(folder_setup, load):
     temp_dir = tempfile.TemporaryDirectory(prefix="fds_test")
     with FDSRun() as run:
         run.config(disable_resources_metrics=True)
-        run._dispatch_mode = "direct"
         run.init(name=name,folder=folder_setup)
         run_id = run.id
         if load:

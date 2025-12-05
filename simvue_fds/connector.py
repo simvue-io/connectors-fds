@@ -272,9 +272,6 @@ class FDSRun(WrappedRun):
 
             elif len(_devc_coords_idx) > 1:
                 # Not varying in 1D, currently not supported # TODO
-                logger.warning(
-                    f"Multi-dimensional DEVC device '{_devc_id}' detected - these are currently not supported and will be ignored."
-                )
                 continue
             _devc_coord_label = _labels[_devc_coords_idx[0]]
             _devc_coord_id = devc.get(f"{_devc_coord_label}_id")
