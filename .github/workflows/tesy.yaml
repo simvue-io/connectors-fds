@@ -19,4 +19,4 @@ jobs:
         with:
           type: 'zip'
           filename: 'example_results.zip'
-          path: '../examples/example_results'
+          path: 'examples/example_results'
