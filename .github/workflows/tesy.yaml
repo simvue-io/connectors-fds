@@ -11,7 +11,7 @@ jobs:
           pwd
           ls
           ls ..
-          ls -R ../examples
+          ls
 
       - name: Create a Zip of example results for docs example
         uses: thedoctor0/zip-release@0.7.5
