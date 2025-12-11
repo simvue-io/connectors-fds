@@ -9,11 +9,11 @@ jobs:
       - name: List files
         run: |
           pwd
-          ls -R examples
+          ls -R ../examples
 
       - name: Create a Zip of example results for docs example
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'zip'
           filename: 'example_results.zip'
-          path: 'examples/example_results'
+          path: '../examples/example_results'
