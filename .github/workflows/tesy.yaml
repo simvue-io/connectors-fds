@@ -1,0 +1,22 @@
+name: Test
+on:
+  workflow_dispatch:
+jobs:
+  upload_example_zip:
+    runs-on: ubuntu-latest
+    name: Upload example results zip
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: List files
+        run: |
+          pwd
+          ls
+          ls ..
+
+      - name: Create a Zip of example results for docs example
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'zip'
+          filename: 'example_results.zip'
+          path: 'examples/example_results'
