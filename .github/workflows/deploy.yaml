@@ -114,6 +114,14 @@ jobs:
           gh release upload
           '${{ github.ref_name }}' dist/**
           --repo '${{ github.repository }}'
+  upload_example_zip:
+    runs-on: ubuntu-latest
+    name: Upload example results zip
+    needs:
+      - github-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Create a Zip of example results for docs example
         uses: thedoctor0/zip-release@0.7.5
         with:
@@ -126,6 +134,7 @@ jobs:
           artifacts: "example_results.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
   publish_to_docker_registry:
+    name: Publish new image to Docker Registry
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:

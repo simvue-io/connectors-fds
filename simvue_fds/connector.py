@@ -872,7 +872,7 @@ class FDSRun(WrappedRun):
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
             self._trigger.set()
-            if "ERROR" in std_err:
+            if "ERROR" in std_err or status_code != 0:
                 click.secho(
                     f"[simvue] Run failed - FDS encountered an error: {std_err}",
                     fg="red" if self._term_color else None,
@@ -905,7 +905,6 @@ class FDSRun(WrappedRun):
             command += [f"{fds_bin}", str(self.fds_input_file_path)]
 
         command += format_command_env_vars(self.fds_env_vars)
-
         self.add_process(
             "fds_simulation",
             *command,
