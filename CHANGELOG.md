@@ -1,5 +1,8 @@
 # Change log
 
+## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
+* Add zip of example results to releas artifacts
+
 ## [v1.3.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
 * Fixes bug with segfaulting FDS simulations hanging
 
