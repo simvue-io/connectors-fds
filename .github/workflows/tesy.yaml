@@ -9,6 +9,8 @@ jobs:
       - name: List files
         run: |
           pwd
+          ls
+          ls ..
           ls -R ../examples
 
       - name: Create a Zip of example results for docs example
