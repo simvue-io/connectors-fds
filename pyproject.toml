@@ -45,6 +45,7 @@ documentation = "https://docs.simvue.io"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
+pytest-xdist = "^3.8.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

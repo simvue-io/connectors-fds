@@ -15,10 +15,10 @@ import datetime
 def write_to_log(self, example_file, temp_logfile):
     for line in example_file:
         temp_logfile.write(line)
-        time.sleep(0.1)
+        time.sleep(0.2)
     temp_logfile.flush()
-    time.sleep(1)
     temp_logfile.close()
+    time.sleep(2)
     self._trigger.set()
     return
 
@@ -145,7 +145,7 @@ def test_fds_hrr_parser(folder_setup, load):
     actual_metric_names.sort()
     actual_metric_last_values = [value["last"] for value in metrics.values()]
     actual_metric_last_values.sort()
-        
+
     assert expected_metric_names == actual_metric_names
     assert expected_metric_last_values == actual_metric_last_values
     
@@ -173,16 +173,15 @@ def test_fds_ctrl_parser(folder_setup, load):
                 fds_input_file_path = pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
                 workdir_path = temp_dir.name,
             )
-    # Allow time for queued dispatcher to send final updates
-    time.sleep(1)
+
     client = simvue.Client()
     
     # Check DEVC and CTRL events have been correctly added to events log
     events = [event['message'] for event in client.get_events(run_id)]
     assert "DEVC 'Ceiling_Thermocouple.Back_Right' has been set to 'True' at time 4.25244E+01s, when it reached a value of 2.00162E+02C." in events
-    assert "CTRL 'KILL_TEMP_TOO_HIGH' has been set to 'True' at time 4.25244E+01s" in events
+    assert "CTRL 'TEMP_TOO_HIGH' has been set to 'True' at time 4.25244E+01s" in events
     
     # Check metadata has been added correctly
     metadata = client.get_run(run_id).metadata
     assert metadata.get('Ceiling_Thermocouple.Back_Right') == True
-    assert metadata.get('KILL_TEMP_TOO_HIGH') == True
+    assert metadata.get('TEMP_TOO_HIGH') == True

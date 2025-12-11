@@ -5,7 +5,7 @@ FDSVERSION
 FDS-6.9.1-0-g889da6a-release
 
 INPF
- /home/wk9874/Documents/simvue/connectors-fds/examples/activate_vents.fds
+ supply_exhaust_vents.fds
 
 REVISION
 Revisio                                                                                                                                                                                                                                                        
@@ -26,13 +26,13 @@ CSVF
  supply_exhaust_vents_devc.csv
 
 NMESHES
-  2
+  1
 
 TIMES
-          0.000         10.000
+          0.000         60.000
 
 VIEWTIMES
-           0.00          10.00    10
+           0.00          60.00    60
 
 ALBEDO
       0.30000
@@ -125,22 +125,18 @@ SURFACE
  null                                                        
 
 OUTLINE
-  16
+  12
         0.0000        0.0000        0.0000        0.0000        0.0000        3.0000
-        3.0000        0.0000        0.0000        3.0000        0.0000        3.0000
         0.0000        4.0000        0.0000        0.0000        4.0000        3.0000
+        3.0000        0.0000        0.0000        3.0000        0.0000        3.0000
         3.0000        4.0000        0.0000        3.0000        4.0000        3.0000
-        0.0000        0.0000        0.0000        0.0000        2.0000        0.0000
-        0.0000        0.0000        3.0000        0.0000        2.0000        3.0000
-        3.0000        0.0000        0.0000        3.0000        2.0000        0.0000
-        3.0000        0.0000        3.0000        3.0000        2.0000        3.0000
-        0.0000        2.0000        0.0000        0.0000        4.0000        0.0000
-        0.0000        2.0000        3.0000        0.0000        4.0000        3.0000
-        3.0000        2.0000        0.0000        3.0000        4.0000        0.0000
-        3.0000        2.0000        3.0000        3.0000        4.0000        3.0000
+        0.0000        0.0000        0.0000        0.0000        4.0000        0.0000
+        0.0000        0.0000        3.0000        0.0000        4.0000        3.0000
+        3.0000        0.0000        0.0000        3.0000        4.0000        0.0000
+        3.0000        0.0000        3.0000        3.0000        4.0000        3.0000
         0.0000        0.0000        0.0000        3.0000        0.0000        0.0000
-        0.0000        0.0000        3.0000        3.0000        0.0000        3.0000
         0.0000        4.0000        0.0000        3.0000        4.0000        0.0000
+        0.0000        0.0000        3.0000        3.0000        0.0000        3.0000
         0.0000        4.0000        3.0000        3.0000        4.0000        3.0000
 
 TOFFSET
@@ -170,11 +166,11 @@ DEVICE
 
 DEVICE
  flow_volume_supply % U-VELOCITY                                                  
-       0.00100       1.99900       0.40000       0.00000       0.00000      -1.00000  0  0 #        0.00000       1.00000       0.20000       0.00000       3.00000       0.60000 % null
+       0.00100       2.00000       0.40000       0.00000       0.00000      -1.00000  0  0 #        0.00000       1.00000       0.20000       0.00000       3.00000       0.60000 % null
 
 DEVICE
  flow_volume_exhaust % U-VELOCITY                                                  
-       2.99900       1.99900       2.80000       0.00000       0.00000      -1.00000  0  0 #        3.00000       1.50000       2.60000       3.00000       2.50000       3.00000 % null
+       2.99900       2.00000       2.80000       0.00000       0.00000      -1.00000  0  0 #        3.00000       1.50000       2.60000       3.00000       2.50000       3.00000 % null
 
 DEVICE
  eye_level_visibility % VISIBILITY                                                  
@@ -183,6 +179,406 @@ DEVICE
 DEVICE
  air_temperature % TEMPERATURE                                                 
        1.50000       0.00100       1.50000       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.00100       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.03030       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.06061       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.09091       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.12121       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.15152       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.18182       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.21212       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.24242       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.27273       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.30303       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.33333       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.36364       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.39394       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.42424       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.45455       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.48485       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.51515       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.54545       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.57576       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.60606       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.63636       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.66667       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.69697       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.72727       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.75758       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.78788       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.81818       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.84848       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.87879       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.90909       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.93939       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       0.96970       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.00000       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.03030       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.06061       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.09091       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.12121       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.15152       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.18182       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.21212       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.24242       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.27273       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.30303       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.33333       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.36364       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.39394       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.42424       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.45455       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.48485       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.51515       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.54545       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.57576       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.60606       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.63636       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.66667       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.69697       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.72727       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.75758       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.78788       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.81818       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.84848       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.87879       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.90909       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.93939       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       1.96970       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.00000       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.03030       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.06061       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.09091       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.12121       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.15152       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.18182       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.21212       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.24242       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.27273       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.30303       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.33333       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.36364       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.39394       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.42424       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.45455       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.48485       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.51515       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.54545       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.57576       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.60606       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.63636       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.66667       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.69697       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.72727       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.75758       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.78788       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.81818       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.84848       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.87879       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.90909       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.93939       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.96970       0.00000       0.00000      -1.00000  0  0 % null
+
+DEVICE
+ visibility_time_averaged % VISIBILITY                                                  
+       1.50000       0.00100       2.99900       0.00000       0.00000      -1.00000  0  0 % null
 
 VENTORIG
  2
@@ -193,10 +589,10 @@ OFFSET
       0.00000      0.00000      0.00000
 
 GRID   MESH_0000001
-   30   20   30    0
+   30   40   30    0
 
 PDIM
-       0.00000       3.00000       0.00000       2.00000       0.00000       3.00000       0.00000       0.00000       0.00000
+       0.00000       3.00000       0.00000       4.00000       0.00000       3.00000       0.00000       0.00000       0.00000
 
 TRNX
     0
@@ -255,6 +651,26 @@ TRNY
    18       1.80000
    19       1.90000
    20       2.00000
+   21       2.10000
+   22       2.20000
+   23       2.30000
+   24       2.40000
+   25       2.50000
+   26       2.60000
+   27       2.70000
+   28       2.80000
+   29       2.90000
+   30       3.00000
+   31       3.10000
+   32       3.20000
+   33       3.30000
+   34       3.40000
+   35       3.50000
+   36       3.60000
+   37       3.70000
+   38       3.80000
+   39       3.90000
+   40       4.00000
 
 TRNZ
     0
@@ -292,172 +708,41 @@ TRNZ
 
 OBST
            1
-       1.30000       1.70000       1.80000       2.00000       0.00000       0.50000      1   1   1   1   1   1   1  ! OBST-1
-   13   17   18   20    0    5   -3   -1      1.00000      0.00000      0.00000      1.00000
+       1.30000       1.70000       1.80000       2.20000       0.00000       0.50000      1   1   1   1   1   1   1  ! OBST-1
+   13   17   18   22    0    5   -3   -1      1.00000      0.00000      0.00000      1.00000
 
 VENT
-   12   10
-       0.00000       0.00000       1.00000       2.00000       0.20000       0.60000     1   2    -999.00000    -999.00000    -999.00000
-       3.00000       3.00000       1.50000       2.00000       2.60000       3.00000     2   3    -999.00000    -999.00000    -999.00000
+   15   13
+       0.00000       0.00000       1.00000       3.00000       0.20000       0.60000     1   2    -999.00000    -999.00000    -999.00000
+       3.00000       3.00000       1.50000       2.50000       2.60000       3.00000     2   3    -999.00000    -999.00000    -999.00000
        0.00000       0.00000       0.00000       1.00000       0.00000       3.00000     3   0
-       0.00000       0.00000       1.00000       2.00000       0.00000       0.20000     4   0
-       0.00000       0.00000       1.00000       2.00000       0.20000       0.60000     5   2
-       0.00000       0.00000       1.00000       2.00000       0.60000       3.00000     6   0
-       3.00000       3.00000       0.00000       1.50000       0.00000       3.00000     7   0
-       3.00000       3.00000       1.50000       2.00000       0.00000       2.60000     8   0
-       3.00000       3.00000       1.50000       2.00000       2.60000       3.00000     9   3
-       0.00000       3.00000       0.00000       0.00000       0.00000       3.00000    10   0
-       0.00000       3.00000       0.00000       2.00000       0.00000       0.00000    11   0
-       0.00000       3.00000       0.00000       2.00000       3.00000       3.00000    12   0
-    0    0   10   20    2    6    8   -2 !     1
-   30   30   15   20   26   30    8   -2 !    -1
+       0.00000       0.00000       1.00000       4.00000       0.00000       0.20000     4   0
+       0.00000       0.00000       1.00000       3.00000       0.20000       0.60000     5   2
+       0.00000       0.00000       3.00000       4.00000       0.20000       3.00000     6   0
+       0.00000       0.00000       1.00000       3.00000       0.60000       3.00000     7   0
+       3.00000       3.00000       0.00000       1.50000       0.00000       3.00000     8   0
+       3.00000       3.00000       1.50000       4.00000       0.00000       2.60000     9   0
+       3.00000       3.00000       1.50000       2.50000       2.60000       3.00000    10   3
+       3.00000       3.00000       2.50000       4.00000       2.60000       3.00000    11   0
+       0.00000       3.00000       0.00000       0.00000       0.00000       3.00000    12   0
+       0.00000       3.00000       4.00000       4.00000       0.00000       3.00000    13   0
+       0.00000       3.00000       0.00000       4.00000       0.00000       0.00000    14   0
+       0.00000       3.00000       0.00000       4.00000       3.00000       3.00000    15   0
+    0    0   10   30    2    6    8   -2 !     1
+   30   30   15   25   26   30    8   -2 !    -1
     0    0    0   10    0   30   99    0
-    0    0   10   20    0    2   99    0
-    0    0   10   20    2    6   99    0
-    0    0   10   20    6   30   99    0
+    0    0   10   40    0    2   99    0
+    0    0   10   30    2    6   99    0
+    0    0   30   40    2   30   99    0
+    0    0   10   30    6   30   99    0
    30   30    0   15    0   30   99    0
-   30   30   15   20    0   26   99    0
-   30   30   15   20   26   30   99    0
+   30   30   15   40    0   26   99    0
+   30   30   15   25   26   30   99    0
+   30   30   25   40   26   30   99    0
     0   30    0    0    0   30   99    0
-    0   30    0   20    0    0   99    0
-    0   30    0   20   30   30   99    0
-
-CVENT
-    0
-
-
-OFFSET
-      0.00000      0.00000      0.00000
-
-GRID   MESH_0000002
-   30   20   30    0
-
-PDIM
-       0.00000       3.00000       2.00000       4.00000       0.00000       3.00000       0.00000       0.00000       0.00000
-
-TRNX
-    0
-    0       0.00000
-    1       0.10000
-    2       0.20000
-    3       0.30000
-    4       0.40000
-    5       0.50000
-    6       0.60000
-    7       0.70000
-    8       0.80000
-    9       0.90000
-   10       1.00000
-   11       1.10000
-   12       1.20000
-   13       1.30000
-   14       1.40000
-   15       1.50000
-   16       1.60000
-   17       1.70000
-   18       1.80000
-   19       1.90000
-   20       2.00000
-   21       2.10000
-   22       2.20000
-   23       2.30000
-   24       2.40000
-   25       2.50000
-   26       2.60000
-   27       2.70000
-   28       2.80000
-   29       2.90000
-   30       3.00000
-
-TRNY
-    0
-    0       2.00000
-    1       2.10000
-    2       2.20000
-    3       2.30000
-    4       2.40000
-    5       2.50000
-    6       2.60000
-    7       2.70000
-    8       2.80000
-    9       2.90000
-   10       3.00000
-   11       3.10000
-   12       3.20000
-   13       3.30000
-   14       3.40000
-   15       3.50000
-   16       3.60000
-   17       3.70000
-   18       3.80000
-   19       3.90000
-   20       4.00000
-
-TRNZ
-    0
-    0       0.00000
-    1       0.10000
-    2       0.20000
-    3       0.30000
-    4       0.40000
-    5       0.50000
-    6       0.60000
-    7       0.70000
-    8       0.80000
-    9       0.90000
-   10       1.00000
-   11       1.10000
-   12       1.20000
-   13       1.30000
-   14       1.40000
-   15       1.50000
-   16       1.60000
-   17       1.70000
-   18       1.80000
-   19       1.90000
-   20       2.00000
-   21       2.10000
-   22       2.20000
-   23       2.30000
-   24       2.40000
-   25       2.50000
-   26       2.60000
-   27       2.70000
-   28       2.80000
-   29       2.90000
-   30       3.00000
-
-OBST
-           1
-       1.30000       1.70000       2.00000       2.20000       0.00000       0.50000      1   1   1   1   1   1   1  ! OBST-1
-   13   17    0    2    0    5   -3   -1      1.00000      0.00000      0.00000      1.00000
-
-VENT
-   12   10
-       0.00000       0.00000       2.00000       3.00000       0.20000       0.60000     1   2    -999.00000    -999.00000    -999.00000
-       3.00000       3.00000       2.00000       2.50000       2.60000       3.00000     2   3    -999.00000    -999.00000    -999.00000
-       0.00000       0.00000       2.00000       4.00000       0.00000       0.20000     3   0
-       0.00000       0.00000       2.00000       3.00000       0.20000       0.60000     4   2
-       0.00000       0.00000       3.00000       4.00000       0.20000       3.00000     5   0
-       0.00000       0.00000       2.00000       3.00000       0.60000       3.00000     6   0
-       3.00000       3.00000       2.00000       4.00000       0.00000       2.60000     7   0
-       3.00000       3.00000       2.00000       2.50000       2.60000       3.00000     8   3
-       3.00000       3.00000       2.50000       4.00000       2.60000       3.00000     9   0
-       0.00000       3.00000       4.00000       4.00000       0.00000       3.00000    10   0
-       0.00000       3.00000       2.00000       4.00000       0.00000       0.00000    11   0
-       0.00000       3.00000       2.00000       4.00000       3.00000       3.00000    12   0
-    0    0    0   10    2    6    8   -2 !     1
-   30   30    0    5   26   30    8   -2 !    -1
-    0    0    0   20    0    2   99    0
-    0    0    0   10    2    6   99    0
-    0    0   10   20    2   30   99    0
-    0    0    0   10    6   30   99    0
-   30   30    0   20    0   26   99    0
-   30   30    0    5   26   30   99    0
-   30   30    5   20   26   30   99    0
-    0   30   20   20    0   30   99    0
-    0   30    0   20    0    0   99    0
-    0   30    0   20   30   30   99    0
+    0   30   40   40    0   30   99    0
+    0   30    0   40    0    0   99    0
+    0   30    0   40   30   30   99    0
 
 CVENT
     0
@@ -504,6 +789,11 @@ SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      2      0
  TEMPERATURE
  temp
  C
+SLCF     1 # STRUCTURED &     0    30     0    40    20    20 !      3      0
+ supply_exhaust_vents_1_6.sf
+ SOOT VISIBILITY
+ VIS_C
+ m
 DEVICE_ACT     timer
      1      0.00     0
 DEVICE_ACT     flow_volume_supply
@@ -514,63 +804,213 @@ DEVICE_ACT     eye_level_visibility
      4      0.00     0
 DEVICE_ACT     air_temperature
      5      0.00     0
+DEVICE_ACT     visibility_time_averaged
+     6      0.00     0
+DEVICE_ACT     visibility_time_averaged
+     7      0.00     0
+DEVICE_ACT     visibility_time_averaged
+     8      0.00     0
+DEVICE_ACT     visibility_time_averaged
+     9      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    10      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    11      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    12      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    13      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    14      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    15      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    16      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    17      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    18      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    19      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    20      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    21      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    22      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    23      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    24      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    25      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    26      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    27      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    28      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    29      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    30      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    31      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    32      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    33      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    34      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    35      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    36      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    37      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    38      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    39      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    40      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    41      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    42      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    43      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    44      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    45      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    46      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    47      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    48      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    49      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    50      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    51      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    52      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    53      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    54      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    55      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    56      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    57      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    58      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    59      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    60      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    61      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    62      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    63      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    64      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    65      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    66      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    67      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    68      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    69      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    70      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    71      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    72      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    73      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    74      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    75      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    76      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    77      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    78      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    79      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    80      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    81      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    82      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    83      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    84      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    85      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    86      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    87      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    88      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    89      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    90      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    91      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    92      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    93      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    94      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    95      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    96      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    97      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    98      0.00     0
+DEVICE_ACT     visibility_time_averaged
+    99      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   100      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   101      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   102      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   103      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   104      0.00     0
+DEVICE_ACT     visibility_time_averaged
+   105      0.00     0
 CLOSE_VENT    1
      1      0.00
 CLOSE_VENT    1
-     2      0.00
-XYZ
- supply_exhaust_vents_2.xyz
-SMOKF3D     2   8700.000
- supply_exhaust_vents_2_1.s3d
- SOOT DENSITY
- rho_C
- kg/m3
-SMOKF3D     2      0.000
- supply_exhaust_vents_2_2.s3d
- HRRPUV
- hrrpuv
- kW/m3
-SMOKF3D     2      0.000
- supply_exhaust_vents_2_3.s3d
- TEMPERATURE
- temp
- C
-SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      1      0
- supply_exhaust_vents_2_1.sf
- VELOCITY
- vel
- m/s
-SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      1      0
- supply_exhaust_vents_2_2.sf
- U-VELOCITY
- U-VEL
- m/s
-SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      1      0
- supply_exhaust_vents_2_3.sf
- V-VELOCITY
- V-VEL
- m/s
-SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      1      0
- supply_exhaust_vents_2_4.sf
- W-VELOCITY
- W-VEL
- m/s
-SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      2      0
- supply_exhaust_vents_2_5.sf
- TEMPERATURE
- temp
- C
-CLOSE_VENT    2
-     1      0.00
-CLOSE_VENT    2
      2      0.00
 DEVICE_ACT     timer
-     1      2.00     1
+     1     20.00     1
 OPEN_VENT     1
-     1      2.02
+     1     20.02
 OPEN_VENT     1
-     2      2.02
-OPEN_VENT     2
-     1      2.02
-OPEN_VENT     2
-     2      2.02
+     2     20.02
