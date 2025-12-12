@@ -22,11 +22,11 @@ FUEL='PROPANE'/
 
 # Create a supply vent, which will add room temperature air into the room
 &VENT XB=0,0,1,3,0.2,0.6, SURF_ID='supply', DEVC_ID='timer'/
-&SURF ID='supply', VOLUME_FLOW=-1.5, COLOR='GREEN' /
+&SURF ID='supply', VOLUME_FLOW=-3, COLOR='GREEN' /
 
 # Create a exhaust vent, which will remove air and smoke from the room
 &VENT XB=3,3,1.5,2.5,2.6,3, SURF_ID='exhaust', DEVC_ID='timer'/
-&SURF ID='exhaust', VOLUME_FLOW=1.5, COLOR='BLUE' /
+&SURF ID='exhaust', VOLUME_FLOW=3, COLOR='BLUE' /
 
 # Add a timer device for supply and exhaust, activates the vents after 20 seconds
 &DEVC ID='timer', QUANTITY='TIME', XYZ = 1,1,1, SETPOINT=20, INITIAL_STATE=.FALSE. /
