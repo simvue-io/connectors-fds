@@ -954,11 +954,6 @@ class FDSRun(WrappedRun):
         mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
-        Raises
-        ------
-        ValueError
-            Raised if 2D slices could not be parsed correctly
-
         """
         self.fds_input_file_path = fds_input_file_path
         self.workdir_path = workdir_path
@@ -1036,35 +1031,6 @@ class FDSRun(WrappedRun):
             if self.workdir_path
             else self._chid
         )
-
-        if self.slice_parse_enabled:
-            # This is only necessary because of the way pyfdstools works
-            if (
-                self.workdir_path
-                and (
-                    pathlib.Path(self.fds_input_file_path).absolute()
-                    != pathlib.Path(self.workdir_path)
-                    .joinpath(f"{self._chid}.fds")
-                    .absolute()
-                )
-            ) or (
-                not self.workdir_path
-                and (
-                    pathlib.Path(self.fds_input_file_path).absolute()
-                    != pathlib.Path.cwd().joinpath(f"{self._chid}.fds").absolute()
-                )
-            ):
-                shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
-
-            # Make sure xyz is enabled
-            write_xyz = False
-            for key in nml.keys():
-                if "dump" in key:
-                    write_xyz = write_xyz or nml[key].get("write_xyz", False)
-            if not write_xyz:
-                raise ValueError(
-                    "WRITE_XYZ must be enabled in your FDS file for slice parsing."
-                )
 
         super().launch()
 
@@ -1250,15 +1216,6 @@ class FDSRun(WrappedRun):
                 )
 
         if self.slice_parse_enabled:
-            if not _fds_files:
-                logger.warning(
-                    "Slice cannot be parsed without an input file available - slice parsing disabled."
-                )
-            elif not list(pathlib.Path(results_dir).rglob("*.xyz")):
-                logger.warning(
-                    "No XYZ files detected in results directory - slice parsing disabled."
-                )
-            else:
-                self._parse_slice()
+            self._parse_slice()
 
         self._post_simulation()
