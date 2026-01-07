@@ -600,7 +600,7 @@ class FDSRun(WrappedRun):
             # Get the values, coordinates, times
             values, coords = slice.to_global(
                 masked=True, fill=numpy.nan, return_coordinates=True
-            )  # TODO: Could mask with numpy.NaN?
+            )
             times = slice.times
 
             # Get rid of values already uploaded, return if nothing left to upload
@@ -731,6 +731,8 @@ class FDSRun(WrappedRun):
 
         # Need this so that we dont get spammed with non-critical timestamp warning from fdsreader
         fdsreader.settings.IGNORE_ERRORS = True
+        # Disable caching so that it doesnt create pickle files inside the results directory
+        fdsreader.settings.ENABLE_CACHING = False
 
         super().__init__(
             mode=mode,
@@ -894,8 +896,8 @@ class FDSRun(WrappedRun):
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
-        slice_parse_quantity: str = None,
-        slice_parse_quantities: list[str] = None,
+        slice_parse_quantity: str | None = None,
+        slice_parse_quantities: list[str] | None = None,
         slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
         slice_parse_ignore_zeros: bool = False,
@@ -925,10 +927,10 @@ class FDSRun(WrappedRun):
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_enabled: bool, optional
             Whether to enable slice parsing for this run, by default False
-        slice_parse_quantity: str, optional
+        slice_parse_quantity: str | None, optional
             DEPRECATED: Will be removed in version 2
             The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
-        slice_parse_quantities: list[str], optional
+        slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
         slice_parse_ids: list[str] | None, optional
             If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
@@ -1068,8 +1070,8 @@ class FDSRun(WrappedRun):
         results_dir: pydantic.DirectoryPath,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
-        slice_parse_quantity: str = None,
-        slice_parse_quantities: list[str] = None,
+        slice_parse_quantity: str | None = None,
+        slice_parse_quantities: list[str] | None = None,
         slice_parse_ids: list[str] | None = None,
         slice_parse_ignore_zeros: bool = False,
     ) -> None:
@@ -1085,10 +1087,10 @@ class FDSRun(WrappedRun):
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_enabled: bool, optional
             Whether to enable slice parsing for this run, by default False
-        slice_parse_quantity: str, optional
+        slice_parse_quantity: str | None, optional
             DEPRECATED: Will be removed in version 2
             The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
-        slice_parse_quantities: list[str], optional
+        slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
         slice_parse_ids: list[str] | None, optional
             If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
@@ -1193,8 +1195,8 @@ class FDSRun(WrappedRun):
             # If file was not found, no other way to obtain timestamps from when the simulation will run
             # Will default to using the last time the input file was edited for any time (t >= 0 ), with a warning
             logger.warning(
-                "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
-                "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
+                """Warning: No '.out' file was found! You will be missing important metrics from your simulation.
+                Cannot determine timestamps accurately - defaulting to last time the input file was modified."""
             )
         if not self._timestamp_mapping.size:
             self._timestamp_mapping = numpy.array(

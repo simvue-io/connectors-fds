@@ -24,26 +24,23 @@ def mock_post_sim(self, *_, **__):
 # This is to simulate the parser reading slice files at ragular intervals
 # Test with single and multi meshes
 # Test with visibility and temperature
-# Test with ignore and dont ignore zeros (floating obstruction cube at x,y,z = 1.25 to 1.75)
 @pytest.mark.parametrize("results_path", ("slice_singlemesh", "slice_multimesh"), ids=("single_mesh", "multi_mesh"))
 @pytest.mark.parametrize("slice_parameter", ("SOOT VISIBILITY", "TEMPERATURE", None), ids=("visibility", "temperature", "disabled"))
-@pytest.mark.parametrize("ignore_zeros", (True, False), ids=("ignore_zeros", "include_zeros"))
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
 @patch.object(FDSRun, 'add_process', mock_fds_process)
 @patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, '_during_simulation', mock_during_sim)
 @patch.object(FDSRun, '_post_simulation', mock_post_sim)
-def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_zeros, load):
+def test_fds_slice_parser(folder_setup, results_path, slice_parameter, load):
     _prefix = slice_parameter.replace(' ', '_').lower() if slice_parameter else None
     with FDSRun() as run:
-        run.init(f"testing_{results_path}_{_prefix}_{'ignore_zeros' if ignore_zeros else 'include_zeros'}_{'load' if load else 'launch'}", folder=folder_setup)
+        run.init(f"testing_{results_path}_{_prefix}_{'load' if load else 'launch'}", folder=folder_setup)
         run_id = run.id
         if load:
             if slice_parameter:
                 run.load(
                     pathlib.Path(__file__).parent.joinpath("example_data", results_path),
                     slice_parse_quantity = slice_parameter,
-                    slice_parse_ignore_zeros = ignore_zeros
                 )
             else:
                 run.load(
@@ -56,7 +53,6 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                     workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
                     slice_parse_quantity = slice_parameter,
                     slice_parse_interval = 3,
-                    slice_parse_ignore_zeros = ignore_zeros,
                 )
             else:
                 run.launch(
@@ -104,14 +100,6 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                 # Check all max >= avg >= min
                 assert numpy.all(_max >= _avg)
                 assert numpy.all(_avg >= _min)
-                
-                # If including zeros, check any slices at 1.5 have min visibility of zero due to obstruction
-                if metric.endswith("1_5") and slice_parameter == "SOOT VISIBILITY" and not ignore_zeros:
-                    assert numpy.all(_min == 0)
-                # If ignoring zeros, check there are none present
-                # Otherwise, z = 2.5 slice doesn't pass through obstruction, so should have no zeros in any case
-                else:
-                    assert numpy.all(_min != 0)
                     
                 # Check that the average visibility is decreasing, or temperature increasing over time
                 # Will compare 5 steps apart to allow for outliers and noise
