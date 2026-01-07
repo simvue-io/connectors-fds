@@ -589,6 +589,7 @@ class FDSRun(WrappedRun):
         # Calculate the metrics which need to be sent, store in format:
         # {time: {metric_name: [], timestamp: ""}}
         slice_metrics: dict[float, dict] = {}
+        times = None
 
         for slice in slices:
             if not slice:
@@ -664,7 +665,9 @@ class FDSRun(WrappedRun):
 
         self._grids_defined = True
         self._last_parse_time = datetime.now(timezone.utc).timestamp()
-        self._slice_processed_idx = times.shape[0]
+        self._slice_processed_idx = (
+            times.shape[0] if times is not None else self._slice_processed_idx
+        )
         return True
 
     def _slice_parser(self) -> None:

@@ -362,7 +362,7 @@ SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      5      0
  SOOT VISIBILITY
  VIS_C
  m
-SLCF     1 # STRUCTURED &     0    30    15    15     0    30 !      6      0
+SLCF     1 # STRUCTURED %visibility_slice &     0    30    15    15     0    30 !      6      0
  no_vents_1_9.sf
  SOOT VISIBILITY
  VIS_C
@@ -382,11 +382,16 @@ SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      9      0
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &     0    30    15    15     0    30 !     10      0
+SLCF     1 # STRUCTURED %temperature_slice &     0    30    15    15     0    30 !     10      0
  no_vents_1_13.sf
  TEMPERATURE
  temp
  C
+SLCF     1 # STRUCTURED %velocity_slice &     0    30    15    15     0    30 !     11      0
+ no_vents_1_14.sf
+ VELOCITY
+ vel
+ m/s
 DEVICE_ACT     eye_level_visibility
      1      0.00     0
 DEVICE_ACT     air_temperature
