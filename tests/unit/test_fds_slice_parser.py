@@ -11,14 +11,14 @@ def mock_fds_process(self, *_, **__):
     return
 
 def mock_during_sim(self, *_, **__):
-    time.sleep(2)
+    time.sleep(5)
     self._trigger.set()
     return
 
 def mock_post_sim(self, *_, **__):
     if self.slice_parser:
         self.slice_parser.join()
-    time.sleep(1)
+    time.sleep(2)
     return
 # Ran an FDS case and stopped it abruptly sometime after 25s simulation time
 # This is to simulate the parser reading slice files at ragular intervals
@@ -60,7 +60,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
                     workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
                     slice_parse_quantity = slice_parameter,
                     slice_parse_ids = slice_ids,
-                    slice_parse_interval = 1,
+                    slice_parse_interval = 3,
                 )
             else:
                 run.launch(
@@ -69,7 +69,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
                     slice_parse_enabled = enabled,
                     slice_parse_quantities = slice_parameter,
                     slice_parse_ids = slice_ids,
-                    slice_parse_interval = 1
+                    slice_parse_interval = 3
                 )
                 
         # Mesh is 30x40x30 cells, this means 31x41x31 grid points
