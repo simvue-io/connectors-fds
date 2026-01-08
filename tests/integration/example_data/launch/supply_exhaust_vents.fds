@@ -5,9 +5,9 @@
 &MESH XB= 0, 3, 0, 2, 0, 3, IJK= 30, 20, 30 /
 &MESH XB= 0, 3, 2, 4, 0, 3, IJK= 30, 20, 30 /
 
-# Simulate the fire for 10 seconds, output results every second
-&TIME T_END=10. /
-&DUMP NFRAMES=10, WRITE_XYZ=.TRUE. /
+# Simulate the fire for 5 seconds, output results every second
+&TIME T_END=5. /
+&DUMP NFRAMES=5, WRITE_XYZ=.TRUE. /
 
 # Define the type of fuel for the fire
 &REAC ID = 'propane reaction',

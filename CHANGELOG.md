@@ -1,5 +1,14 @@
 # Change log
 
+## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
+* Add zip of example results to releas artifacts
+
+## [v1.3.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
+* Fixes bug with segfaulting FDS simulations hanging
+
+## [v1.3.0](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.0) - 2025-12-11
+* Adds support for DEVC line devices to be uploaded as 2D metrics
+
 ## [v1.2.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.2.1) - 2025-10-16
 * Fixes bug with alerting due to timestamps not being sent in UTC
 * Adds support for &CATF lines in FDS input files

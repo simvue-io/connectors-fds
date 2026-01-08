@@ -8,7 +8,6 @@ import requests
 
 from unittest.mock import patch
 def mock_fds_process(self, *_, **__):
-    self.slice_parse_interval = 0.05
     return
 
 def mock_during_sim(self, *_, **__):
@@ -56,7 +55,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, ignore_ze
                     fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
                     workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
                     slice_parse_quantity = slice_parameter,
-                    slice_parse_interval = 1,
+                    slice_parse_interval = 3,
                     slice_parse_ignore_zeros = ignore_zeros,
                 )
             else:
