@@ -2,7 +2,7 @@ name: Integration Tests (Windows)
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: ["main", "dev", "*windows-ci*"]
   pull_request:
     branches: [ "main", "dev"]
   workflow_dispatch:
@@ -20,37 +20,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install 7z
-        run: choco install -y 7zip
-
       - name: Download FDS installer
         run: |
+          $ProgressPreference = "SilentlyContinue"
           Invoke-WebRequest -Uri https://github.com/firemodels/fds/releases/download/FDS-6.10.1/FDS-6.10.1_SMV-6.10.1_win.exe -OutFile FDSInstaller.exe
 
       - name: Unpack Installer
-        run: 7z.exe x .\FDSInstaller.exe
+        run: |
+          Rename-Item -Path .\FDSInstaller.exe -NewName .\FDSInstaller.zip
+          Expand-Archive -Path .\FDSInstaller.zip -DestinationPath .
 
       - name: List firemodels folder
         run: dir ".\firemodels"
 
       - name: Setup FDS
-        run: |
-          ".\firemodels\setup.bat a"
+        run: cmd /c "(echo yes & echo. & echo.) | .\firemodels\setup.bat"
 
-      - name: Run FDS version
+      - name: Append Install to PATH
         run: |
-          "& $(Get-ChildItem -Recurse -Filter 'fds_local.bat' 'D:\' | Select-Object -ExpandProperty FullName) -v"
+          $MPIPath = Get-ChildItem -Path "D:\\" -Filter "mpiexec.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          $MPIDir =  Split-Path -Path $MPIPath
+          Write-Output "Found MPI at $MPIDIR"
+          $MPIDir | Out-File -FilePath $env:GITHUB_PATH -Append
+          [System.Environment]::GetEnvironmentVariable('Path','Machine') | Out-File -FilePath $env:GITHUB_PATH -Append
+          [System.Environment]::GetEnvironmentVariable('Path','User') | Out-File -FilePath $env:GITHUB_PATH -Append
+
+
+      - name: Check FDS Version
+        run: fds_local -v
+
+      - name: Check Running FDS without Simvue
+        run: mpiexec.exe -localonly -n 1 fds.exe .\tests\integration\example_data\launch\supply_exhaust_vents.fds
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install poetry
         run: python3 -m pip install poetry
-      - name: Install dependencies and run tests
+
+      - name: Install dependencies and run serial tests
         run: |
-          export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
-          export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
-          poetry install --all-extras
-          poetry run pytest tests/integration/ -v
-        shell: bash
+          $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
+          $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
+          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 1 -localonly fds.exe"
+          python -m poetry install --all-extras
+          python -m poetry run pytest -k serial tests/integration/ -v -x
+
+      - name: Run parallel tests
+        run: |
+          $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
+          $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
+          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 4 -localonly openmpi_fds.exe"
+          python -m poetry run pytest -k parallel tests/integration/ -v -x
