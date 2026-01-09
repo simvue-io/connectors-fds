@@ -26,6 +26,8 @@ try:
 except ImportError:
     from typing_extensions import Self
 
+import logging
+
 import click
 import f90nml
 import multiparser.parsing.file as mp_file_parser
@@ -34,10 +36,11 @@ import numpy
 import pydantic
 import pyfdstools
 import simvue
-from loguru import logger
 from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
+
+logger = logging.getLogger(__name__)
 
 
 class FDSRun(WrappedRun):
@@ -243,6 +246,7 @@ class FDSRun(WrappedRun):
 
     def _map_line_var_coords(self) -> None:
         """Map DEVC line variables to their coordinates."""
+        self._line_var_coords = {}
         _labels = ("x", "y", "z")
         # Loop through input dict and find all DEVC devices
         for key, devc in self._input_dict.items():
@@ -535,7 +539,7 @@ class FDSRun(WrappedRun):
 
     def _line_callback(self, data, meta) -> None:
         # Generate devc to coord mapping if it doesnt exist:
-        if not self._line_var_coords:
+        if self._line_var_coords is None:
             self._map_line_var_coords()
 
         # Create metric data
@@ -544,6 +548,18 @@ class FDSRun(WrappedRun):
         for key, values in data.items():
             if not (_axes := self._line_var_coords.get(key)):
                 continue
+
+            metric = numpy.array(values)
+            metric = metric[~numpy.isnan(metric)]
+
+            # Add a catch here to check if removal of NaNs has caused the data to be a different length to the axes
+            if metric.shape[0] != len(_axes["ticks"]):
+                logger.warning(
+                    f"Unexpected NaN value found in line metric '{key}': This metric will not be recorded."
+                )
+                self._line_var_coords.pop(key)
+                continue
+
             # Assign to grid if required
             if key not in self._grids.keys():
                 self.assign_metric_to_grid(
@@ -551,8 +567,7 @@ class FDSRun(WrappedRun):
                     axes_ticks=[_axes["ticks"]],
                     axes_labels=[_axes["label"]],
                 )
-            metric = numpy.array(values)
-            metric = metric[~numpy.isnan(metric)]
+
             if numpy.any(metric):
                 _metric_data[key] = metric
         if _metric_data:
@@ -849,6 +864,7 @@ class FDSRun(WrappedRun):
         self._loading_historic_run: bool = False
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
         self._input_dict: dict = {}
+        self._line_var_coords: dict | None = None
 
         super().__init__(
             mode=mode,
@@ -1078,7 +1094,6 @@ class FDSRun(WrappedRun):
         self._activation_times = False
         self._activation_times_data = {}
         self._grids_defined = False
-        self._line_var_coords = {}
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
@@ -1264,8 +1279,8 @@ class FDSRun(WrappedRun):
             # If file was not found, no other way to obtain timestamps from when the simulation will run
             # Will default to using the last time the input file was edited for any time (t >= 0 ), with a warning
             logger.warning(
-                "Warning: No '.out' file was found! You will be missing important metrics from your simulation.",
-                "Cannot determine timestamps accurately - defaulting to last time the input file was modified.",
+                """Warning: No '.out' file was found! You will be missing important metrics from your simulation.
+                Cannot determine timestamps accurately - defaulting to last time the input file was modified."""
             )
         if not self._timestamp_mapping.size:
             self._timestamp_mapping = numpy.array(
@@ -1308,7 +1323,6 @@ class FDSRun(WrappedRun):
                     "Line DEVC devices cannot be parsed without an input file available."
                 )
             else:
-                self._line_var_coords = {}
                 self._map_line_var_coords()
                 _, data = self._line_parser(f"{self._results_prefix}_line.csv")
                 self._line_callback(
