@@ -891,7 +891,8 @@ class FDSRun(WrappedRun):
                 raise ValueError(
                     "SIMVUE_FDS_RUN_COMMAND environment variable is invalid - must be a JSON serialized list of commands/options."
                 )
-            command += [str(self.fds_input_file_path)]
+            command = [str(item) for item in command] + [str(self.fds_input_file_path)]
+
         else:
             fds_bin = self._find_fds_executable()
             command = []
