@@ -7,17 +7,16 @@ import contextlib
 import csv
 import glob
 import io
+import json
 import os
 import pathlib
 import platform
 import re
 import shutil
-import sys
 import threading
 import time
 import typing
 from datetime import datetime, timezone
-from itertools import chain
 
 import pandas
 
@@ -35,7 +34,6 @@ import pydantic
 import pyfdstools
 import simvue
 from loguru import logger
-from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
@@ -219,17 +217,11 @@ class FDSRun(WrappedRun):
             fds_bin = shutil.which("fds")
 
         else:
-            search_paths = [
+            for search_loc in (
                 pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
                 pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
                 pathlib.Path.home().joinpath("firemodels"),
-            ]
-            if os.environ.get("GITHUB_WORKSPACE"):
-                search_paths.append(
-                    pathlib.Path(os.environ["GITHUB_WORKSPACE"]).joinpath("firemodels")
-                )
-
-            for search_loc in search_paths:
+            ):
                 if not search_loc.exists():
                     continue
                 if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
@@ -867,8 +859,6 @@ class FDSRun(WrappedRun):
         if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists:
             self.save_file(self.fds_input_file_path, "input")
 
-        fds_bin = self._find_fds_executable()
-
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
             self._trigger.set()
@@ -887,24 +877,42 @@ class FDSRun(WrappedRun):
                 )
                 self.kill_all_processes()
 
-        command = []
-        if platform.system() == "Windows":
-            if self.run_in_parallel:
-                command += [
-                    f"{fds_bin}",
-                    "-p",
-                    str(self.num_processors),
-                    str(self.fds_input_file_path),
-                ]
-            else:
-                command += [f"{fds_bin}", str(self.fds_input_file_path)]
+        if run_command := os.getenv("SIMVUE_FDS_RUN_COMMAND"):
+            logger.warning(
+                "Custom FDS run command provided - environment variables passed into launch will be ignored."
+            )
+            try:
+                command: list = json.loads(run_command)
+            except json.JSONDecodeError:
+                raise ValueError(
+                    "SIMVUE_FDS_RUN_COMMAND environment variable is invalid - must be a JSON serialized list of commands/options."
+                )
+            if not isinstance(command, list):
+                raise ValueError(
+                    "SIMVUE_FDS_RUN_COMMAND environment variable is invalid - must be a JSON serialized list of commands/options."
+                )
+            command += [str(self.fds_input_file_path)]
         else:
-            if self.run_in_parallel:
-                command += ["mpiexec", "-n", str(self.num_processors)]
-                command += format_command_env_vars(self.mpiexec_env_vars)
-            command += [f"{fds_bin}", str(self.fds_input_file_path)]
+            fds_bin = self._find_fds_executable()
+            command = []
+            if platform.system() == "Windows":
+                if self.run_in_parallel:
+                    command += [
+                        f"{fds_bin}",
+                        "-p",
+                        str(self.num_processors),
+                        str(self.fds_input_file_path),
+                    ]
+                else:
+                    command += [f"{fds_bin}", str(self.fds_input_file_path)]
+            else:
+                if self.run_in_parallel:
+                    command += ["mpiexec", "-n", str(self.num_processors)]
+                    command += format_command_env_vars(self.mpiexec_env_vars)
+                command += [f"{fds_bin}", str(self.fds_input_file_path)]
 
-        command += format_command_env_vars(self.fds_env_vars)
+            command += format_command_env_vars(self.fds_env_vars)
+
         self.add_process(
             "fds_simulation",
             *command,
