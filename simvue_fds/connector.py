@@ -872,10 +872,11 @@ class FDSRun(WrappedRun):
                 self._failed = True
                 self.log_event("FDS encountered an error:")
                 self.log_event(std_err)
-                self.log_alert(
-                    identifier=self._executor._alert_ids["fds_simulation"],
-                    state="critical",
-                )
+                if alert_id := self._executor._alert_ids.get("fds_simulation"):
+                    self.log_alert(
+                        identifier=alert_id,
+                        state="critical",
+                    )
             self.kill_all_processes()
 
         if run_command := os.getenv("SIMVUE_FDS_RUN_COMMAND"):
