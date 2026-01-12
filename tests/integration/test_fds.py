@@ -7,7 +7,7 @@ import tempfile
 import numpy
 import simvue
 import time
-from simvue.sender import sender
+from simvue.sender import Sender
 from simvue_fds.connector import FDSRun
 import uuid
 import requests
@@ -80,8 +80,9 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
         time.sleep(2)
 
         if offline:
-            _id_mapping = sender(throw_exceptions=True)
-            run_id = _id_mapping.get(run_id)
+            sender = Sender(throw_exceptions=True)
+            sender.upload()
+            run_id = sender._id_mapping.get(run_id)
 
         return run_id
 
