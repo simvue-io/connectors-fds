@@ -12,6 +12,7 @@ import os
 import pathlib
 import platform
 import re
+import shlex
 import shutil
 import threading
 import time
@@ -875,23 +876,16 @@ class FDSRun(WrappedRun):
                     identifier=self._executor._alert_ids["fds_simulation"],
                     state="critical",
                 )
-                self.kill_all_processes()
+            self.kill_all_processes()
 
         if run_command := os.getenv("SIMVUE_FDS_RUN_COMMAND"):
             logger.warning(
                 "Custom FDS run command provided - environment variables passed into launch will be ignored."
             )
-            try:
-                command: list = json.loads(run_command)
-            except json.JSONDecodeError:
-                raise ValueError(
-                    "SIMVUE_FDS_RUN_COMMAND environment variable is invalid - must be a JSON serialized list of commands/options."
-                )
-            if not isinstance(command, list):
-                raise ValueError(
-                    "SIMVUE_FDS_RUN_COMMAND environment variable is invalid - must be a JSON serialized list of commands/options."
-                )
-            command = [str(item) for item in command] + [str(self.fds_input_file_path)]
+            command: list = shlex.split(
+                run_command, posix=platform.system() == "Windows"
+            )
+            command.append(str(self.fds_input_file_path))
 
         else:
             fds_bin = self._find_fds_executable()
