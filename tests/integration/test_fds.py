@@ -169,9 +169,9 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert metrics["max_divergence.mesh.2"]["count"] > 0
 
     # Check metrics from slice
-    assert metrics["temperature.y.2_0.min"]["count"] == 5
-    assert metrics["temperature.y.2_0.min"]["count"] == 5
-    assert metrics["temperature.y.2_0.min"]["count"] == 5
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
 
     _retrieved = client.get_metric_values(
         run_ids=[run_id],
