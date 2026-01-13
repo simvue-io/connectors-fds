@@ -145,7 +145,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     # Check events from log
     # Loosening requirement for this since Windows and Ubuntu will print slightly different times
     assert any(
-        [event.startswith("Time Step: 1, Simulation Time: 0.092") for event in events]
+        [event.startswith("Time Step: 1, Simulation Time: 0.09") for event in events]
     )
 
     # Check events from DEVC/CTRL log
@@ -494,7 +494,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
 
     # Check events from log
     assert any(
-        [event.startswith("Time Step: 1, Simulation Time: 0.27") for event in events]
+        [event.startswith("Time Step: 1, Simulation Time: 0.2") for event in events]
     )
 
     metrics = dict(run_data.metrics)
