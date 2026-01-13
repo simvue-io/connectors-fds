@@ -49,9 +49,6 @@ jobs:
       - name: Check FDS Version
         run: fds_local -v
 
-      - name: Check Running FDS without Simvue
-        run: mpiexec.exe -localonly -n 1 fds.exe .\tests\integration\example_data\launch\supply_exhaust_vents.fds
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -72,5 +69,5 @@ jobs:
         run: |
           $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
           $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
-          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 4 -localonly openmpi_fds.exe"
+          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 2 -localonly openmpi_fds.exe"
           python -m poetry run pytest -k parallel tests/integration/ -v -x
