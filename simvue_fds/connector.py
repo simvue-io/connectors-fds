@@ -599,10 +599,19 @@ class FDSRun(WrappedRun):
                 continue
 
             # Get the values, coordinates, times
-            values, coords = slice.to_global(
-                masked=True, fill=numpy.nan, return_coordinates=True
-            )
-            times = slice.times
+            # Due to edge cases which may break fdsreader, we cover this in a try... except
+            try:
+                values, coords = slice.to_global(
+                    masked=True, fill=numpy.nan, return_coordinates=True
+                )
+                times = slice.times
+            except Exception as e:
+                if not self._grids_defined:
+                    logger.warning(
+                        "Unable to parse a slice due to unexpected values within the slice - enable debug logging for full traceback."
+                    )
+                    logger.debug(e)
+                continue
 
             # Get rid of values already uploaded, return if nothing left to upload
             values = values[self._slice_processed_idx :, ...]
@@ -635,9 +644,7 @@ class FDSRun(WrappedRun):
                 slice_metrics.setdefault(time_val, {})
                 slice_metrics[time_val].update(
                     {
-                        metric_name: numpy.nan_to_num(
-                            values_at_time
-                        ).T,  # TODO should we cast NaNs to zeros?
+                        metric_name: numpy.nan_to_num(values_at_time).T,
                         f"{metric_name}.min": numpy.min(values_no_obst),
                         f"{metric_name}.max": numpy.max(values_no_obst),
                         f"{metric_name}.avg": numpy.mean(values_no_obst),
