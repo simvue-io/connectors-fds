@@ -5,6 +5,7 @@ import simvue
 import time
 import numpy
 import requests
+import logging
 
 from unittest.mock import patch
 def mock_fds_process(self, *_, **__):
@@ -146,4 +147,54 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
                         assert response.status_code == 200   
                         assert numpy.array(response.json().get("array")).shape == slice_dims
                 
+@patch.object(FDSRun, 'add_process', mock_fds_process)
+@patch.object(FDSRun, '_find_fds_executable', lambda _: None)
+@patch.object(FDSRun, '_during_simulation', mock_during_sim)
+@patch.object(FDSRun, '_post_simulation', mock_post_sim)
+@pytest.mark.parametrize("slice_id", (None, "cell_centered_slice", "large_slice"), ids=("all_slices", "cell_centered_slice", "slice_too_big"))     
+def test_fds_invalid_slice(folder_setup, caplog, slice_id):
+    with FDSRun() as run:
+        run.config(disable_resources_metrics = True)
+        run.init(f"test_invalid_slice-{slice_id if slice_id else 'all_slices'}", folder=folder_setup)
+        run_id = run.id
+        run.launch(
+            fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", "slice_invalid", "Pohlhausen_Pr_1.fds"),
+            workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", "slice_invalid"),
+            slice_parse_enabled = True,
+            slice_parse_ids = [slice_id] if slice_id else None,
+            slice_parse_interval = 3
+        )
+    if slice_id == "cell_centered_slice" or not slice_id:
+        assert "Unable to parse a slice due to unexpected values within the slice - enable debug logging for full traceback." in caplog.text
+    if slice_id == "large_slice" or not slice_id:
+        assert "Slice 'large_slice' exceeds the maximum size for upload to the server - ignoring this metric." in caplog.text
+    client = simvue.Client()
+    
+    metrics_names = [item for item in client.get_metrics_names(run_id)]
+    
+    
+    if slice_id:
+        assert not metrics_names
+    else:
+        # Check cell centered slice  and large slice not created
+        for metric in ("cell_centered_slice", "large_slice"):
+            assert f"{metric}.max" not in metrics_names
+            assert f"{metric}.min" not in metrics_names
+            assert f"{metric}.avg" not in metrics_names
             
+            response = requests.get(
+                url=f"{run._user_config.server.url}/runs/{run.id}/metrics/cell_centered_slice/values?step=0",
+                headers=run._sv_obj._headers,
+            )
+            assert response.status_code == 404
+        
+        # Check other slices are created
+        assert "temperature.x.0_0.max" in metrics_names
+        assert "temperature.x.0_0.min" in metrics_names
+        assert "temperature.x.0_0.avg" in metrics_names
+        
+        response = requests.get(
+            url=f"{run._user_config.server.url}/runs/{run.id}/metrics/temperature.x.0_0/values?step=0",
+            headers=run._sv_obj._headers,
+        )
+        assert response.status_code == 200

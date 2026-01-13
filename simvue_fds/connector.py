@@ -629,6 +629,16 @@ class FDSRun(WrappedRun):
 
             # Define grid if first pass
             if not self._grids_defined:
+                # Check size doesn't breach server limit
+                if (
+                    coords[slice.extent_dirs[0]].shape[0]
+                    * coords[slice.extent_dirs[1]].shape[0]
+                    > 50000
+                ):
+                    logger.warning(
+                        f"Slice '{metric_name}' exceeds the maximum size for upload to the server - ignoring this metric."
+                    )
+                    continue
                 self.assign_metric_to_grid(
                     metric_name=metric_name,
                     axes_ticks=[
