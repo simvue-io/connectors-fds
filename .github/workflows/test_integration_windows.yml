@@ -60,17 +60,17 @@ jobs:
           python -m poetry install --all-extras
 
       - name: Run parallel tests
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: |
           $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
           $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
           $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 2 -localonly fds_openmp.exe"
-          python -m poetry run pytest -k parallel tests/integration/ -n 2 -v
+          python -m poetry run pytest -k parallel tests/integration/ -v
 
       - name: Run serial tests
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: |
           $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
           $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
           $env:SIMVUE_FDS_RUN_COMMAND="fds.exe"
-          python -m poetry run pytest -k serial tests/integration/ -n 2 -v
+          python -m poetry run pytest -k serial tests/integration/ -v
