@@ -30,11 +30,11 @@ jobs:
           Rename-Item -Path .\FDSInstaller.exe -NewName .\FDSInstaller.zip
           Expand-Archive -Path .\FDSInstaller.zip -DestinationPath .
 
-      - name: List firemodels folder
-        run: dir ".\firemodels"
-
       - name: Setup FDS
         run: cmd /c "(echo yes & echo. & echo.) | .\firemodels\setup.bat"
+
+      - name: List firemodels folder
+        run: dir ".\firemodels"
 
       - name: Append Install to PATH
         run: |
@@ -56,18 +56,18 @@ jobs:
 
       - name: Install poetry
         run: python3 -m pip install poetry
+        
+      - name: Run parallel tests
+        run: |
+          $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
+          $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
+          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 2 -localonly fds_openmp.exe"
+          python -m poetry run pytest -k parallel tests/integration/ -v -x
 
       - name: Install dependencies and run serial tests
         run: |
           $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
           $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
-          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 1 -localonly fds.exe"
+          $env:SIMVUE_FDS_RUN_COMMAND="fds.exe"
           python -m poetry install --all-extras
           python -m poetry run pytest -k serial tests/integration/ -v -x
-
-      - name: Run parallel tests
-        run: |
-          $env:SIMVUE_URL="${{ secrets.SIMVUE_URL }}"
-          $env:SIMVUE_TOKEN="${{ secrets.SIMVUE_TOKEN }}"
-          $env:SIMVUE_FDS_RUN_COMMAND="mpiexec.exe -n 2 -localonly openmpi_fds.exe"
-          python -m poetry run pytest -k parallel tests/integration/ -v -x
