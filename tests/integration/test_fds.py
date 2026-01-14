@@ -32,56 +32,53 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
     str
         The ID of the run
     """
-    # Delete old copies of results, if they exist:
-    if pathlib.Path(__file__).parent.joinpath("results").exists():
-        shutil.rmtree(pathlib.Path(__file__).parent.joinpath("results"))
-
-    # Initialise the FDSRun class as a context manager
-    with FDSRun(mode="offline" if offline else "online") as run:
-        # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
-        run.init(
-            name=f"fds-integration-{file_path.stem}-{'parallel' if parallel else 'serial'}-{'offline' if offline else 'online'}-{'load' if load else 'launch'}-{str(uuid.uuid4())}",
-            description="An example of using the FDSRun Connector to track an FDS simulation.",
-            folder=run_folder,
-            tags=sorted(["fds", "integration", "test", platform.system()]),        )
-        # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
-        run.create_metric_threshold_alert(
-            name="avg_temp_above_100",
-            metric="temperature.y.2_0.avg",
-            frequency=1,
-            rule="is above",
-            threshold=100,
-        )
-        if load:
-            run.load(
-                results_dir=file_path,
-                slice_parse_quantity=slice_var,
+    with tempfile.TemporaryDirectory() as tempd:
+        # Initialise the FDSRun class as a context manager
+        with FDSRun(mode="offline" if offline else "online") as run:
+            # Initialise the run, providing a name for the run, and optionally extra information such as a folder, description, tags etc
+            run.init(
+                name=f"fds-integration-{file_path.stem}-{'parallel' if parallel else 'serial'}-{'offline' if offline else 'online'}-{'load' if load else 'launch'}-{str(uuid.uuid4())}",
+                description="An example of using the FDSRun Connector to track an FDS simulation.",
+                folder=run_folder,
+                tags=sorted(["fds", "integration", "test", platform.system()]),        )
+            # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
+            run.create_metric_threshold_alert(
+                name="avg_temp_above_100",
+                metric="temperature.y.2_0.avg",
+                frequency=1,
+                rule="is above",
+                threshold=100,
             )
-        else:
-            # Then call the .launch() method to start your FDS simulation, providing the path to the input file
-            run.launch(
-                fds_input_file_path=file_path,
-                workdir_path=str(pathlib.Path(__file__).parent.joinpath("results")),
-                clean_workdir=True,
-                # You can optionally have the connector track slices in your simulation
-                slice_parse_quantity=slice_var,
-                slice_parse_interval=10,
-                # And you can choose whether to run it in parallel
-                run_in_parallel=parallel,
-                num_processors=2,
-            )
+            if load:
+                run.load(
+                    results_dir=file_path,
+                    slice_parse_quantity=slice_var,
+                )
+            else:
+                # Then call the .launch() method to start your FDS simulation, providing the path to the input file
+                run.launch(
+                    fds_input_file_path=file_path,
+                    workdir_path=tempd,
+                    clean_workdir=True,
+                    # You can optionally have the connector track slices in your simulation
+                    slice_parse_quantity=slice_var,
+                    slice_parse_interval=10,
+                    # And you can choose whether to run it in parallel
+                    run_in_parallel=parallel,
+                    num_processors=2,
+                )
 
-        # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
-        run.log_event("Test...")
+            # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
+            run.log_event("Test...")
 
-        run_id = run.id
+            run_id = run.id
 
-        time.sleep(2)
+            time.sleep(2)
 
-        if offline:
-            sender = Sender(throw_exceptions=True)
-            sender.upload()
-            run_id = sender._id_mapping.get(run_id)
+            if offline:
+                sender = Sender(throw_exceptions=True)
+                sender.upload()
+                run_id = sender._id_mapping.get(run_id)
 
         return run_id
 
