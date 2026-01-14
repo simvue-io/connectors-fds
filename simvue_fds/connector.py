@@ -527,22 +527,17 @@ class FDSRun(WrappedRun):
     def _line_parser(
         self, input_file: str, **__
     ) -> tuple[dict, dict[str, list[float]]]:
-        logger.warning("Inside line parser")
         df = pandas.read_csv(input_file, skiprows=1)
-        logger.warning(f"Parsed: {df}")
         return {}, df.to_dict(orient="list")
 
     def _line_callback(self, data, meta) -> None:
         # Generate devc to coord mapping if it doesnt exist:
         if self._line_var_coords is None:
-            logger.warning("mapping line var coords")
             self._map_line_var_coords()
-            logger.warning("done mapping line var coords")
 
         # Create metric data
         _metric_data = {}
         # For each key, check if it is a DEVC device we can track
-        logger.warning(f"Line devc data: {data}")
         for key, values in data.items():
             if not (_axes := self._line_var_coords.get(key)):
                 continue
@@ -560,7 +555,6 @@ class FDSRun(WrappedRun):
 
             # Assign to grid if required
             if key not in self._grids.keys():
-                logger.warning(f"Adding grid for {key}")
                 self.assign_metric_to_grid(
                     metric_name=key,
                     axes_ticks=[_axes["ticks"]],
@@ -568,12 +562,10 @@ class FDSRun(WrappedRun):
                 )
 
             if numpy.any(metric):
-                logger.warning(f"Adding metric for {key}")
                 _metric_data[key] = metric
         if _metric_data:
             # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
             _metric_data["time"] = 1
-            logger.warning("Adding metrics")
             self._metrics_callback(_metric_data, meta)
 
     def _setup_grids(
@@ -1106,8 +1098,6 @@ class FDSRun(WrappedRun):
         self._activation_times = False
         self._activation_times_data = {}
         self._grids_defined = False
-
-        logger.addHandler(simvue.Handler(self))
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
