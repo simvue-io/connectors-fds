@@ -164,13 +164,15 @@ def test_fds_invalid_slice(folder_setup, caplog, slice_id):
             slice_parse_ids = [slice_id] if slice_id else None,
             slice_parse_interval = 3
         )
-    if slice_id == "cell_centered_slice" or not slice_id:
-        assert "Unable to parse a slice due to unexpected values within the slice - enable debug logging for full traceback." in caplog.text
-    if slice_id == "large_slice" or not slice_id:
-        assert "Slice 'large_slice' exceeds the maximum size for upload to the server - ignoring this metric." in caplog.text
+
     client = simvue.Client()
-    
+    events = [event["message"] for event in client.get_events(run_id)]
     metrics_names = [item for item in client.get_metrics_names(run_id)]
+    
+    if slice_id == "cell_centered_slice" or not slice_id:
+        assert all("Unable to parse a slice due to unexpected values within the slice - enable debug logging for full traceback." in s for s in (caplog.text, events))
+    if slice_id == "large_slice" or not slice_id:
+        assert all("Slice 'large_slice' exceeds the maximum size for upload to the server - ignoring this metric." in s for s in (caplog.text, events))
     
     
     if slice_id:

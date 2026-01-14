@@ -993,6 +993,8 @@ class FDSRun(WrappedRun):
         self._grids_defined = False
         self._line_var_coords = {}
 
+        logger.addHandler(simvue.Handler(self))
+
         if slice_parse_quantity:
             logger.warning(
                 "'slice_parse_quantity' is deprecated and will be removed in version 2. Please migrate to enabling slice parsing, and optionally providing either a list of quantities or slice IDs to parse."
@@ -1104,6 +1106,8 @@ class FDSRun(WrappedRun):
         self._loading_historic_run = True
         self._grids_defined = False
         self._concatenated_input_files = False
+
+        logger.addHandler(simvue.Handler(self))
 
         if slice_parse_quantity:
             logger.warning(
