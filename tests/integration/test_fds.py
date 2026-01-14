@@ -219,6 +219,19 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     )
     assert response.status_code == 200
     numpy.array(response.json().get("array")).shape == (41, 31)
+    
+    # Check line DEVC uploaded as 2D metric
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
+    response = requests.get(
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/visibility_time_averaged/values?step=0",
+        headers={
+            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+            "User-Agent": "Simvue Python client",
+            "Accept-Encoding": "gzip",
+        }
+    )
+    assert response.status_code == 200
+    numpy.array(response.json().get("array")).shape == (100)
 
     temp_dir = tempfile.TemporaryDirectory()
 
