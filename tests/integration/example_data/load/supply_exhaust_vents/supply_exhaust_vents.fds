@@ -5,9 +5,9 @@
 &MESH XB= 0, 3, 0, 2, 0, 3, IJK= 30, 20, 30 /
 &MESH XB= 0, 3, 2, 4, 0, 3, IJK= 30, 20, 30 /
 
-# Simulate the fire for 10 seconds, output results every second
-&TIME T_END=10. /
-&DUMP NFRAMES=10, WRITE_XYZ=.TRUE. /
+# Simulate the fire for 5 seconds, output results every second
+&TIME T_END=5. /
+&DUMP NFRAMES=5, WRITE_XYZ=.TRUE. /
 
 # Define the type of fuel for the fire
 &REAC ID = 'propane reaction',
@@ -42,4 +42,8 @@ FUEL='PROPANE'/
 &DEVC XB=3,3,1.5,2.5,2.6,3, QUANTITY='VOLUME FLOW', ID='flow_volume_exhaust' /
 &DEVC XB=1.5,1.5,0,0,1.5,1.5, QUANTITY='VISIBILITY', ID='eye_level_visibility' /
 &DEVC XYZ=1.5,0,1.5, QUANTITY='TEMPERATURE', ID='air_temperature' /
+
+# Generate a set of DEVC outputs along the full height of the room at the doorway (x=1.5, y=0) showing soot visibility
+&DEVC XB=1.5,1.5,0,0,0,2.9, QUANTITY='VISIBILITY', ID='visibility_time_averaged', POINTS=100, STATISTICS_START=0., STATISTICS_END=5. /
+
 &TAIL /

@@ -127,7 +127,8 @@ jobs:
         with:
           type: 'zip'
           filename: 'example_results.zip'
-          path: 'examples/example_results'
+          directory: 'examples'
+          path: 'example_results'
       - name: Upload example zip file
         uses: ncipollo/release-action@v1.12.0
         with:
