@@ -38,6 +38,7 @@ from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
 logger = logging.getLogger(__name__)
+MAXIMUM_SLICE_SIZE: int = 50000
 
 
 class FDSRun(WrappedRun):
@@ -635,7 +636,7 @@ class FDSRun(WrappedRun):
                 if (
                     coords[slice.extent_dirs[0]].shape[0]
                     * coords[slice.extent_dirs[1]].shape[0]
-                    > 50000
+                    > MAXIMUM_SLICE_SIZE
                 ):
                     logger.warning(
                         f"Slice '{metric_name}' exceeds the maximum size for upload to the server - ignoring this metric."
