@@ -1,5 +1,3 @@
-import os
-import shutil
 import pytest
 import pathlib
 import platform
@@ -40,7 +38,7 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
                 name=f"fds-integration-{file_path.stem}-{'parallel' if parallel else 'serial'}-{'offline' if offline else 'online'}-{'load' if load else 'launch'}-{str(uuid.uuid4())}",
                 description="An example of using the FDSRun Connector to track an FDS simulation.",
                 folder=run_folder,
-                tags=["fds", "integration", "test"],
+                tags=sorted(["fds", "integration", "test", platform.system()]),
             )
             # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
             run.create_metric_threshold_alert(
