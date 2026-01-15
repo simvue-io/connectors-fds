@@ -1,7 +1,7 @@
 
  Fire Dynamics Simulator
 
- Current Date     : November  3, 2025  17:53:11
+ Current Date     : January 14, 2026  15:57:01
  Revision         : FDS-6.9.1-0-g889da6a-release
  Revision Date    : Sun Apr 7 17:05:06 2024 -0400
  Compiler         : Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.7.1 Build 20221019_000000
@@ -52,7 +52,7 @@
    Initial Time Step (s)            0.092
    CFL Velocity Norm                    2
    Simulation Start Time (s)          0.0
-   Simulation End Time (s)           10.0
+   Simulation End Time (s)            5.0
    Background Pressure (Pa)     101325.00
    Ambient Temperature (C)          20.00
 
@@ -423,6 +423,506 @@
      QUANTITY: TEMPERATURE
      Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.500000E+00
      TEMPORAL STATISTIC: TIME AVERAGE
+   6 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.000000E-03
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+   7 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.929293E-02
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+   8 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    5.858586E-02
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+   9 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    8.787879E-02
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  10 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.171717E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  11 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.464646E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  12 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.757576E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  13 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.050505E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  14 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.343434E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  15 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.636364E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  16 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.929293E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  17 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    3.222222E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  18 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    3.515152E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  19 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    3.808081E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  20 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    4.101010E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  21 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    4.393939E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  22 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    4.686869E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  23 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    4.979798E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  24 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    5.272727E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  25 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    5.565657E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  26 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    5.858586E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  27 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    6.151515E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  28 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    6.444444E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  29 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    6.737374E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  30 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    7.030303E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  31 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    7.323232E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  32 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    7.616162E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  33 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    7.909091E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  34 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    8.202020E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  35 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    8.494949E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  36 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    8.787879E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  37 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    9.080808E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  38 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    9.373737E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  39 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    9.666667E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  40 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    9.959596E-01
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  41 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.025253E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  42 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.054545E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  43 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.083838E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  44 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.113131E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  45 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.142424E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  46 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.171717E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  47 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.201010E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  48 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.230303E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  49 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.259596E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  50 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.288889E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  51 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.318182E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  52 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.347475E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  53 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.376768E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  54 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.406061E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  55 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.435354E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  56 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.464646E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  57 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.493939E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  58 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.523232E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  59 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.552525E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  60 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.581818E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  61 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.611111E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  62 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.640404E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  63 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.669697E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  64 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.698990E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  65 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.728283E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  66 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.757576E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  67 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.786869E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  68 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.816162E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  69 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.845455E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  70 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.874747E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  71 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.904040E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  72 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.933333E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  73 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.962626E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  74 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    1.991919E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  75 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.021212E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  76 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.050505E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  77 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.079798E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  78 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.109091E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  79 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.138384E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  80 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.167677E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  81 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.196970E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  82 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.226263E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  83 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.255556E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  84 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.284848E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  85 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.314141E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  86 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.343434E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  87 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.372727E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  88 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.402020E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  89 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.431313E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  90 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.460606E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  91 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.489899E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  92 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.519192E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  93 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.548485E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  94 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.577778E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  95 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.607071E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  96 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.636364E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  97 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.665657E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  98 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.694949E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+  99 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.724242E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 100 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.753535E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 101 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.782828E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 102 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.812121E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 103 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.841414E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 104 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.870707E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
+ 105 ID: visibility_time_averaged
+     QUANTITY: VISIBILITY
+     Species ID: SOOT
+     Coordinates (X,Y,Z):    1.500000E+00    1.000000E-03    2.900000E+00
+     TEMPORAL STATISTIC: RUNNING AVERAGE
 
 
  Slice File Information, Mesh     1
@@ -469,7 +969,7 @@
 
  Run Time Diagnostics
 
-       Time Step        1   November  3, 2025  17:53:11
+       Time Step        1   January 14, 2026  15:57:01
        Step Size:    0.922E-01 s, Total Time:      0.092 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.38E-02 on Mesh 1 at (13,20,5)
@@ -486,7 +986,7 @@
        Min divergence: -0.84E-03 at (14,1,6)
        Max VN number:   0.23E-01 at (4,11,30)
  
-       Time Step        2   November  3, 2025  17:53:11
+       Time Step        2   January 14, 2026  15:57:01
        Step Size:    0.922E-01 s, Total Time:       0.18 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.22E-01 on Mesh 1 at (12,20,1)
@@ -505,7 +1005,7 @@
        Max VN number:   0.23E-01 at (4,11,30)
        Total Heat Release Rate:              4.581 kW
  
-       Time Step        3   November  3, 2025  17:53:11
+       Time Step        3   January 14, 2026  15:57:02
        Step Size:    0.922E-01 s, Total Time:       0.28 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.45E-01 on Mesh 1 at (13,20,1)
@@ -526,7 +1026,7 @@
        Total Heat Release Rate:              3.670 kW
        Radiation Loss to Boundaries:        -0.427 kW
  
-       Time Step        4   November  3, 2025  17:53:11
+       Time Step        4   January 14, 2026  15:57:02
        Step Size:    0.922E-01 s, Total Time:       0.37 s
        Pressure Iterations: 5
        Maximum Velocity Error:  0.46E-01 on Mesh 1 at (13,20,1)
@@ -547,7 +1047,7 @@
        Total Heat Release Rate:             23.449 kW
        Radiation Loss to Boundaries:        -0.895 kW
  
-       Time Step        5   November  3, 2025  17:53:11
+       Time Step        5   January 14, 2026  15:57:02
        Step Size:    0.922E-01 s, Total Time:       0.46 s
        Pressure Iterations: 6
        Maximum Velocity Error:  0.31E-01 on Mesh 1 at (13,20,2)
@@ -568,7 +1068,7 @@
        Total Heat Release Rate:             15.690 kW
        Radiation Loss to Boundaries:        -2.718 kW
  
-       Time Step        6   November  3, 2025  17:53:12
+       Time Step        6   January 14, 2026  15:57:02
        Step Size:    0.922E-01 s, Total Time:       0.55 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.40E-01 on Mesh 1 at (18,20,1)
@@ -589,7 +1089,7 @@
        Total Heat Release Rate:             29.453 kW
        Radiation Loss to Boundaries:        -4.512 kW
  
-       Time Step        7   November  3, 2025  17:53:12
+       Time Step        7   January 14, 2026  15:57:02
        Step Size:    0.922E-01 s, Total Time:       0.65 s
        Pressure Iterations: 6
        Maximum Velocity Error:  0.35E-01 on Mesh 1 at (18,20,1)
@@ -610,7 +1110,7 @@
        Total Heat Release Rate:             27.612 kW
        Radiation Loss to Boundaries:        -9.208 kW
  
-       Time Step        8   November  3, 2025  17:53:12
+       Time Step        8   January 14, 2026  15:57:02
        Step Size:    0.781E-01 s, Total Time:       0.72 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.39E-01 on Mesh 1 at (18,20,1)
@@ -631,7 +1131,7 @@
        Total Heat Release Rate:             38.575 kW
        Radiation Loss to Boundaries:       -11.548 kW
  
-       Time Step        9   November  3, 2025  17:53:12
+       Time Step        9   January 14, 2026  15:57:02
        Step Size:    0.612E-01 s, Total Time:       0.78 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.27E-01 on Mesh 1 at (18,20,1)
@@ -652,7 +1152,7 @@
        Total Heat Release Rate:             41.097 kW
        Radiation Loss to Boundaries:       -15.831 kW
  
-       Time Step       10   November  3, 2025  17:53:12
+       Time Step       10   January 14, 2026  15:57:02
        Step Size:    0.523E-01 s, Total Time:       0.84 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.24E-01 on Mesh 1 at (17,20,2)
@@ -673,7 +1173,7 @@
        Total Heat Release Rate:             45.225 kW
        Radiation Loss to Boundaries:       -16.875 kW
  
-       Time Step       20   November  3, 2025  17:53:13
+       Time Step       20   January 14, 2026  15:57:03
        Step Size:    0.242E-01 s, Total Time:       1.17 s
        Pressure Iterations: 3
        Maximum Velocity Error:  0.36E-01 on Mesh 1 at (13,20,8)
@@ -694,7 +1194,7 @@
        Total Heat Release Rate:             60.454 kW
        Radiation Loss to Boundaries:       -18.001 kW
  
-       Time Step       30   November  3, 2025  17:53:14
+       Time Step       30   January 14, 2026  15:57:04
        Step Size:    0.217E-01 s, Total Time:       1.39 s
        Pressure Iterations: 3
        Maximum Velocity Error:  0.46E-01 on Mesh 2 at (13,0,12)
@@ -715,7 +1215,7 @@
        Total Heat Release Rate:             61.298 kW
        Radiation Loss to Boundaries:       -14.462 kW
  
-       Time Step       40   November  3, 2025  17:53:14
+       Time Step       40   January 14, 2026  15:57:05
        Step Size:    0.189E-01 s, Total Time:       1.60 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.30E-01 on Mesh 1 at (13,20,14)
@@ -736,7 +1236,7 @@
        Total Heat Release Rate:             65.403 kW
        Radiation Loss to Boundaries:       -15.576 kW
  
-       Time Step       50   November  3, 2025  17:53:15
+       Time Step       50   January 14, 2026  15:57:06
        Step Size:    0.189E-01 s, Total Time:       1.79 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.26E-01 on Mesh 1 at (13,20,17)
@@ -757,7 +1257,7 @@
        Total Heat Release Rate:             67.829 kW
        Radiation Loss to Boundaries:       -17.104 kW
  
-       Time Step       60   November  3, 2025  17:53:16
+       Time Step       60   January 14, 2026  15:57:07
        Step Size:    0.189E-01 s, Total Time:       1.98 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.29E-01 on Mesh 1 at (12,20,15)
@@ -778,7 +1278,7 @@
        Total Heat Release Rate:             68.680 kW
        Radiation Loss to Boundaries:       -17.350 kW
  
-       Time Step       70   November  3, 2025  17:53:17
+       Time Step       70   January 14, 2026  15:57:08
        Step Size:    0.166E-01 s, Total Time:       2.15 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.40E-01 on Mesh 2 at (15,0,16)
@@ -799,7 +1299,7 @@
        Total Heat Release Rate:             70.300 kW
        Radiation Loss to Boundaries:       -17.397 kW
  
-       Time Step       80   November  3, 2025  17:53:17
+       Time Step       80   January 14, 2026  15:57:08
        Step Size:    0.149E-01 s, Total Time:       2.31 s
        Pressure Iterations: 5
        Maximum Velocity Error:  0.25E-01 on Mesh 1 at (16,20,20)
@@ -820,7 +1320,7 @@
        Total Heat Release Rate:             70.653 kW
        Radiation Loss to Boundaries:       -17.480 kW
  
-       Time Step       90   November  3, 2025  17:53:18
+       Time Step       90   January 14, 2026  15:57:09
        Step Size:    0.149E-01 s, Total Time:       2.46 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.38E-01 on Mesh 1 at (15,20,20)
@@ -841,7 +1341,7 @@
        Total Heat Release Rate:             71.195 kW
        Radiation Loss to Boundaries:       -17.901 kW
  
-       Time Step      100   November  3, 2025  17:53:19
+       Time Step      100   January 14, 2026  15:57:10
        Step Size:    0.149E-01 s, Total Time:       2.61 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.27E-01 on Mesh 1 at (17,20,24)
@@ -862,7 +1362,7 @@
        Total Heat Release Rate:             71.459 kW
        Radiation Loss to Boundaries:       -17.623 kW
  
-       Time Step      200   November  3, 2025  17:53:27
+       Time Step      200   January 14, 2026  15:57:19
        Step Size:    0.133E-01 s, Total Time:       3.92 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.30E-01 on Mesh 1 at (17,20,28)
@@ -883,89 +1383,26 @@
        Total Heat Release Rate:             70.735 kW
        Radiation Loss to Boundaries:       -16.641 kW
  
-       Time Step      300   November  3, 2025  17:53:35
-       Step Size:    0.142E-01 s, Total Time:       5.33 s
+       Time Step      277   January 14, 2026  15:57:26
+       Step Size:    0.113E-01 s, Total Time:       5.00 s
        Pressure Iterations: 3
-       Maximum Velocity Error:  0.29E-01 on Mesh 1 at (17,20,26)
-       Maximum Pressure Error:  0.66E+02 on Mesh 2 at (29,1,30)
+       Maximum Velocity Error:  0.31E-01 on Mesh 1 at (17,20,23)
+       Maximum Pressure Error:  0.92E+02 on Mesh 1 at (18,18,30)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.76E+00 at (17,20,26)
-       Max divergence:  0.28E+01 at (18,20,6)
-       Min divergence: -0.14E+01 at (16,20,14)
-       Max VN number:   0.70E+00 at (30,16,29)
-       Total Heat Release Rate:             73.028 kW
-       Radiation Loss to Boundaries:       -19.472 kW
+       Max CFL number:  0.67E+00 at (17,20,22)
+       Max divergence:  0.25E+01 at (17,18,6)
+       Min divergence: -0.90E+00 at (17,20,19)
+       Max VN number:   0.57E+00 at (18,14,30)
+       Total Heat Release Rate:             73.542 kW
+       Radiation Loss to Boundaries:       -18.773 kW
        Mesh    2
-       Max CFL number:  0.83E+00 at (17,1,24)
-       Max divergence:  0.26E+01 at (18,1,6)
-       Min divergence: -0.90E+00 at (17,1,11)
-       Max VN number:   0.48E+00 at (19,10,30)
-       Total Heat Release Rate:             70.179 kW
-       Radiation Loss to Boundaries:       -15.260 kW
- 
-       Time Step      400   November  3, 2025  17:53:43
-       Step Size:    0.171E-01 s, Total Time:       6.87 s
-       Pressure Iterations: 2
-       Maximum Velocity Error:  0.42E-01 on Mesh 1 at (19,20,28)
-       Maximum Pressure Error:  0.41E+02 on Mesh 2 at (21,3,30)
-       ---------------------------------------------------------------
-       Mesh    1
-       Max CFL number:  0.84E+00 at (30,18,27)
-       Max divergence:  0.30E+01 at (14,18,1)
-       Min divergence: -0.13E+01 at (17,20,13)
-       Max VN number:   0.44E+00 at (30,2,25)
-       Total Heat Release Rate:             73.188 kW
-       Radiation Loss to Boundaries:       -18.534 kW
-       Mesh    2
-       Max CFL number:  0.88E+00 at (20,4,26)
+       Max CFL number:  0.66E+00 at (17,1,25)
        Max divergence:  0.26E+01 at (14,3,1)
-       Min divergence: -0.75E+00 at (17,1,8)
-       Max VN number:   0.53E+00 at (19,1,30)
-       Total Heat Release Rate:             69.834 kW
-       Radiation Loss to Boundaries:       -15.813 kW
- 
-       Time Step      500   November  3, 2025  17:53:51
-       Step Size:    0.171E-01 s, Total Time:       8.58 s
-       Pressure Iterations: 2
-       Maximum Velocity Error:  0.20E-01 on Mesh 1 at (29,20,28)
-       Maximum Pressure Error:  0.33E+02 on Mesh 2 at (29,4,30)
-       ---------------------------------------------------------------
-       Mesh    1
-       Max CFL number:  0.91E+00 at (30,18,27)
-       Max divergence:  0.32E+01 at (18,20,4)
-       Min divergence: -0.11E+01 at (16,20,9)
-       Max VN number:   0.58E+00 at (30,17,29)
-       Total Heat Release Rate:             74.854 kW
-       Radiation Loss to Boundaries:       -18.862 kW
-       Mesh    2
-       Max CFL number:  0.89E+00 at (29,5,30)
-       Max divergence:  0.22E+01 at (17,3,2)
-       Min divergence: -0.79E+00 at (18,2,16)
-       Max VN number:   0.38E+00 at (30,6,29)
-       Total Heat Release Rate:             67.684 kW
-       Radiation Loss to Boundaries:       -16.329 kW
- 
-       Time Step      589   November  3, 2025  17:53:58
-       Step Size:    0.152E-01 s, Total Time:      10.00 s
-       Pressure Iterations: 2
-       Maximum Velocity Error:  0.22E-01 on Mesh 1 at (20,20,24)
-       Maximum Pressure Error:  0.13E+02 on Mesh 2 at (29,1,30)
-       ---------------------------------------------------------------
-       Mesh    1
-       Max CFL number:  0.79E+00 at (30,19,27)
-       Max divergence:  0.28E+01 at (14,18,3)
-       Min divergence: -0.93E+00 at (19,18,8)
-       Max VN number:   0.60E+00 at (21,19,1)
-       Total Heat Release Rate:             71.663 kW
-       Radiation Loss to Boundaries:       -18.336 kW
-       Mesh    2
-       Max CFL number:  0.77E+00 at (30,3,27)
-       Max divergence:  0.28E+01 at (14,3,1)
-       Min divergence: -0.70E+00 at (23,3,11)
-       Max VN number:   0.35E+00 at (30,8,28)
-       Total Heat Release Rate:             73.372 kW
-       Radiation Loss to Boundaries:       -18.070 kW
+       Min divergence: -0.99E+00 at (17,2,8)
+       Max VN number:   0.48E+00 at (20,7,30)
+       Total Heat Release Rate:             72.731 kW
+       Radiation Loss to Boundaries:       -16.855 kW
  
 
 
@@ -974,7 +1411,7 @@
          1    timer                     T           2.001
 
 
- Time Stepping Wall Clock Time (s):       47.306
- Total Elapsed Wall Clock Time (s):       48.879
+ Time Stepping Wall Clock Time (s):       24.280
+ Total Elapsed Wall Clock Time (s):       25.877
 
 STOP: FDS completed successfully (CHID: supply_exhaust_vents)
