@@ -1,6 +1,11 @@
 # Change log
 
-## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
+## [v1.3.3](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.3) - 2026-01-15
+* Fixes bug where IndexError is thrown if the FDS Simulation alert is not available
+* Fixes bug caused by an edge case in FDS which gives NaNs in DEVC Line devices
+* Adds environment variable to be able to specify the FDS run command manually
+
+## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.2) - 2025-12-11
 * Add zip of example results to releas artifacts
 
 ## [v1.3.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
