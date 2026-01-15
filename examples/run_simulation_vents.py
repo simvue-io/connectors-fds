@@ -63,5 +63,6 @@ with FDSRun() as run:
         clean_workdir=True,
         slice_parse_enabled=True,
         slice_parse_quantities=["TEMPERATURE"],
+        slice_parse_interval=10
     )
         

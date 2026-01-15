@@ -649,7 +649,8 @@ class FDSRun(WrappedRun):
                     ],
                     axes_labels=slice.extent_dirs,
                 )
-            for time_idx, time_val in enumerate(times[self._slice_processed_idx :]):
+            times_to_process = times[self._slice_processed_idx :]
+            for time_idx, time_val in enumerate(times_to_process):
                 values_at_time = values[time_idx, ...]
                 values_no_obst = values_at_time[~numpy.isnan(values_at_time)]
 
@@ -668,7 +669,7 @@ class FDSRun(WrappedRun):
                 if not slice_metrics[time_val].get("timestamp"):
                     slice_metrics[time_val]["timestamp"] = self._last_parse_time + (
                         datetime.now(timezone.utc).timestamp() - self._last_parse_time
-                    ) * ((time_idx + 1) / len(slices))
+                    ) * ((time_idx + 1) / len(times_to_process))
 
         for time_val, metrics in slice_metrics.items():
             timestamp = metrics.pop("timestamp", None)
