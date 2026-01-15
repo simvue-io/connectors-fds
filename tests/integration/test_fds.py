@@ -81,7 +81,8 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
         if load:
             run.load(
                 results_dir=file_path,
-                slice_parse_quantity = slice_var,
+                slice_parse_enabled = True if slice_var else False,
+                slice_parse_quantities = [slice_var] if slice_var else None,
             )
         else:
             # Then call the .launch() method to start your FDS simulation, providing the path to the input file
@@ -90,7 +91,8 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
                 workdir_path = str(pathlib.Path(__file__).parent.joinpath("results")),
                 clean_workdir=True,
                 # You can optionally have the connector track slices in your simulation
-                slice_parse_quantity = slice_var,
+                slice_parse_enabled = True if slice_var else False,
+                slice_parse_quantities = [slice_var] if slice_var else None,
                 slice_parse_interval = 10,
                 # And you can choose whether to run it in parallel
                 run_in_parallel = parallel,

@@ -61,6 +61,6 @@ with FDSRun() as run:
         fds_input_file_path=pathlib.Path(__file__).parent.joinpath("input_with_vents.fds"),
         workdir_path=str(pathlib.Path(__file__).parent.joinpath("results_vents")),
         clean_workdir=True,
-        slice_parse_quantity = "TEMPERATURE",
+        slice_parse_quantities = ["TEMPERATURE"],
     )
         

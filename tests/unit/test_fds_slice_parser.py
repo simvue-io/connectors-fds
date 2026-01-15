@@ -26,7 +26,7 @@ def mock_post_sim(self, *_, **__):
 # Test with single and multi meshes
 # Test with visibility and temperature
 @pytest.mark.parametrize("results_path", ("slice_singlemesh", "slice_multimesh"), ids=("single_mesh", "multi_mesh"))
-@pytest.mark.parametrize("slice_parameter", ("SOOT VISIBILITY", ["SOOT VISIBILITY", "TEMPERATURE"], None), ids=("visibility", "visibility-temperature", "no-quantities"))
+@pytest.mark.parametrize("slice_parameter", (["SOOT VISIBILITY", "TEMPERATURE"], None), ids=("visibility-temperature", "no-quantities"))
 @pytest.mark.parametrize("slice_ids", (["temperature_slice", "visibility_slice", "velocity_slice"], None), ids=("ids", "no-ids"))
 @pytest.mark.parametrize("enabled", (True, False), ids=("enabled", "disabled"))    
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
@@ -40,39 +40,22 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
         run.init(f"testing_{results_path}_{'enabled' if enabled else 'disabled'}_{'quantities' if slice_parameter else 'no-quantities'}_{'ids' if slice_ids else 'no-ids'}_{'load' if load else 'launch'}", folder=folder_setup)
         run_id = run.id
         if load:
-            if type(slice_parameter) is str:
-                run.load(
-                    pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                    slice_parse_quantity = slice_parameter,
-                    slice_parse_ids = slice_ids,
-                    
-                )
-            else:
-                run.load(
-                    pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                    slice_parse_enabled = enabled,
-                    slice_parse_quantities = slice_parameter,
-                    slice_parse_ids = slice_ids,
-                )
+            run.load(
+                pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                slice_parse_enabled = enabled,
+                slice_parse_quantities = slice_parameter,
+                slice_parse_ids = slice_ids,
+            )
         else:
-            if type(slice_parameter) is str:
-                run.launch(
-                    fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
-                    workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                    slice_parse_quantity = slice_parameter,
-                    slice_parse_ids = slice_ids,
-                    slice_parse_interval = 3,
-                )
-            else:
-                run.launch(
-                    fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
-                    workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
-                    slice_parse_enabled = enabled,
-                    slice_parse_quantities = slice_parameter,
-                    slice_parse_ids = slice_ids,
-                    slice_parse_interval = 3
-                )
-                
+            run.launch(
+                fds_input_file_path= pathlib.Path(__file__).parent.joinpath("example_data", results_path, "no_vents.fds"),
+                workdir_path = pathlib.Path(__file__).parent.joinpath("example_data", results_path),
+                slice_parse_enabled = enabled,
+                slice_parse_quantities = slice_parameter,
+                slice_parse_ids = slice_ids,
+                slice_parse_interval = 3
+            )
+            
         # Mesh is 30x40x30 cells, this means 31x41x31 grid points
         # The data is then transposed so that it is in (row, col) which is what multidimensional metrics expects
         # This means the shapes below are flipped, eg for a slice at fixed x:
@@ -83,11 +66,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
         _slice_dims = [(31, 41), (31, 31), (41, 31), (41, 31)]
                     
         # Check all metrics from slice have been created
-        if type(slice_parameter) is str:
-            # This is the deprecated way to specify - automatically enables the feature
-            expected_metrics = ["visibility_slice"] if slice_ids else ["soot_visibility.x.1_5", "visibility_slice", "soot_visibility.z.1_5", "soot_visibility.z.2_5"]
-            expected_slice_dims = _slice_dims[1:2] if slice_ids else _slice_dims
-        elif slice_parameter:
+        if slice_parameter:
             if not enabled:
                 expected_metrics = None
             else:

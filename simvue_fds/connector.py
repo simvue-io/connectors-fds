@@ -3,21 +3,17 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
-import contextlib
 import csv
 import glob
-import io
 import os
 import pathlib
 import platform
 import re
 import shutil
-import sys
 import threading
 import time
 import typing
 from datetime import datetime, timezone
-from itertools import chain
 
 import pandas
 
@@ -37,7 +33,6 @@ import numpy
 import pydantic
 import simvue
 from fdsreader.slcf.slice import Slice
-from simvue.models import DATETIME_FORMAT
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
@@ -916,11 +911,9 @@ class FDSRun(WrappedRun):
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
-        slice_parse_quantity: str | None = None,
         slice_parse_quantities: list[str] | None = None,
         slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
-        slice_parse_ignore_zeros: bool = False,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
         fds_env_vars: typing.Optional[dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
@@ -947,9 +940,6 @@ class FDSRun(WrappedRun):
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_enabled: bool, optional
             Whether to enable slice parsing for this run, by default False
-        slice_parse_quantity: str | None, optional
-            DEPRECATED: Will be removed in version 2
-            The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
         slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
         slice_parse_ids: list[str] | None, optional
@@ -957,9 +947,6 @@ class FDSRun(WrappedRun):
             Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
         slice_parse_interval : int, optional
             Interval (in seconds) at which to parse and upload 2D slice data, default is 60
-        slice_parse_ignore_zeros : bool, optional
-            DEPRECATED: Will be removed in version 2
-            This setting has no effect.
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[dict[str, typing.Any]], optional
@@ -976,6 +963,7 @@ class FDSRun(WrappedRun):
         self.workdir_path = workdir_path
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
+        self.slice_parse_quantities = slice_parse_quantities
         self.slice_parse_ids = slice_parse_ids
         self.slice_parse_interval = slice_parse_interval
         self.slice_parser = None
@@ -984,9 +972,6 @@ class FDSRun(WrappedRun):
         self.run_in_parallel = run_in_parallel
         self.num_processors = num_processors
         self.mpiexec_env_vars = mpiexec_env_vars or {}
-        self.slice_parse_quantities = (
-            [slice_parse_quantity] if slice_parse_quantity else slice_parse_quantities
-        )
 
         self._activation_times = False
         self._activation_times_data = {}
@@ -994,17 +979,6 @@ class FDSRun(WrappedRun):
         self._line_var_coords = {}
 
         logger.addHandler(simvue.Handler(self))
-
-        if slice_parse_quantity:
-            logger.warning(
-                "'slice_parse_quantity' is deprecated and will be removed in version 2. Please migrate to enabling slice parsing, and optionally providing either a list of quantities or slice IDs to parse."
-            )
-            self.slice_parse_enabled = True
-
-        if slice_parse_ignore_zeros:
-            logger.warning(
-                "'slice_parse_ignore_zeros' is deprecated and will be removed in version 2. This setting has no effect - obstructions will be automatically removed from summary metric calculations."
-            )
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
@@ -1058,10 +1032,8 @@ class FDSRun(WrappedRun):
         results_dir: pydantic.DirectoryPath,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
-        slice_parse_quantity: str | None = None,
         slice_parse_quantities: list[str] | None = None,
         slice_parse_ids: list[str] | None = None,
-        slice_parse_ignore_zeros: bool = False,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
@@ -1075,17 +1047,11 @@ class FDSRun(WrappedRun):
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
         slice_parse_enabled: bool, optional
             Whether to enable slice parsing for this run, by default False
-        slice_parse_quantity: str | None, optional
-            DEPRECATED: Will be removed in version 2
-            The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
         slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
         slice_parse_ids: list[str] | None, optional
             If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
             Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
-        slice_parse_ignore_zeros : bool, optional
-            DEPRECATED: Will be removed in version 2
-            This setting has no effect.
 
         Raises
         ------
@@ -1097,10 +1063,8 @@ class FDSRun(WrappedRun):
         self.workdir_path = results_dir
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
+        self.slice_parse_quantities = slice_parse_quantities
         self.slice_parse_ids = slice_parse_ids
-        self.slice_parse_quantities = (
-            [slice_parse_quantity] if slice_parse_quantity else slice_parse_quantities
-        )
 
         self.slice_parser = None
         self._loading_historic_run = True
@@ -1108,17 +1072,6 @@ class FDSRun(WrappedRun):
         self._concatenated_input_files = False
 
         logger.addHandler(simvue.Handler(self))
-
-        if slice_parse_quantity:
-            logger.warning(
-                "'slice_parse_quantity' is deprecated and will be removed in version 2. Please migrate to enabling slice parsing, and optionally providing either a list of quantities or slice IDs to parse."
-            )
-            self.slice_parse_enabled = True
-
-        if slice_parse_ignore_zeros:
-            logger.warning(
-                "'slice_parse_ignore_zeros' is deprecated and will be removed in version 2. This setting has no effect - obstructions will be automatically removed from summary metric calculations."
-            )
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
