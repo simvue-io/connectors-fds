@@ -1,5 +1,11 @@
 # Change log
 
+## [v2.0.0](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.0) - 2026-01-15
+* Makes slice parsing more efficient by using FDSReader
+* Slices to parse can now be specified by ID as well as by quantities
+* Breaking change to input format to launch and load commands
+* Changes license to GPL3
+
 ## [v1.3.3](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.3) - 2026-01-15
 * Fixes bug where IndexError is thrown if the FDS Simulation alert is not available
 * Fixes bug caused by an edge case in FDS which gives NaNs in DEVC Line devices

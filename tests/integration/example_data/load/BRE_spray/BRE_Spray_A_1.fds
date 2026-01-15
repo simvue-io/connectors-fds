@@ -6,7 +6,7 @@
 
 &TIME T_END=10.,DT = 0.05 /
 &SPEC ID = 'WATER VAPOR' /
-&DUMP DT_PL3D = 30.0 DT_DEVC = 0.1 WRITE_XYZ = .TRUE. /
+&DUMP DT_PL3D = 30.0 DT_DEVC = 0.1/
 
 &DEVC  XYZ = 0.0, 0.0,2.24, 
  PROP_ID =  'Nozzle'

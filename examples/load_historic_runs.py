@@ -42,5 +42,6 @@ with FDSRun() as run:
     # Call run.load(), providing the path to your directory of results
     run.load(
         results_dir=pathlib.Path(__file__).parent.joinpath("example_results"),
-        slice_parse_quantity = "TEMPERATURE"
+        slice_parse_enabled=True,
+        slice_parse_quantities=["TEMPERATURE"]
     )

@@ -3,11 +3,8 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
-import contextlib
 import csv
 import glob
-import io
-import json
 import os
 import pathlib
 import platform
@@ -30,16 +27,18 @@ import logging
 
 import click
 import f90nml
+import fdsreader
 import multiparser.parsing.file as mp_file_parser
 import multiparser.parsing.tail as mp_tail_parser
 import numpy
 import pydantic
-import pyfdstools
 import simvue
+from fdsreader.slcf.slice import Slice
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
 logger = logging.getLogger(__name__)
+MAXIMUM_SLICE_SIZE: int = 50000
 
 
 class FDSRun(WrappedRun):
@@ -568,111 +567,6 @@ class FDSRun(WrappedRun):
             _metric_data["time"] = 1
             self._metrics_callback(_metric_data, meta)
 
-    def _setup_grids(
-        self,
-        grid_data: numpy.ndarray,
-        indices: numpy.ndarray,
-        label: str,
-        names: numpy.ndarray,
-    ) -> None:
-        """Create 3D metric grids for each slice being analysed.
-
-        Parameters
-        ----------
-        grid_data : numpy.ndarray
-            The slice to compute min, max, mean over
-        indices : numpy.ndarray
-            The indices in the grid data at which slices are found
-        label : str
-            The dimension which this slice is calculated over
-        names : numpy.ndarray
-            Positions in space where the slice is calculated in the above dimension
-
-        """
-        for i, grid_index in enumerate(indices):
-            if label == "x":
-                axes = [
-                    grid_data[grid_index, :, 0, 1].tolist(),
-                    grid_data[grid_index, 0, :, 2].tolist(),
-                ]
-                axes_labels = ["y", "z"]
-            elif label == "y":
-                axes = [
-                    grid_data[:, grid_index, 0, 0].tolist(),
-                    grid_data[0, grid_index, :, 2].tolist(),
-                ]
-                axes_labels = ["x", "z"]
-            elif label == "z":
-                axes = [
-                    grid_data[:, 0, grid_index, 0].tolist(),
-                    grid_data[0, :, grid_index, 1].tolist(),
-                ]
-                axes_labels = ["x", "y"]
-
-            self.assign_metric_to_grid(
-                metric_name=f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(names[i], 3)).replace('.', '_')}",
-                axes_ticks=axes,
-                axes_labels=axes_labels,
-            )
-
-    def _add_slice_metrics(
-        self,
-        metrics: dict,
-        sub_slice: numpy.ndarray,
-        label: str,
-        name: float,
-        ignore_zeros: bool,
-    ) -> dict:
-        """Add metrics for a given slice at a specific time to a dictionary of metrics.
-
-        Parameters
-        ----------
-        metrics : dict
-            The dictionary of metrics to add to
-        sub_slice : numpy.ndarray
-            The slice to compute min, max, mean over
-        label : str
-            The dimension which this slice is calculated over
-        name : float
-            Position in space where the slice is calculated in the above dimension
-        ignore_zeros : bool
-            Whether to ignore zeros in the slices
-
-        Returns
-        -------
-        dict
-            The updated metrics
-
-        Raises
-        ------
-        ValueError
-            Raised of all values defined in a slice are NaN (likely due to a slice defined in an obstruction)
-
-        """
-        sub_slice_no_nan = sub_slice[~numpy.isnan(sub_slice)]
-        if sub_slice_no_nan.size == 0:
-            raise ValueError(
-                "Slice is not correctly defined - all values are NaN! Slice parsing has been disabled for this run."
-            )
-
-        _metric_label = f"{self.slice_parse_quantity.replace(' ', '_').lower()}.{label}.{str(round(name, 3)).replace('.', '_')}"
-
-        if ignore_zeros:
-            sub_slice_no_nan = sub_slice_no_nan[numpy.where(sub_slice_no_nan != 0)]
-            if sub_slice_no_nan.size == 0:
-                logger.warning(
-                    f"""All values in slice '{_metric_label}' are zeros, but ignore_zeros is set to True!
-                Summary metrics for this slice will be set to zero.
-                You may wish to disable `slice_parse_ignore_zeros` in future runs."""
-                )
-                sub_slice_no_nan = numpy.zeros(1)
-
-        metrics[_metric_label] = sub_slice.T
-        metrics[f"{_metric_label}.min"] = numpy.min(sub_slice_no_nan)
-        metrics[f"{_metric_label}.max"] = numpy.max(sub_slice_no_nan)
-        metrics[f"{_metric_label}.avg"] = numpy.mean(sub_slice_no_nan)
-        return metrics
-
     def _parse_slice(self) -> bool:
         """Parse slices present in the FDS results files and extract data as metrics.
 
@@ -682,118 +576,119 @@ class FDSRun(WrappedRun):
             Whether the slice was successfuly extracted
 
         """
-        # grid_abs is an array of all possible grid points, shape (X, Y, Z, 3)
-        # data_abs is an array of all values, shape (X, Y, Z, times)
-        # times_out is an array of in simulation times
-        temp_stdout = io.StringIO()
-        try:
-            with contextlib.redirect_stdout(temp_stdout):
-                grid_abs, data_abs, times_out = pyfdstools.readSLCF2Ddata(
-                    self._chid,
-                    str(pathlib.Path(self.workdir_path).absolute())
-                    if self.workdir_path
-                    else str(pathlib.Path.cwd()),
-                    self.slice_parse_quantity,
+        sim = fdsreader.Simulation(str(pathlib.Path(self.workdir_path).absolute()))
+        slices: list[Slice] = (
+            [sim.slices.get_by_id(_id) for _id in self.slice_parse_ids]
+            if self.slice_parse_ids
+            else sim.slices
+        )
+        if self.slice_parse_quantities:
+            slices = [
+                slice
+                for slice in slices
+                if slice.quantity.quantity in self.slice_parse_quantities
+            ]
+
+        # Calculate the metrics which need to be sent, store in format:
+        # {time: {metric_name: [], timestamp: ""}}
+        slice_metrics: dict[float, dict] = {}
+        times = None
+
+        for slice in slices:
+            if not slice:
+                continue
+            # Check it is a 2D slice, if not then ignore
+            if slice.type == "3D":
+                continue
+
+            # Get the values, coordinates, times
+            # Due to edge cases which may break fdsreader, we cover this in a try... except
+            try:
+                values, coords = slice.to_global(
+                    masked=True, fill=numpy.nan, return_coordinates=True
                 )
-        except Exception as e:
-            logger.error(
-                """Failed to collect 2D slice data - check that your slice quantity is valid.
-                Slice parsing has been disabled for this run. Enable debug logging for more info."""
-            )
-            logger.debug(f"Exception is: {e}")
-            logger.debug(f"Debug: \n {temp_stdout.getvalue()}")
-            return False
+                times = slice.times
+            except Exception as e:
+                if not self._grids_defined:
+                    logger.warning(
+                        "Unable to parse a slice due to unexpected values within the slice - enable debug logging for full traceback."
+                    )
+                    logger.debug(e)
+                continue
 
-        # Remove times which we have already processed
-        times_out = times_out[: data_abs.shape[-1]]
-        to_process = numpy.where(times_out > self._slice_processed_time)[0]
+            # Get rid of values already uploaded, return if nothing left to upload
+            values = values[self._slice_processed_idx :, ...]
+            if values.shape[0] == 0:
+                continue
 
-        if len(to_process) == 0:
-            return True
+            # Check if slice has an ID, generate a metric name if not
+            metric_name = slice.id
+            if not metric_name:
+                # Will name it {quantity}.{axis}.{value}
+                quantity = slice.quantity.quantity.replace(" ", "_").lower()
+                axis = next(ax for ax in ("x", "y", "z") if ax not in slice.extent_dirs)
+                value = str(round(coords[axis][0], 3)).replace(".", "_")
+                metric_name = f"{quantity}.{axis}.{value}"
 
-        times_out = times_out[to_process]
-        data_abs = data_abs[:, :, :, to_process]
-
-        # Find X, Y, and Z slices which are present in our data
-        # Defined as over 50% of mesh points being not NaN
-        x_indices = numpy.where(
-            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(1, 2))
-            / (data_abs.shape[1] * data_abs.shape[2])
-            > 0.5
-        )[0]
-        y_indices = numpy.where(
-            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 2))
-            / (data_abs.shape[0] * data_abs.shape[2])
-            > 0.5
-        )[0]
-        z_indices = numpy.where(
-            numpy.sum(~numpy.isnan(data_abs[..., 0]), axis=(0, 1))
-            / (data_abs.shape[0] * data_abs.shape[1])
-            > 0.5
-        )[0]
-
-        # Convert these to their actual positions, for naming
-        x_names = grid_abs[x_indices, 0, 0, 0]
-        y_names = grid_abs[0, y_indices, 0, 1]
-        z_names = grid_abs[0, 0, z_indices, 2]
-        if not self._grids_defined:
-            self._setup_grids(grid_abs, x_indices, "x", x_names)
-            self._setup_grids(grid_abs, y_indices, "y", y_names)
-            self._setup_grids(grid_abs, z_indices, "z", z_names)
-            self._grids_defined = True
-
-        # Take the 2D slices
-        x_slices = data_abs[x_indices, :, :, :]
-        y_slices = data_abs[:, y_indices, :, :]
-        z_slices = data_abs[:, :, z_indices, :]
-
-        for time_idx, time_val in enumerate(times_out):
-            metrics = {}
-            for idx in range(len(x_indices)):
-                sub_slice = x_slices[idx, :, :, time_idx]
-                metrics = self._add_slice_metrics(
-                    metrics,
-                    sub_slice,
-                    label="x",
-                    name=x_names[idx],
-                    ignore_zeros=self.slice_parse_ignore_zeros,
+            # Define grid if first pass
+            if not self._grids_defined:
+                # Check size doesn't breach server limit
+                if (
+                    coords[slice.extent_dirs[0]].shape[0]
+                    * coords[slice.extent_dirs[1]].shape[0]
+                    > MAXIMUM_SLICE_SIZE
+                ):
+                    logger.warning(
+                        f"Slice '{metric_name}' exceeds the maximum size for upload to the server - ignoring this metric."
+                    )
+                    continue
+                self.assign_metric_to_grid(
+                    metric_name=metric_name,
+                    axes_ticks=[
+                        coords[slice.extent_dirs[0]].tolist(),
+                        coords[slice.extent_dirs[1]].tolist(),
+                    ],
+                    axes_labels=slice.extent_dirs,
                 )
+            times_to_process = times[self._slice_processed_idx :]
+            for time_idx, time_val in enumerate(times_to_process):
+                values_at_time = values[time_idx, ...]
+                values_no_obst = values_at_time[~numpy.isnan(values_at_time)]
 
-            for idx in range(len(y_indices)):
-                sub_slice = y_slices[:, idx, :, time_idx]
-                metrics = self._add_slice_metrics(
-                    metrics,
-                    sub_slice,
-                    label="y",
-                    name=y_names[idx],
-                    ignore_zeros=self.slice_parse_ignore_zeros,
-                )
-
-            for idx in range(len(z_indices)):
-                sub_slice = z_slices[:, :, idx, time_idx]
-                metrics = self._add_slice_metrics(
-                    metrics,
-                    sub_slice,
-                    label="z",
-                    name=z_names[idx],
-                    ignore_zeros=self.slice_parse_ignore_zeros,
+                slice_metrics.setdefault(time_val, {})
+                slice_metrics[time_val].update(
+                    {
+                        metric_name: numpy.nan_to_num(values_at_time).T,
+                        f"{metric_name}.min": numpy.min(values_no_obst),
+                        f"{metric_name}.max": numpy.max(values_no_obst),
+                        f"{metric_name}.avg": numpy.mean(values_no_obst),
+                    }
                 )
 
-            # Need to estimate timestamp which this measurement would correspond to
-            # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
-            _timestamp_estimate: float = self._parse_time + (
-                datetime.now(timezone.utc).timestamp() - self._parse_time
-            ) * ((time_idx + 1) / len(times_out))
+                # Need to estimate timestamp which this measurement would correspond to
+                # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
+                if not slice_metrics[time_val].get("timestamp"):
+                    slice_metrics[time_val]["timestamp"] = self._last_parse_time + (
+                        datetime.now(timezone.utc).timestamp() - self._last_parse_time
+                    ) * ((time_idx + 1) / len(times_to_process))
 
+        for time_val, metrics in slice_metrics.items():
+            timestamp = metrics.pop("timestamp", None)
             self.log_metrics(
                 metrics,
-                time=float(time_val),
+                time=time_val,
                 step=self._slice_step,
-                timestamp=datetime.fromtimestamp(_timestamp_estimate, tz=timezone.utc),
+                timestamp=datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                if timestamp
+                else None,
             )
             self._slice_step += 1
-        self._parse_time = datetime.now(timezone.utc).timestamp()
-        self._slice_processed_time = times_out[-1]
+
+        self._grids_defined = True
+        self._last_parse_time = datetime.now(timezone.utc).timestamp()
+        self._slice_processed_idx = (
+            times.shape[0] if times is not None else self._slice_processed_idx
+        )
         return True
 
     def _slice_parser(self) -> None:
@@ -837,19 +732,19 @@ class FDSRun(WrappedRun):
         self.fds_input_file_path: pydantic.FilePath = None
         self.workdir_path: str | pydantic.DirectoryPath = None
         self.upload_files: list[str] = None
-        self.slice_parse_quantity: str | None = None
+        self.slice_parse_enabled: bool = False
+        self.slice_parse_ids: list[str] | None = None
         self.slice_parse_interval: int = 60
-        self.slice_parse_ignore_zeros: bool = False
         self.ulimit: str | int = None
         self.fds_env_vars: dict[str, typing.Any] = None
 
         # Users can set this before launching a simulation, if they want (not in launch to not bloat arguments required)
         self.upload_input_file: bool = True
 
-        self._slice_processed_time: int = -1
+        self._slice_processed_idx: int = 0
         self._slice_step: int = 0
         self._step_tracker: dict = {}
-        self._parse_time: float = datetime.now(timezone.utc).timestamp()
+        self._last_parse_time: float = datetime.now(timezone.utc).timestamp()
         self._activation_times: bool = False
         self._activation_times_data: dict[str, float] = {}
         self._chid: str = ""
@@ -858,6 +753,11 @@ class FDSRun(WrappedRun):
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
         self._input_dict: dict = {}
         self._line_var_coords: dict | None = None
+
+        # Need this so that we dont get spammed with non-critical timestamp warning from fdsreader
+        fdsreader.settings.IGNORE_ERRORS = True
+        # Disable caching so that it doesnt create pickle files inside the results directory
+        fdsreader.settings.ENABLE_CACHING = False
 
         super().__init__(
             mode=mode,
@@ -873,7 +773,7 @@ class FDSRun(WrappedRun):
         self.log_event("Starting FDS simulation")
 
         # Save the FDS input file for this run to the Simvue server
-        if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists:
+        if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists():
             self.save_file(self.fds_input_file_path, "input")
 
         def check_for_errors(status_code, std_out, std_err):
@@ -932,7 +832,7 @@ class FDSRun(WrappedRun):
             completion_callback=check_for_errors,
         )
 
-        if self.slice_parse_quantity:
+        if self.slice_parse_enabled:
             self.slice_parser = threading.Thread(
                 target=self._slice_parser, daemon=True, name="slice_parser"
             )
@@ -1031,9 +931,10 @@ class FDSRun(WrappedRun):
         workdir_path: str | pydantic.DirectoryPath = None,
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
-        slice_parse_quantity: str | None = None,
+        slice_parse_enabled: bool = False,
+        slice_parse_quantities: list[str] | None = None,
+        slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
-        slice_parse_ignore_zeros: bool = False,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
         fds_env_vars: typing.Optional[dict[str, typing.Any]] = None,
         run_in_parallel: bool = False,
@@ -1058,13 +959,15 @@ class FDSRun(WrappedRun):
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the working directory specified above (if specified, otherwise relative to cwd)
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
-        slice_parse_quantity: str | None, optional
-            The quantity for which to find any 2D slices saved by the simulation, and upload them as metrics
-            Default is None, which will disable this feature
+        slice_parse_enabled: bool, optional
+            Whether to enable slice parsing for this run, by default False
+        slice_parse_quantities: list[str] | None, optional
+            If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
+        slice_parse_ids: list[str] | None, optional
+            If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
+            Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
         slice_parse_interval : int, optional
             Interval (in seconds) at which to parse and upload 2D slice data, default is 60
-        slice_parse_ignore_zeros : bool, optional
-            Whether to ignore values of zero in slices when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
         fds_env_vars : typing.Optional[dict[str, typing.Any]], optional
@@ -1076,18 +979,14 @@ class FDSRun(WrappedRun):
         mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
-        Raises
-        ------
-        ValueError
-            Raised if 2D slices could not be parsed correctly
-
         """
         self.fds_input_file_path = fds_input_file_path
         self.workdir_path = workdir_path
         self.upload_files = upload_files
-        self.slice_parse_quantity = slice_parse_quantity
+        self.slice_parse_enabled = slice_parse_enabled
+        self.slice_parse_quantities = slice_parse_quantities
+        self.slice_parse_ids = slice_parse_ids
         self.slice_parse_interval = slice_parse_interval
-        self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
         self.slice_parser = None
         self.ulimit = ulimit
         self.fds_env_vars = fds_env_vars or {}
@@ -1098,6 +997,8 @@ class FDSRun(WrappedRun):
         self._activation_times = False
         self._activation_times_data = {}
         self._grids_defined = False
+
+        logger.addHandler(simvue.Handler(self))
 
         nml = f90nml.read(self.fds_input_file_path).todict()
         self._chid = nml["head"]["chid"]
@@ -1144,43 +1045,15 @@ class FDSRun(WrappedRun):
             else self._chid
         )
 
-        if self.slice_parse_quantity:
-            # This is only necessary because of the way pyfdstools works
-            if (
-                self.workdir_path
-                and (
-                    pathlib.Path(self.fds_input_file_path).absolute()
-                    != pathlib.Path(self.workdir_path)
-                    .joinpath(f"{self._chid}.fds")
-                    .absolute()
-                )
-            ) or (
-                not self.workdir_path
-                and (
-                    pathlib.Path(self.fds_input_file_path).absolute()
-                    != pathlib.Path.cwd().joinpath(f"{self._chid}.fds").absolute()
-                )
-            ):
-                shutil.copy(self.fds_input_file_path, f"{self._results_prefix}.fds")
-
-            # Make sure xyz is enabled
-            write_xyz = False
-            for key in nml.keys():
-                if "dump" in key:
-                    write_xyz = write_xyz or nml[key].get("write_xyz", False)
-            if not write_xyz:
-                raise ValueError(
-                    "WRITE_XYZ must be enabled in your FDS file for slice parsing."
-                )
-
         super().launch()
 
     def load(
         self,
         results_dir: pydantic.DirectoryPath,
         upload_files: list[str] | None = None,
-        slice_parse_quantity: str | None = None,
-        slice_parse_ignore_zeros: bool = False,
+        slice_parse_enabled: bool = False,
+        slice_parse_quantities: list[str] | None = None,
+        slice_parse_ids: list[str] | None = None,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
 
@@ -1192,12 +1065,13 @@ class FDSRun(WrappedRun):
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the results directory specified above
             If not specified, will upload all files by default. If you want no results files to be uploaded, provide an empty list.
-        slice_parse_quantity: str | None, optional
-            The quantity for which to find any 2D slices saved by the simulation, and upload as metrics
-            Default is None, which will disable this feature
-            Note that the XYZ files must have been recorded when running the simulation for this to work.
-        slice_parse_ignore_zeros : bool, optional
-            Whether to ignore values of zero when calculating slice summary metrics (useful if there are obstructions in the mesh), default is False
+        slice_parse_enabled: bool, optional
+            Whether to enable slice parsing for this run, by default False
+        slice_parse_quantities: list[str] | None, optional
+            If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
+        slice_parse_ids: list[str] | None, optional
+            If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
+            Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
 
         Raises
         ------
@@ -1208,12 +1082,16 @@ class FDSRun(WrappedRun):
         """
         self.workdir_path = results_dir
         self.upload_files = upload_files
-        self.slice_parse_quantity = slice_parse_quantity
-        self.slice_parse_ignore_zeros = slice_parse_ignore_zeros
+        self.slice_parse_enabled = slice_parse_enabled
+        self.slice_parse_quantities = slice_parse_quantities
+        self.slice_parse_ids = slice_parse_ids
+
         self.slice_parser = None
         self._loading_historic_run = True
         self._grids_defined = False
         self._concatenated_input_files = False
+
+        logger.addHandler(simvue.Handler(self))
 
         # Find input file inside results dir
         _fds_files = list(pathlib.Path(results_dir).rglob("*.fds"))
@@ -1249,10 +1127,7 @@ class FDSRun(WrappedRun):
             self._chid = self._input_dict["head"]["chid"]
             self.update_metadata({"input_file": self._input_dict})
 
-            if (
-                self.slice_parse_quantity
-                and self.fds_input_file_path.stem != self._chid
-            ):
+            if self.slice_parse_enabled and self.fds_input_file_path.stem != self._chid:
                 logger.warning(
                     "Detected FDS input file with name different to CHID - creating a copy for slice parser..."
                 )
@@ -1333,16 +1208,7 @@ class FDSRun(WrappedRun):
                     data, {"file_name": f"{self._results_prefix}_line.csv"}
                 )
 
-        if self.slice_parse_quantity:
-            if not _fds_files:
-                logger.warning(
-                    "Slice cannot be parsed without an input file available - slice parsing disabled."
-                )
-            elif not list(pathlib.Path(results_dir).rglob("*.xyz")):
-                logger.warning(
-                    "No XYZ files detected in results directory - slice parsing disabled."
-                )
-            else:
-                self._parse_slice()
+        if self.slice_parse_enabled:
+            self._parse_slice()
 
         self._post_simulation()

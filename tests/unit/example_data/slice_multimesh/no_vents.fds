@@ -28,12 +28,14 @@ FUEL='PROPANE'/
 &SLCF PBZ = 2.5, QUANTITY = 'VISIBILITY' /
 &SLCF PBZ = 1.5, QUANTITY = 'VISIBILITY' /
 &SLCF PBX = 1.5, QUANTITY = 'VISIBILITY' /
-&SLCF PBY = 1.5, QUANTITY = 'VISIBILITY' /
+&SLCF PBY = 1.5, QUANTITY = 'VISIBILITY', ID='visibility_slice' /
 
 &SLCF PBZ = 2.5, QUANTITY = 'TEMPERATURE' /
 &SLCF PBZ = 1.5, QUANTITY = 'TEMPERATURE' /
 &SLCF PBX = 1.5, QUANTITY = 'TEMPERATURE' /
-&SLCF PBY = 1.5, QUANTITY = 'TEMPERATURE' /
+&SLCF PBY = 1.5, QUANTITY = 'TEMPERATURE', ID='temperature_slice' /
+
+&SLCF PBY = 1.5, QUANTITY = 'VELOCITY', ID='velocity_slice'/
 
 # Define device outputs - outputs the flows through the vents, temperature and visibility to a CSV file every second
 &DEVC XB=1.5,1.5,0,0,1.5,1.5, QUANTITY='VISIBILITY', ID='eye_level_visibility' /
