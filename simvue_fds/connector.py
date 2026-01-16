@@ -579,7 +579,14 @@ class FDSRun(WrappedRun):
         sim_dir = (
             pathlib.Path(self.workdir_path) if self.workdir_path else pathlib.Path.cwd()
         )
-        sim = fdsreader.Simulation(str(sim_dir.absolute()))
+        try:
+            sim = fdsreader.Simulation(str(sim_dir.absolute()))
+        except OSError as e:
+            logger.warning(f"""
+                           No simulation data found in output directory '{sim_dir}'.
+                           Slice parsing is disabled for this run.
+                           """)
+            return False
         slices: list[Slice] = (
             [sim.slices.get_by_id(_id) for _id in self.slice_parse_ids]
             if self.slice_parse_ids
@@ -697,7 +704,7 @@ class FDSRun(WrappedRun):
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
-            time.sleep(self.slice_parse_interval)
+            self._trigger.wait(timeout=self.slice_parse_interval)
             slice_parsed = self._parse_slice()
 
             if self._trigger.is_set() or not slice_parsed:
