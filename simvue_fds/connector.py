@@ -809,7 +809,7 @@ class FDSRun(WrappedRun):
             command: list = shlex.split(
                 run_command, posix=platform.system() == "Windows"
             )
-            command.append(str(self.fds_input_file_path))
+            command.append(str(self.fds_input_file_path.absolute()))
 
         else:
             fds_bin = self._find_fds_executable()
@@ -823,12 +823,12 @@ class FDSRun(WrappedRun):
                         str(self.fds_input_file_path),
                     ]
                 else:
-                    command += [f"{fds_bin}", str(self.fds_input_file_path)]
+                    command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
                     command += format_command_env_vars(self.mpiexec_env_vars)
-                command += [f"{fds_bin}", str(self.fds_input_file_path)]
+                command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
 
             command += format_command_env_vars(self.fds_env_vars)
 
