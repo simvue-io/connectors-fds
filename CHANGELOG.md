@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.0.1](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.1) - 2026-01-16
+* Fixes bug where slice parsing wouldn't work if a working dir not specified
+
 ## [v2.0.0](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.0) - 2026-01-15
 * Makes slice parsing more efficient by using FDSReader
 * Slices to parse can now be specified by ID as well as by quantities
