@@ -576,7 +576,10 @@ class FDSRun(WrappedRun):
             Whether the slice was successfuly extracted
 
         """
-        sim = fdsreader.Simulation(str(pathlib.Path(self.workdir_path).absolute()))
+        sim_dir = (
+            pathlib.Path(self.workdir_path) if self.workdir_path else pathlib.Path.cwd()
+        )
+        sim = fdsreader.Simulation(str(sim_dir.absolute()))
         slices: list[Slice] = (
             [sim.slices.get_by_id(_id) for _id in self.slice_parse_ids]
             if self.slice_parse_ids
@@ -730,7 +733,7 @@ class FDSRun(WrappedRun):
 
         """
         self.fds_input_file_path: pydantic.FilePath = None
-        self.workdir_path: str | pydantic.DirectoryPath = None
+        self.workdir_path: str | pydantic.DirectoryPath | None = None
         self.upload_files: list[str] = None
         self.slice_parse_enabled: bool = False
         self.slice_parse_ids: list[str] | None = None
