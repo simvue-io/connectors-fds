@@ -553,6 +553,32 @@ files = [
 ]
 
 [[package]]
+name = "multiparser"
+version = "1.0.6"
+description = "Multiple File Parser for monitoring and processing updates to a given set of output files."
+optional = false
+python-versions = ">=3.10,<4.0"
+groups = ["main"]
+files = []
+develop = false
+
+[package.dependencies]
+flatdict = ">=4.0.1"
+loguru = ">=0.7.3"
+pyyaml = ">=6.0.2"
+toml = ">=0.10.2"
+
+[package.extras]
+arrow = ["pandas (>=2.2.3)", "pyarrow (>=20.0.0)"]
+fortran = ["f90nml (>=1.4.5)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/ukaea/Multiparser.git"
+reference = "wk9874/final_parse"
+resolved_reference = "03cf2b8b3ec9b4bdd0653feb9aa3e36cccbad809"
+
+[[package]]
 name = "numpy"
 version = "2.2.6"
 description = "Fundamental package for array computing in Python"
@@ -1597,4 +1623,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "92ef516c59be3ab2cbc31e69f5c5d861b6a0e976c4f229447762b7570d2ca8a8"
+content-hash = "94b251bb7458d058496888be825ac8299ad65db4518a2bae38f725785cca982c"

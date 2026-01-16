@@ -12,6 +12,7 @@ dependencies = [
     "simvue-connector (>=1.0.0)",
     "f90nml (>1.4.3)",
     "fdsreader (>=1.11.7,<2.0.0)",
+    "multiparser @ git+https://github.com/ukaea/Multiparser.git@wk9874/final_parse",
     ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
