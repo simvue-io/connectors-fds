@@ -576,9 +576,7 @@ class FDSRun(WrappedRun):
             Whether the slice was successfuly extracted
 
         """
-        sim_dir = (
-            pathlib.Path(self.workdir_path) if self.workdir_path else pathlib.Path.cwd()
-        )
+        sim_dir = self.workdir_path if self.workdir_path else pathlib.Path.cwd()
         try:
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
         except OSError as e:
@@ -739,7 +737,7 @@ class FDSRun(WrappedRun):
 
         """
         self.fds_input_file_path: pathlib.Path = None
-        self.workdir_path: str | pydantic.DirectoryPath | None = None
+        self.workdir_path: pathlib.Path | None = None
         self.upload_files: list[str] = None
         self.slice_parse_enabled: bool = False
         self.slice_parse_ids: list[str] | None = None
@@ -911,8 +909,7 @@ class FDSRun(WrappedRun):
         else:
             if self.workdir_path:
                 self.upload_files = [
-                    str(pathlib.Path(self.workdir_path).joinpath(path))
-                    for path in self.upload_files
+                    str(self.workdir_path.joinpath(path)) for path in self.upload_files
                 ]
 
             for path in self.upload_files:
@@ -934,7 +931,7 @@ class FDSRun(WrappedRun):
     def launch(
         self,
         fds_input_file_path: pydantic.FilePath,
-        workdir_path: str | pydantic.DirectoryPath = None,
+        workdir_path: str | pathlib.Path = None,
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
@@ -953,7 +950,7 @@ class FDSRun(WrappedRun):
         ----------
         fds_input_file_path : pydantic.FilePath
             Path to the FDS input file to use in the simulation
-        workdir_path : str | pydantic.DirectoryPath, optional
+        workdir_path : str | pathlib.Path, optional
             Path to a directory which you would like FDS to run in, by default None
             This is where FDS will generate the results from the simulation
             If a directory does not already exist at this path, it will be created
@@ -987,7 +984,7 @@ class FDSRun(WrappedRun):
 
         """
         self.fds_input_file_path = pathlib.Path(fds_input_file_path)
-        self.workdir_path = workdir_path
+        self.workdir_path = pathlib.Path(workdir_path) if workdir_path else None
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
@@ -1018,10 +1015,10 @@ class FDSRun(WrappedRun):
             self._chid += "_cat"
 
         if self.workdir_path:
-            pathlib.Path(self.workdir_path).mkdir(exist_ok=True)
+            self.workdir_path.mkdir(exist_ok=True)
 
             if clean_workdir:
-                for file in pathlib.Path(self.workdir_path).glob(f"{self._chid}*"):
+                for file in self.workdir_path.glob(f"{self._chid}*"):
                     if (
                         pathlib.Path(file).absolute()
                         == self.fds_input_file_path.absolute()
@@ -1036,15 +1033,15 @@ class FDSRun(WrappedRun):
                 if (
                     concat_path.exists()
                     and concat_path.absolute()
-                    != pathlib.Path(self.workdir_path).joinpath(concat_file).absolute()
+                    != self.workdir_path.joinpath(concat_file).absolute()
                 ):
                     shutil.copy(
                         concat_path,
-                        pathlib.Path(self.workdir_path).joinpath(concat_file),
+                        self.workdir_path.joinpath(concat_file),
                     )
 
         self._results_prefix = (
-            str(pathlib.Path(self.workdir_path).joinpath(self._chid))
+            str(self.workdir_path.joinpath(self._chid))
             if self.workdir_path
             else self._chid
         )
@@ -1084,7 +1081,7 @@ class FDSRun(WrappedRun):
             Raised if no input file present and CHID could not be determined from results file names
 
         """
-        self.workdir_path = results_dir
+        self.workdir_path = pathlib.Path(results_dir)
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
