@@ -576,10 +576,14 @@ class FDSRun(WrappedRun):
             Whether the slice was successfuly extracted
 
         """
-        sim_dir = (
-            pathlib.Path(self.workdir_path) if self.workdir_path else pathlib.Path.cwd()
-        )
-        sim = fdsreader.Simulation(str(sim_dir.absolute()))
+        sim_dir = self.workdir_path if self.workdir_path else pathlib.Path.cwd()
+        try:
+            sim = fdsreader.Simulation(str(sim_dir.absolute()))
+        except OSError as e:
+            logger.warning(
+                f"No simulation data found in output directory '{sim_dir}'. Slice parsing is disabled for this run."
+            )
+            return False
         slices: list[Slice] = (
             [sim.slices.get_by_id(_id) for _id in self.slice_parse_ids]
             if self.slice_parse_ids
@@ -697,7 +701,7 @@ class FDSRun(WrappedRun):
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
-            time.sleep(self.slice_parse_interval)
+            self._trigger.wait(timeout=self.slice_parse_interval)
             slice_parsed = self._parse_slice()
 
             if self._trigger.is_set() or not slice_parsed:
@@ -732,8 +736,8 @@ class FDSRun(WrappedRun):
             run in debug mode, by default False
 
         """
-        self.fds_input_file_path: pydantic.FilePath = None
-        self.workdir_path: str | pydantic.DirectoryPath | None = None
+        self.fds_input_file_path: pathlib.Path = None
+        self.workdir_path: pathlib.Path | None = None
         self.upload_files: list[str] = None
         self.slice_parse_enabled: bool = False
         self.slice_parse_ids: list[str] | None = None
@@ -776,7 +780,7 @@ class FDSRun(WrappedRun):
         self.log_event("Starting FDS simulation")
 
         # Save the FDS input file for this run to the Simvue server
-        if self.upload_input_file and pathlib.Path(self.fds_input_file_path).exists():
+        if self.upload_input_file and self.fds_input_file_path.exists():
             self.save_file(self.fds_input_file_path, "input")
 
         def check_for_errors(status_code, std_out, std_err):
@@ -805,7 +809,7 @@ class FDSRun(WrappedRun):
             command: list = shlex.split(
                 run_command, posix=platform.system() == "Windows"
             )
-            command.append(str(self.fds_input_file_path))
+            command.append(str(self.fds_input_file_path.absolute()))
 
         else:
             fds_bin = self._find_fds_executable()
@@ -819,12 +823,12 @@ class FDSRun(WrappedRun):
                         str(self.fds_input_file_path),
                     ]
                 else:
-                    command += [f"{fds_bin}", str(self.fds_input_file_path)]
+                    command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
                     command += format_command_env_vars(self.mpiexec_env_vars)
-                command += [f"{fds_bin}", str(self.fds_input_file_path)]
+                command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
 
             command += format_command_env_vars(self.fds_env_vars)
 
@@ -842,7 +846,7 @@ class FDSRun(WrappedRun):
             self.slice_parser.start()
 
         if self._concatenated_input_files:
-            self.fds_input_file_path = f"{self._results_prefix}.fds"
+            self.fds_input_file_path = pathlib.Path(f"{self._results_prefix}.fds")
 
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
@@ -899,24 +903,20 @@ class FDSRun(WrappedRun):
 
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
-                if (
-                    pathlib.Path(file).absolute()
-                    == pathlib.Path(self.fds_input_file_path).absolute()
-                ):
+                if pathlib.Path(file).absolute() == self.fds_input_file_path.absolute():
                     continue
                 self.save_file(file, "output")
         else:
             if self.workdir_path:
                 self.upload_files = [
-                    str(pathlib.Path(self.workdir_path).joinpath(path))
-                    for path in self.upload_files
+                    str(self.workdir_path.joinpath(path)) for path in self.upload_files
                 ]
 
             for path in self.upload_files:
                 for file in glob.glob(path):
                     if (
                         pathlib.Path(file).absolute()
-                        == pathlib.Path(self.fds_input_file_path).absolute()
+                        == self.fds_input_file_path.absolute()
                     ):
                         continue
                     self.save_file(file, "output")
@@ -931,7 +931,7 @@ class FDSRun(WrappedRun):
     def launch(
         self,
         fds_input_file_path: pydantic.FilePath,
-        workdir_path: str | pydantic.DirectoryPath = None,
+        workdir_path: str | pathlib.Path = None,
         clean_workdir: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
@@ -950,7 +950,7 @@ class FDSRun(WrappedRun):
         ----------
         fds_input_file_path : pydantic.FilePath
             Path to the FDS input file to use in the simulation
-        workdir_path : str | pydantic.DirectoryPath, optional
+        workdir_path : str | pathlib.Path, optional
             Path to a directory which you would like FDS to run in, by default None
             This is where FDS will generate the results from the simulation
             If a directory does not already exist at this path, it will be created
@@ -983,8 +983,8 @@ class FDSRun(WrappedRun):
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
         """
-        self.fds_input_file_path = fds_input_file_path
-        self.workdir_path = workdir_path
+        self.fds_input_file_path = pathlib.Path(fds_input_file_path)
+        self.workdir_path = pathlib.Path(workdir_path) if workdir_path else None
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
@@ -1015,13 +1015,13 @@ class FDSRun(WrappedRun):
             self._chid += "_cat"
 
         if self.workdir_path:
-            pathlib.Path(self.workdir_path).mkdir(exist_ok=True)
+            self.workdir_path.mkdir(exist_ok=True)
 
             if clean_workdir:
-                for file in pathlib.Path(self.workdir_path).glob(f"{self._chid}*"):
+                for file in self.workdir_path.glob(f"{self._chid}*"):
                     if (
                         pathlib.Path(file).absolute()
-                        == pathlib.Path(self.fds_input_file_path).absolute()
+                        == self.fds_input_file_path.absolute()
                         or file.name in self._concatenated_input_files
                     ):
                         continue
@@ -1029,21 +1029,19 @@ class FDSRun(WrappedRun):
 
             # Copy files to concatenate together into working directory
             for concat_file in self._concatenated_input_files:
-                concat_path = pathlib.Path(self.fds_input_file_path).parent.joinpath(
-                    concat_file
-                )
+                concat_path = self.fds_input_file_path.parent.joinpath(concat_file)
                 if (
                     concat_path.exists()
                     and concat_path.absolute()
-                    != pathlib.Path(self.workdir_path).joinpath(concat_file).absolute()
+                    != self.workdir_path.joinpath(concat_file).absolute()
                 ):
                     shutil.copy(
                         concat_path,
-                        pathlib.Path(self.workdir_path).joinpath(concat_file),
+                        self.workdir_path.joinpath(concat_file),
                     )
 
         self._results_prefix = (
-            str(pathlib.Path(self.workdir_path).joinpath(self._chid))
+            str(self.workdir_path.joinpath(self._chid))
             if self.workdir_path
             else self._chid
         )
@@ -1083,7 +1081,7 @@ class FDSRun(WrappedRun):
             Raised if no input file present and CHID could not be determined from results file names
 
         """
-        self.workdir_path = results_dir
+        self.workdir_path = pathlib.Path(results_dir)
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
