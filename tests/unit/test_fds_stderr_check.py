@@ -11,9 +11,12 @@ import pytest
 import subprocess
 import sys
 
+# Check it doesnt hang for 60s due to slice parser not finishing
+@pytest.mark.timeout(30)
+@pytest.mark.parametrize("slice_parse_enabled", (True, False), ids=("slice_parse_enabled", "slice_parse_disabled"))
 @pytest.mark.parametrize("file_name", ("fds_invalid_config.stderr", "fds_no_file.stderr", "fds_too_few_meshes.stderr", "fds_expected.stderr"), ids=("invalid_config", "no_file", "cannot_mpi", "expected"))
 @patch.object(FDSRun, '_find_fds_executable', lambda _: None)
-def test_fds_stderr_check(folder_setup, file_name):
+def test_fds_stderr_check(folder_setup, file_name, slice_parse_enabled):
 
     def mock_execute_process(*args, file_name=file_name, **kwargs):
         """Execute a process which sleeps for 2s, then passes the stderr from the example file into the completion callback"""
@@ -28,11 +31,16 @@ def test_fds_stderr_check(folder_setup, file_name):
         return _result, thread
     
     with patch("simvue.executor._execute_process", mock_execute_process):
-        with FDSRun() as run:
-            run.config(disable_resources_metrics=True)
-            run.init('test_fds_stderr-%s' % str(uuid.uuid4()), folder=folder_setup)
-            run_id = run.id
-            run.launch(pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"))
+        with tempfile.TemporaryDirectory() as tempd:
+            with FDSRun() as run:
+                run.config(disable_resources_metrics=True)
+                run.init('test_fds_stderr-%s' % str(uuid.uuid4()), folder=folder_setup)
+                run_id = run.id
+                run.launch(
+                    pathlib.Path(__file__).parent.joinpath("example_data", "fds_input.fds"),
+                    workdir_path=tempd,
+                    slice_parse_enabled=slice_parse_enabled
+                    )
             
     time.sleep(1)
     client = simvue.Client()
@@ -54,3 +62,7 @@ def test_fds_stderr_check(folder_setup, file_name):
         assert "Simulation Failed!" in events
         assert pathlib.Path(__file__).parent.joinpath("example_data", file_name).read_text() in events
         assert alert.get_status(run_id) == "critical"
+
+    # If slice parsing enabled, check appropriate log message added for no results found
+    if slice_parse_enabled:
+        assert f"No simulation data found in output directory '{tempd}'. Slice parsing is disabled for this run." in events

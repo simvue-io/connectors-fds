@@ -582,10 +582,9 @@ class FDSRun(WrappedRun):
         try:
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
         except OSError as e:
-            logger.warning(f"""
-                           No simulation data found in output directory '{sim_dir}'.
-                           Slice parsing is disabled for this run.
-                           """)
+            logger.warning(
+                f"No simulation data found in output directory '{sim_dir}'. Slice parsing is disabled for this run."
+            )
             return False
         slices: list[Slice] = (
             [sim.slices.get_by_id(_id) for _id in self.slice_parse_ids]
