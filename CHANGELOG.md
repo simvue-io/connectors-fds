@@ -1,5 +1,10 @@
 # Change log
 
+## [v2.0.2](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.2) - 2026-01-16
+* Improves handling of error thrown by fdsreader.Simulation if no results are found
+* Improves responsiveness of FDSRun() is the FDS simulation fails
+* Fixes bugs related to passing paths to the input file or workdir as strings
+
 ## [v2.0.1](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.1) - 2026-01-16
 * Fixes bug where slice parsing wouldn't work if a working dir not specified
 
