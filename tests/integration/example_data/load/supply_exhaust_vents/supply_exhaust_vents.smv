@@ -904,6 +904,11 @@ SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      2      0
  TEMPERATURE
  temp
  C
+SLCF     1 # STRUCTURED &     0    30     0    20    20    20 !      3      0
+ supply_exhaust_vents_1_6.sf
+ SOOT VISIBILITY
+ VIS_C
+ m
 DEVICE_ACT     timer
      1      0.00     0
 DEVICE_ACT     flow_volume_supply
@@ -1160,6 +1165,11 @@ SLCF     2 # STRUCTURED &     0    30     0     0     0    30 !      2      0
  TEMPERATURE
  temp
  C
+SLCF     2 # STRUCTURED &     0    30     0    20    20    20 !      3      0
+ supply_exhaust_vents_2_6.sf
+ SOOT VISIBILITY
+ VIS_C
+ m
 CLOSE_VENT    2
      1      0.00
 CLOSE_VENT    2
