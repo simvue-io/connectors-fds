@@ -1555,25 +1555,25 @@ files = [
 
 [[package]]
 name = "ukaea-multiparser"
-version = "1.0.4"
+version = "1.0.5"
 description = "Multiple File Parser for monitoring and processing updates to a given set of output files."
 optional = false
-python-versions = "<3.14,>=3.10"
+python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "ukaea_multiparser-1.0.4-py3-none-any.whl", hash = "sha256:4b467c94116d25d26dff083d801f32bf696781a0d47beebad9fb277dcb954692"},
-    {file = "ukaea_multiparser-1.0.4.tar.gz", hash = "sha256:fbcd0c1c73095be202be5371af12056f5349b09a3a68577ec4e194f308d471e5"},
+    {file = "ukaea_multiparser-1.0.5-py3-none-any.whl", hash = "sha256:c11fd5c6f0016268061f4840882a5033995733113703647a1cf5c9b20b50f1e4"},
+    {file = "ukaea_multiparser-1.0.5.tar.gz", hash = "sha256:0d5c78c4fcba248499cc3a54d84c20aee00d12e3eb1803f7f93415b250e02f58"},
 ]
 
 [package.dependencies]
-flatdict = ">=4.0.1,<5.0.0"
-loguru = ">=0.7.2,<0.8.0"
-pyyaml = ">=6.0.1,<7.0.0"
-toml = ">=0.10.2,<0.11.0"
+flatdict = ">=4.0.1"
+loguru = ">=0.7.3"
+pyyaml = ">=6.0.2"
+toml = ">=0.10.2"
 
 [package.extras]
-arrow = ["pandas (>=2.1.1,<3.0.0)", "pyarrow (>=14,<18) ; python_version < \"3.13\"", "pyarrow (>=18) ; python_version >= \"3.13\""]
-fortran = ["f90nml (>=1.4.3,<2.0.0)"]
+arrow = ["pandas (>=2.2.3)", "pyarrow (>=20.0.0)", "tables (>=3.10.1)"]
+fortran = ["f90nml (>=1.4.5)"]
 
 [[package]]
 name = "urllib3"
@@ -1612,4 +1612,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "172fdbe68f903bf15d3342dbc6853c0603d1aa9a1d37c7ef10d12253f411f6c6"
+content-hash = "875525ee774a0ef4e8a17c22441c8794611b11cc9374e7c3d4851addc6641ef4"

@@ -27,6 +27,7 @@ def mock_post_sim(self, *_, **__):
 # Test with visibility and temperature
 @pytest.mark.parametrize("results_path", ("slice_singlemesh", "slice_multimesh"), ids=("single_mesh", "multi_mesh"))
 @pytest.mark.parametrize("slice_parameter", (["SOOT VISIBILITY", "TEMPERATURE"], None), ids=("visibility-temperature", "no-quantities"))
+@pytest.mark.parametrize("slice_fixed_dims", (["x", "y"], None), ids=("x-y", "no-quantities"))
 @pytest.mark.parametrize("slice_ids", (["temperature_slice", "visibility_slice", "velocity_slice"], None), ids=("ids", "no-ids"))
 @pytest.mark.parametrize("enabled", (True, False), ids=("enabled", "disabled"))    
 @pytest.mark.parametrize("load", (True, False), ids=("load", "launch"))     
@@ -34,7 +35,7 @@ def mock_post_sim(self, *_, **__):
 @patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, '_during_simulation', mock_during_sim)
 @patch.object(FDSRun, '_post_simulation', mock_post_sim)
-def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids, enabled, load):
+def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids, slice_fixed_dims, enabled, load):
     with FDSRun() as run:
         run.config(disable_resources_metrics = True)
         run.init(f"testing_{results_path}_{'enabled' if enabled else 'disabled'}_{'quantities' if slice_parameter else 'no-quantities'}_{'ids' if slice_ids else 'no-ids'}_{'load' if load else 'launch'}", folder=folder_setup)
@@ -66,29 +67,44 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
         _slice_dims = [(31, 41), (31, 31), (41, 31), (41, 31)]
                     
         # Check all metrics from slice have been created
+        expected_slices = {
+            "temperature.x.1_5": (31, 41),
+            "temperature_slice": (31, 31),
+            "temperature.z.1_5":  (41, 31),
+            "temperature.z.2_5": (41, 31),
+            "soot_visibility.x.1_5": (31, 41), 
+            "visibility_slice": (31, 31), 
+            "soot_visibility.z.1_5":  (41, 31), 
+            "soot_visibility.z.2_5": (41, 31), 
+            "velocity_slice": (31, 31)
+        }
         if slice_parameter:
-            if not enabled:
-                expected_metrics = None
-            else:
-                expected_metrics = ["temperature_slice", "visibility_slice"] if slice_ids else ["temperature.x.1_5", "temperature_slice", "temperature.z.1_5", "temperature.z.2_5", "soot_visibility.x.1_5", "visibility_slice", "soot_visibility.z.1_5", "soot_visibility.z.2_5"]
-                expected_slice_dims = _slice_dims[1:2] * 2 if slice_ids else _slice_dims * 2
-        else:
-            if not enabled:
-                expected_metrics = None
-            else:
-                expected_metrics = ["temperature_slice", "visibility_slice", "velocity_slice"] if slice_ids else ["temperature.x.1_5", "temperature_slice", "temperature.z.1_5", "temperature.z.2_5", "soot_visibility.x.1_5", "visibility_slice", "soot_visibility.z.1_5", "soot_visibility.z.2_5", "velocity_slice"]
-                expected_slice_dims = _slice_dims[1:2] * 3 if slice_ids else _slice_dims * 2 + _slice_dims[1:2]
+            expected_slices.pop("velocity_slice", None)
+        if slice_fixed_dims:
+            expected_slices.pop("soot_visibility.z.1_5", None)
+            expected_slices.pop("soot_visibility.z.2_5", None)
+            expected_slices.pop("temperature.z.1_5", None)
+            expected_slices.pop("temperature.z.2_5", None)
+        if slice_ids:
+            expected_slices.pop("soot_visibility.z.1_5", None)
+            expected_slices.pop("soot_visibility.z.2_5", None)
+            expected_slices.pop("soot_visibility.x.1_5", None)
+            expected_slices.pop("temperature.z.1_5", None)
+            expected_slices.pop("temperature.z.2_5", None)
+            expected_slices.pop("temperature.x.1_5", None)
+        
+        if not enabled:
+            expected_slices = None
            
         client = simvue.Client()
         
         metrics_names = [item for item in client.get_metrics_names(run_id)]
         
-        if not expected_metrics:
+        if not expected_slices:
             assert not metrics_names
         else:
             # Check at least 25 times recorded (since we stopped the sim at 25 - 26s)
-
-            for metric, slice_dims in zip(expected_metrics, expected_slice_dims):
+            for metric, slice_dims in expected_slices.items():
                     assert metric+".max" in metrics_names
                     assert metric+".min" in metrics_names
                     assert metric+".avg" in metrics_names

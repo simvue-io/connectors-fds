@@ -12,19 +12,23 @@ import requests
 from simvue.config.user import SimvueConfiguration
 
 
-def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
+def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load):
     """Function demonstrating how to launch FDS runs with Simvue.
 
     Parameters
     ----------
     file_path : str
         Path to FDS input file
-    run_folder : str
-        The folder/directory where the input file is stored
     offline : bool, optional
         Whether to run in offline mode, by default False
     parallel : bool, optional
         Whether to run FDS across multiple CPU cores in parallel, by default False
+    slice_var: str | None
+        The variable to process slices for
+    slice_fixed_dim: str | None
+        The fixed dimension to process slices for
+    load: bool
+        Whether to launch or load simulation
     Returns
     -------
     str
@@ -37,8 +41,10 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
             run.init(
                 name=f"fds-integration-{file_path.stem}-{'parallel' if parallel else 'serial'}-{'offline' if offline else 'online'}-{'load' if load else 'launch'}-{str(uuid.uuid4())}",
                 description="An example of using the FDSRun Connector to track an FDS simulation.",
-                folder=run_folder,
+                folder="/fds_connector_integration_tests",
                 tags=sorted(["fds", "integration", "test", platform.system()]),
+                retention_period="2 hours"
+                
             )
             # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
             run.create_metric_threshold_alert(
@@ -51,8 +57,9 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
             if load:
                 run.load(
                     results_dir=file_path,
-                    slice_parse_enabled = True if slice_var else False,
+                    slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities = [slice_var] if slice_var else None,
+                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None
                 )
             else:
                 # Then call the .launch() method to start your FDS simulation, providing the path to the input file
@@ -61,8 +68,9 @@ def run_fds(file_path, run_folder, parallel, offline, slice_var, load):
                     workdir_path=tempd,
                     clean_workdir=True,
                     # You can optionally have the connector track slices in your simulation
-                    slice_parse_enabled = True if slice_var else False,
+                    slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities = [slice_var] if slice_var else None,
+                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None,
                     slice_parse_interval = 10,
                     # And you can choose whether to run it in parallel
                     run_in_parallel = parallel,
@@ -101,10 +109,10 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     try:
         run_id = run_fds(
             file_path=file_path,
-            run_folder=folder_setup,
             parallel=parallel,
             offline=offline,
-            slice_var="TEMPERATURE",
+            slice_var=None,
+            slice_fixed_dim="z",
             load=load,
         )
     except Exception as e:
@@ -166,22 +174,22 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert metrics["max_divergence.mesh.2"]["count"] > 0
 
     # Check metrics from slice
-    assert metrics["temperature.y.2_0.min"]["count"] > 0
-    assert metrics["temperature.y.2_0.min"]["count"] > 0
-    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
+    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
+    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
 
     _retrieved = client.get_metric_values(
         run_ids=[run_id],
         metric_names=[
-            "temperature.y.2_0.max",
-            "temperature.y.2_0.min",
-            "temperature.y.2_0.avg",
+            "soot_visibility.z.2_0.max",
+            "soot_visibility.z.2_0.min",
+            "soot_visibility.z.2_0.avg",
         ],
         xaxis="time",
     )
-    _max = numpy.array(list(_retrieved["temperature.y.2_0.max"].values()))
-    _min = numpy.array(list(_retrieved["temperature.y.2_0.min"].values()))
-    _avg = numpy.array(list(_retrieved["temperature.y.2_0.avg"].values()))
+    _max = numpy.array(list(_retrieved["soot_visibility.z.2_0.max"].values()))
+    _min = numpy.array(list(_retrieved["soot_visibility.z.2_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["soot_visibility.z.2_0.avg"].values()))
 
     # Check all max >= avg >= min
     assert numpy.all(_max >= _avg)
@@ -196,7 +204,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=0",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/soot_visibility.z.2_0/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",
@@ -247,10 +255,10 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
 
     run_id = run_fds(
         file_path=file_path,
-        run_folder=folder_setup,
         parallel=parallel,
         offline=offline,
         slice_var=None,
+        slice_fixed_dim=None,
         load=load,
     )
     time.sleep(2)
@@ -331,10 +339,10 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
 
     run_id = run_fds(
         file_path=file_path,
-        run_folder=folder_setup,
         parallel=parallel,
         offline=offline,
         slice_var="TEMPERATURE",
+        slice_fixed_dim=None,
         load=load,
     )
     time.sleep(2)
@@ -464,10 +472,10 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
 
     run_id = run_fds(
         file_path=file_path,
-        run_folder=folder_setup,
         parallel=parallel,
         offline=offline,
         slice_var="TEMPERATURE",
+        slice_fixed_dim=None,
         load=load,
     )
     time.sleep(2)
