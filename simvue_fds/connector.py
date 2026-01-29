@@ -596,6 +596,16 @@ class FDSRun(WrappedRun):
                 if slice.quantity.quantity in self.slice_parse_quantities
             ]
 
+        if self.slice_parse_fixed_dimensions:
+            slices = [
+                slice
+                for slice in slices
+                if any(
+                    dim not in slice.extent_dirs
+                    for dim in self.slice_parse_fixed_dimensions
+                )
+            ]
+
         # Calculate the metrics which need to be sent, store in format:
         # {time: {metric_name: [], timestamp: ""}}
         slice_metrics: dict[float, dict] = {}
@@ -936,6 +946,7 @@ class FDSRun(WrappedRun):
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
+        slice_parse_fixed_dimensions: list[typing.Literal["x", "y", "z"]] | None = None,
         slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
@@ -966,9 +977,12 @@ class FDSRun(WrappedRun):
             Whether to enable slice parsing for this run, by default False
         slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
+        slice_parse_fixed_dimensions: list[typing.Literal["x", "y", "z"]] | None, optional
+            If slice parsing is enabled, the fixed dimension(s) which to upload slices for. Default is None, which will upload all slices.
+            Note if this is specified along with other `slice_parse_` parameters, only slices which match all conditions will be uploaded.
         slice_parse_ids: list[str] | None, optional
             If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
-            Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
+            Note if this is specified along with other `slice_parse_` parameters, only slices which match all conditions will be uploaded.
         slice_parse_interval : int, optional
             Interval (in seconds) at which to parse and upload 2D slice data, default is 60
         ulimit : typing.Literal["unlimited"] | int, optional
@@ -988,6 +1002,7 @@ class FDSRun(WrappedRun):
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
+        self.slice_parse_fixed_dimensions = slice_parse_fixed_dimensions
         self.slice_parse_ids = slice_parse_ids
         self.slice_parse_interval = slice_parse_interval
         self.slice_parser = None
@@ -1054,6 +1069,7 @@ class FDSRun(WrappedRun):
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
+        slice_parse_fixed_dimensions: list[typing.Literal["x", "y", "z"]] | None = None,
         slice_parse_ids: list[str] | None = None,
     ) -> None:
         """Load a pre-existing FDS simulation into Simvue.
@@ -1070,6 +1086,9 @@ class FDSRun(WrappedRun):
             Whether to enable slice parsing for this run, by default False
         slice_parse_quantities: list[str] | None, optional
             If slice parsing is enabled, upload all slices which are measuring one of these quantities. Default is None, which will upload all slices.
+        slice_parse_fixed_dimensions: list[typing.Literal["x", "y", "z"]] | None, optional
+            If slice parsing is enabled, the fixed dimension(s) which to upload slices for. Default is None, which will upload all slices.
+            Note if this is specified along with other `slice_parse_` parameters, only slices which match all conditions will be uploaded.
         slice_parse_ids: list[str] | None, optional
             If slice parsing is enabled, the IDs of the slices to upload as Metrics. Default is None, which will upload all slices.
             Note if this is specified along with slice_parse_quantities, only slices which match both conditions will be uploaded.
@@ -1085,6 +1104,7 @@ class FDSRun(WrappedRun):
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
+        self.slice_parse_fixed_dimensions = slice_parse_fixed_dimensions
         self.slice_parse_ids = slice_parse_ids
 
         self.slice_parser = None

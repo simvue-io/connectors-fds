@@ -35,5 +35,4 @@ jobs:
           export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
           export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
           poetry install --all-extras
-          poetry run pytest tests/integration/test_fds.py
-
+          poetry run pytest tests/integration/test_fds.py -n 4
