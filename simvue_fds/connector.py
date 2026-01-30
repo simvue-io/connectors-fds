@@ -581,7 +581,9 @@ class FDSRun(WrappedRun):
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
         except OSError as e:
             logger.warning(
-                f"No simulation data found in output directory '{sim_dir}'. This could be due to FDS taking longer than expected to generate initial results, or an incorrect results directory path being provided. Retrying in {self.slice_parse_interval}s."
+                f"""No simulation data found in output directory '{sim_dir}'.
+                This could be due to FDS taking longer than expected to generate initial results, or an incorrect results directory path being provided.
+                Retrying in {self.slice_parse_interval}s."""
             )
             return True  # Want to retry after slice parse interval in case FDS is taking a long time to setup the case
         slices: list[Slice] = (
