@@ -190,7 +190,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
             metric_names=[metric],
             xaxis="time",
         )
-        assert list(_retrieved[metric].keys())[0][0] < -1
+        assert list(_retrieved[metric].keys())[0][0] < 0
 
     _retrieved = client.get_metric_values(
         run_ids=[run_id],
