@@ -56,7 +56,7 @@ class FDSRun(WrappedRun):
     _patterns: list[dict[str, typing.Pattern]] = [
         {"pattern": re.compile(r"\s+Time\sStep\s+(\d+)\s+([\w\s:,]+)"), "name": "step"},
         {
-            "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.]+)\ss.*"),
+            "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.\-]+)\ss.*"),
             "name": "time",
         },
         {
