@@ -65,4 +65,4 @@ def test_fds_stderr_check(folder_setup, file_name, slice_parse_enabled):
 
     # If slice parsing enabled, check appropriate log message added for no results found
     if slice_parse_enabled:
-        assert f"No simulation data found in output directory '{tempd}'. Slice parsing is disabled for this run." in events
+        assert any(f"Unable to load slice data found in output directory '{tempd}'. Slice parsing is disabled for this run." in event for event in events)

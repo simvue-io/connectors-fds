@@ -582,7 +582,7 @@ class FDSRun(WrappedRun):
         except OSError as e:
             logger.warning(
                 f"""
-                Unable to load simulation data found in output directory '{sim_dir}'. Slice parsing is disabled for this run.
+                Unable to load slice data found in output directory '{sim_dir}'. Slice parsing is disabled for this run.
                 This is because: {e}
                 Please correct the issue described above, or raise a bug report via the UI if you think this is incorrect.
                 """
