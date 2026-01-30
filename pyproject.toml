@@ -1,6 +1,6 @@
 [project]
 name = "simvue-fds"
-version = "2.0.2"
+version = "2.0.3"
 description = "Connector to allow you to easily add Simvue tracking and monitoring to FDS (Fire Dynamics Simulator) simulations."
 authors = [
     {name = "Matt Field",email = "matthew.field@ukaea.uk"}

@@ -1,5 +1,11 @@
 # Change log
 
+## [v2.0.3](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.3) - 2026-01-30
+* Adds option to filter slices uploaded by their fixed dimension
+* Adds support for FDS simulations with negative timesteps
+* Fixes bug where slices may fail to upload a grid on the first iteration
+* Makes slice parser error messages more descriptive
+
 ## [v2.0.2](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.2) - 2026-01-16
 * Improves handling of error thrown by fdsreader.Simulation if no results are found
 * Improves responsiveness of FDSRun() is the FDS simulation fails
