@@ -1,6 +1,9 @@
 # Change log
 
-## [v2.0.3](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.3) - 2026-01-30
+## [v2.0.3](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.4) - 2026-01-30
+* Makes the slice parser retry if it fails to find simulation data initially
+
+## [v2.0.4](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.3) - 2026-01-30
 * Adds option to filter slices uploaded by their fixed dimension
 * Adds support for FDS simulations with negative timesteps
 * Fixes bug where slices may fail to upload a grid on the first iteration

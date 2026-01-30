@@ -580,6 +580,14 @@ class FDSRun(WrappedRun):
         try:
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
         except OSError as e:
+            if "no simulations were found in the directory" in str(e).lower():
+                logger.warning(f"""
+                    Unable to load slice data found in output directory '{sim_dir}' - no simulation data found.
+                    This could be because FDS is taking longer than exepcted to initialize the simulation, or an invalid workdir_path has been provided to the connector.
+                    Retrying in {self.slice_parse_interval}s...
+                    """)
+                return True  # So that it retries later
+
             logger.warning(
                 f"""
                 Unable to load slice data found in output directory '{sim_dir}'. Slice parsing is disabled for this run.
