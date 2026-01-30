@@ -29,7 +29,7 @@ NMESHES
   2
 
 TIMES
-          0.000          5.000
+         -2.000          5.000
 
 VIEWTIMES
            0.00           5.00     5
@@ -910,219 +910,219 @@ SLCF     1 # STRUCTURED &     0    30     0    20    20    20 !      3      0
  VIS_C
  m
 DEVICE_ACT     timer
-     1      0.00     0
+     1     -2.00     0
 DEVICE_ACT     flow_volume_supply
-     2      0.00     0
+     2     -2.00     0
 DEVICE_ACT     flow_volume_exhaust
-     3      0.00     0
+     3     -2.00     0
 DEVICE_ACT     eye_level_visibility
-     4      0.00     0
+     4     -2.00     0
 DEVICE_ACT     air_temperature
-     5      0.00     0
+     5     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-     6      0.00     0
+     6     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-     7      0.00     0
+     7     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-     8      0.00     0
+     8     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-     9      0.00     0
+     9     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    10      0.00     0
+    10     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    11      0.00     0
+    11     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    12      0.00     0
+    12     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    13      0.00     0
+    13     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    14      0.00     0
+    14     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    15      0.00     0
+    15     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    16      0.00     0
+    16     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    17      0.00     0
+    17     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    18      0.00     0
+    18     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    19      0.00     0
+    19     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    20      0.00     0
+    20     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    21      0.00     0
+    21     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    22      0.00     0
+    22     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    23      0.00     0
+    23     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    24      0.00     0
+    24     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    25      0.00     0
+    25     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    26      0.00     0
+    26     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    27      0.00     0
+    27     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    28      0.00     0
+    28     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    29      0.00     0
+    29     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    30      0.00     0
+    30     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    31      0.00     0
+    31     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    32      0.00     0
+    32     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    33      0.00     0
+    33     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    34      0.00     0
+    34     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    35      0.00     0
+    35     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    36      0.00     0
+    36     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    37      0.00     0
+    37     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    38      0.00     0
+    38     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    39      0.00     0
+    39     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    40      0.00     0
+    40     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    41      0.00     0
+    41     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    42      0.00     0
+    42     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    43      0.00     0
+    43     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    44      0.00     0
+    44     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    45      0.00     0
+    45     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    46      0.00     0
+    46     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    47      0.00     0
+    47     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    48      0.00     0
+    48     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    49      0.00     0
+    49     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    50      0.00     0
+    50     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    51      0.00     0
+    51     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    52      0.00     0
+    52     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    53      0.00     0
+    53     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    54      0.00     0
+    54     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    55      0.00     0
+    55     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    56      0.00     0
+    56     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    57      0.00     0
+    57     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    58      0.00     0
+    58     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    59      0.00     0
+    59     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    60      0.00     0
+    60     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    61      0.00     0
+    61     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    62      0.00     0
+    62     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    63      0.00     0
+    63     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    64      0.00     0
+    64     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    65      0.00     0
+    65     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    66      0.00     0
+    66     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    67      0.00     0
+    67     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    68      0.00     0
+    68     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    69      0.00     0
+    69     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    70      0.00     0
+    70     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    71      0.00     0
+    71     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    72      0.00     0
+    72     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    73      0.00     0
+    73     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    74      0.00     0
+    74     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    75      0.00     0
+    75     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    76      0.00     0
+    76     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    77      0.00     0
+    77     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    78      0.00     0
+    78     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    79      0.00     0
+    79     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    80      0.00     0
+    80     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    81      0.00     0
+    81     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    82      0.00     0
+    82     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    83      0.00     0
+    83     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    84      0.00     0
+    84     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    85      0.00     0
+    85     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    86      0.00     0
+    86     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    87      0.00     0
+    87     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    88      0.00     0
+    88     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    89      0.00     0
+    89     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    90      0.00     0
+    90     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    91      0.00     0
+    91     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    92      0.00     0
+    92     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    93      0.00     0
+    93     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    94      0.00     0
+    94     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    95      0.00     0
+    95     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    96      0.00     0
+    96     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    97      0.00     0
+    97     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    98      0.00     0
+    98     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-    99      0.00     0
+    99     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   100      0.00     0
+   100     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   101      0.00     0
+   101     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   102      0.00     0
+   102     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   103      0.00     0
+   103     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   104      0.00     0
+   104     -2.00     0
 DEVICE_ACT     visibility_time_averaged
-   105      0.00     0
+   105     -2.00     0
 CLOSE_VENT    1
-     1      0.00
+     1     -2.00
 CLOSE_VENT    1
-     2      0.00
+     2     -2.00
 XYZ
  supply_exhaust_vents_2.xyz
 SMOKF3D     2   8700.000
@@ -1171,11 +1171,11 @@ SLCF     2 # STRUCTURED &     0    30     0    20    20    20 !      3      0
  VIS_C
  m
 CLOSE_VENT    2
-     1      0.00
+     1     -2.00
 CLOSE_VENT    2
-     2      0.00
+     2     -2.00
 DEVICE_ACT     timer
-     1      2.00     1
+     1      2.01     1
 OPEN_VENT     1
      1      2.02
 OPEN_VENT     1

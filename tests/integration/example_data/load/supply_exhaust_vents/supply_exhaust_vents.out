@@ -1,7 +1,7 @@
 
  Fire Dynamics Simulator
 
- Current Date     : January 28, 2026  15:40:00
+ Current Date     : January 30, 2026  13:47:39
  Revision         : FDS-6.9.1-0-g889da6a-release
  Revision Date    : Sun Apr 7 17:05:06 2024 -0400
  Compiler         : Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.7.1 Build 20221019_000000
@@ -51,7 +51,7 @@
    Maximum Cell Aspect Ratio        1.000
    Initial Time Step (s)            0.092
    CFL Velocity Norm                    2
-   Simulation Start Time (s)          0.0
+   Simulation Start Time (s)         -2.0
    Simulation End Time (s)            5.0
    Background Pressure (Pa)     101325.00
    Ambient Temperature (C)          20.00
@@ -971,8 +971,8 @@
 
  Run Time Diagnostics
 
-       Time Step        1   January 28, 2026  15:40:00
-       Step Size:    0.922E-01 s, Total Time:      0.092 s
+       Time Step        1   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.91 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.38E-02 on Mesh 1 at (13,20,5)
        Maximum Pressure Error:  0.22E-05 on Mesh 2 at (13,1,4)
@@ -988,8 +988,8 @@
        Min divergence: -0.84E-03 at (14,1,6)
        Max VN number:   0.23E-01 at (4,11,30)
  
-       Time Step        2   January 28, 2026  15:40:00
-       Step Size:    0.922E-01 s, Total Time:       0.18 s
+       Time Step        2   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.82 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.22E-01 on Mesh 1 at (12,20,1)
        Maximum Pressure Error:  0.26E-02 on Mesh 1 at (17,18,2)
@@ -1007,8 +1007,8 @@
        Max VN number:   0.23E-01 at (4,11,30)
        Total Heat Release Rate:              4.581 kW
  
-       Time Step        3   January 28, 2026  15:40:01
-       Step Size:    0.922E-01 s, Total Time:       0.28 s
+       Time Step        3   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.72 s
        Pressure Iterations: 1
        Maximum Velocity Error:  0.45E-01 on Mesh 1 at (13,20,1)
        Maximum Pressure Error:  0.98E+00 on Mesh 1 at (17,18,1)
@@ -1028,8 +1028,8 @@
        Total Heat Release Rate:              3.670 kW
        Radiation Loss to Boundaries:        -0.427 kW
  
-       Time Step        4   January 28, 2026  15:40:01
-       Step Size:    0.922E-01 s, Total Time:       0.37 s
+       Time Step        4   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.63 s
        Pressure Iterations: 5
        Maximum Velocity Error:  0.46E-01 on Mesh 1 at (13,20,1)
        Maximum Pressure Error:  0.81E+01 on Mesh 1 at (17,18,1)
@@ -1049,8 +1049,8 @@
        Total Heat Release Rate:             23.449 kW
        Radiation Loss to Boundaries:        -0.895 kW
  
-       Time Step        5   January 28, 2026  15:40:01
-       Step Size:    0.922E-01 s, Total Time:       0.46 s
+       Time Step        5   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.54 s
        Pressure Iterations: 6
        Maximum Velocity Error:  0.31E-01 on Mesh 1 at (13,20,2)
        Maximum Pressure Error:  0.12E+03 on Mesh 1 at (16,18,1)
@@ -1070,8 +1070,8 @@
        Total Heat Release Rate:             15.690 kW
        Radiation Loss to Boundaries:        -2.718 kW
  
-       Time Step        6   January 28, 2026  15:40:01
-       Step Size:    0.922E-01 s, Total Time:       0.55 s
+       Time Step        6   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.45 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.40E-01 on Mesh 1 at (18,20,1)
        Maximum Pressure Error:  0.13E+02 on Mesh 2 at (16,3,1)
@@ -1091,8 +1091,8 @@
        Total Heat Release Rate:             29.453 kW
        Radiation Loss to Boundaries:        -4.512 kW
  
-       Time Step        7   January 28, 2026  15:40:01
-       Step Size:    0.922E-01 s, Total Time:       0.65 s
+       Time Step        7   January 30, 2026  13:47:39
+       Step Size:    0.922E-01 s, Total Time:      -1.35 s
        Pressure Iterations: 6
        Maximum Velocity Error:  0.35E-01 on Mesh 1 at (18,20,1)
        Maximum Pressure Error:  0.27E+02 on Mesh 2 at (18,2,1)
@@ -1112,8 +1112,8 @@
        Total Heat Release Rate:             27.612 kW
        Radiation Loss to Boundaries:        -9.208 kW
  
-       Time Step        8   January 28, 2026  15:40:01
-       Step Size:    0.781E-01 s, Total Time:       0.72 s
+       Time Step        8   January 30, 2026  13:47:39
+       Step Size:    0.781E-01 s, Total Time:      -1.28 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.39E-01 on Mesh 1 at (18,20,1)
        Maximum Pressure Error:  0.15E+02 on Mesh 1 at (13,20,1)
@@ -1133,8 +1133,8 @@
        Total Heat Release Rate:             38.575 kW
        Radiation Loss to Boundaries:       -11.548 kW
  
-       Time Step        9   January 28, 2026  15:40:01
-       Step Size:    0.612E-01 s, Total Time:       0.78 s
+       Time Step        9   January 30, 2026  13:47:39
+       Step Size:    0.612E-01 s, Total Time:      -1.22 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.27E-01 on Mesh 1 at (18,20,1)
        Maximum Pressure Error:  0.20E+02 on Mesh 1 at (13,20,2)
@@ -1154,8 +1154,8 @@
        Total Heat Release Rate:             41.097 kW
        Radiation Loss to Boundaries:       -15.831 kW
  
-       Time Step       10   January 28, 2026  15:40:01
-       Step Size:    0.523E-01 s, Total Time:       0.84 s
+       Time Step       10   January 30, 2026  13:47:39
+       Step Size:    0.523E-01 s, Total Time:      -1.16 s
        Pressure Iterations: 2
        Maximum Velocity Error:  0.24E-01 on Mesh 1 at (17,20,2)
        Maximum Pressure Error:  0.18E+02 on Mesh 2 at (14,3,6)
@@ -1175,8 +1175,8 @@
        Total Heat Release Rate:             45.225 kW
        Radiation Loss to Boundaries:       -16.875 kW
  
-       Time Step       20   January 28, 2026  15:40:02
-       Step Size:    0.242E-01 s, Total Time:       1.17 s
+       Time Step       20   January 30, 2026  13:47:40
+       Step Size:    0.242E-01 s, Total Time:      -0.83 s
        Pressure Iterations: 3
        Maximum Velocity Error:  0.36E-01 on Mesh 1 at (13,20,8)
        Maximum Pressure Error:  0.50E+02 on Mesh 1 at (16,18,10)
@@ -1196,8 +1196,8 @@
        Total Heat Release Rate:             60.454 kW
        Radiation Loss to Boundaries:       -18.001 kW
  
-       Time Step       30   January 28, 2026  15:40:03
-       Step Size:    0.217E-01 s, Total Time:       1.39 s
+       Time Step       30   January 30, 2026  13:47:41
+       Step Size:    0.217E-01 s, Total Time:      -0.61 s
        Pressure Iterations: 3
        Maximum Velocity Error:  0.46E-01 on Mesh 2 at (13,0,12)
        Maximum Pressure Error:  0.41E+02 on Mesh 1 at (15,18,14)
@@ -1217,10 +1217,10 @@
        Total Heat Release Rate:             61.298 kW
        Radiation Loss to Boundaries:       -14.462 kW
  
-       Time Step       40   January 28, 2026  15:40:04
-       Step Size:    0.189E-01 s, Total Time:       1.60 s
+       Time Step       40   January 30, 2026  13:47:42
+       Step Size:    0.189E-01 s, Total Time:      -0.40 s
        Pressure Iterations: 4
-       Maximum Velocity Error:  0.30E-01 on Mesh 1 at (13,20,14)
+       Maximum Velocity Error:  0.30E-01 on Mesh 2 at (13,0,14)
        Maximum Pressure Error:  0.29E+02 on Mesh 1 at (14,19,9)
        ---------------------------------------------------------------
        Mesh    1
@@ -1238,8 +1238,8 @@
        Total Heat Release Rate:             65.403 kW
        Radiation Loss to Boundaries:       -15.576 kW
  
-       Time Step       50   January 28, 2026  15:40:05
-       Step Size:    0.189E-01 s, Total Time:       1.79 s
+       Time Step       50   January 30, 2026  13:47:43
+       Step Size:    0.189E-01 s, Total Time:      -0.21 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.26E-01 on Mesh 1 at (13,20,17)
        Maximum Pressure Error:  0.49E+02 on Mesh 2 at (16,2,12)
@@ -1259,8 +1259,8 @@
        Total Heat Release Rate:             67.829 kW
        Radiation Loss to Boundaries:       -17.104 kW
  
-       Time Step       60   January 28, 2026  15:40:06
-       Step Size:    0.189E-01 s, Total Time:       1.98 s
+       Time Step       60   January 30, 2026  13:47:44
+       Step Size:    0.189E-01 s, Total Time:     -0.018 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.29E-01 on Mesh 1 at (12,20,15)
        Maximum Pressure Error:  0.72E+02 on Mesh 2 at (16,2,16)
@@ -1280,140 +1280,182 @@
        Total Heat Release Rate:             68.680 kW
        Radiation Loss to Boundaries:       -17.350 kW
  
-       Time Step       70   January 28, 2026  15:40:07
-       Step Size:    0.166E-01 s, Total Time:       2.15 s
+       Time Step       70   January 30, 2026  13:47:45
+       Step Size:    0.166E-01 s, Total Time:       0.15 s
        Pressure Iterations: 4
        Maximum Velocity Error:  0.40E-01 on Mesh 2 at (15,0,16)
-       Maximum Pressure Error:  0.79E+02 on Mesh 1 at (15,19,12)
+       Maximum Pressure Error:  0.78E+02 on Mesh 1 at (15,19,12)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.91E+00 at (16,20,15)
-       Max divergence:  0.24E+01 at (13,20,6)
-       Min divergence: -0.98E+00 at (15,20,8)
+       Max CFL number:  0.90E+00 at (16,20,15)
+       Max divergence:  0.24E+01 at (18,20,6)
+       Min divergence: -0.97E+00 at (15,20,8)
        Max VN number:   0.26E+00 at (17,19,18)
-       Total Heat Release Rate:             70.197 kW
-       Radiation Loss to Boundaries:       -17.287 kW
+       Total Heat Release Rate:             70.486 kW
+       Radiation Loss to Boundaries:       -17.456 kW
        Mesh    2
        Max CFL number:  0.85E+00 at (16,1,14)
        Max divergence:  0.24E+01 at (13,1,6)
-       Min divergence: -0.94E+00 at (15,1,10)
+       Min divergence: -0.95E+00 at (15,1,10)
        Max VN number:   0.21E+00 at (14,2,19)
-       Total Heat Release Rate:             70.300 kW
-       Radiation Loss to Boundaries:       -17.397 kW
+       Total Heat Release Rate:             70.628 kW
+       Radiation Loss to Boundaries:       -17.559 kW
  
-       Time Step       80   January 28, 2026  15:40:08
-       Step Size:    0.149E-01 s, Total Time:       2.31 s
-       Pressure Iterations: 5
-       Maximum Velocity Error:  0.25E-01 on Mesh 1 at (16,20,20)
-       Maximum Pressure Error:  0.77E+02 on Mesh 1 at (15,19,15)
+       Time Step       80   January 30, 2026  13:47:46
+       Step Size:    0.143E-01 s, Total Time:       0.31 s
+       Pressure Iterations: 4
+       Maximum Velocity Error:  0.45E-01 on Mesh 1 at (15,20,20)
+       Maximum Pressure Error:  0.78E+02 on Mesh 1 at (15,19,15)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.85E+00 at (15,19,18)
+       Max CFL number:  0.81E+00 at (15,19,18)
        Max divergence:  0.25E+01 at (16,18,6)
-       Min divergence: -0.97E+00 at (16,20,9)
+       Min divergence: -0.94E+00 at (15,20,9)
        Max VN number:   0.17E+00 at (16,20,22)
-       Total Heat Release Rate:             70.505 kW
-       Radiation Loss to Boundaries:       -17.215 kW
+       Total Heat Release Rate:             70.723 kW
+       Radiation Loss to Boundaries:       -17.417 kW
        Mesh    2
-       Max CFL number:  0.93E+00 at (15,2,18)
-       Max divergence:  0.25E+01 at (16,3,6)
-       Min divergence: -0.13E+01 at (16,1,10)
+       Max CFL number:  0.90E+00 at (15,2,18)
+       Max divergence:  0.25E+01 at (15,3,6)
+       Min divergence: -0.12E+01 at (16,1,16)
        Max VN number:   0.18E+00 at (15,2,17)
-       Total Heat Release Rate:             70.653 kW
-       Radiation Loss to Boundaries:       -17.480 kW
+       Total Heat Release Rate:             70.851 kW
+       Radiation Loss to Boundaries:       -17.573 kW
  
-       Time Step       90   January 28, 2026  15:40:08
-       Step Size:    0.149E-01 s, Total Time:       2.46 s
+       Time Step       90   January 30, 2026  13:47:47
+       Step Size:    0.143E-01 s, Total Time:       0.45 s
        Pressure Iterations: 4
-       Maximum Velocity Error:  0.38E-01 on Mesh 1 at (15,20,20)
-       Maximum Pressure Error:  0.64E+02 on Mesh 1 at (16,19,17)
+       Maximum Velocity Error:  0.36E-01 on Mesh 1 at (14,20,18)
+       Maximum Pressure Error:  0.61E+02 on Mesh 1 at (16,19,17)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.87E+00 at (17,19,25)
-       Max divergence:  0.26E+01 at (18,20,6)
+       Max CFL number:  0.80E+00 at (17,19,25)
+       Max divergence:  0.26E+01 at (13,20,6)
        Min divergence: -0.10E+01 at (16,20,12)
-       Max VN number:   0.23E+00 at (17,19,24)
-       Total Heat Release Rate:             70.784 kW
-       Radiation Loss to Boundaries:       -17.030 kW
+       Max VN number:   0.21E+00 at (17,19,24)
+       Total Heat Release Rate:             70.817 kW
+       Radiation Loss to Boundaries:       -17.105 kW
        Mesh    2
-       Max CFL number:  0.92E+00 at (16,1,21)
-       Max divergence:  0.25E+01 at (16,3,6)
-       Min divergence: -0.11E+01 at (16,1,15)
+       Max CFL number:  0.88E+00 at (16,1,21)
+       Max divergence:  0.26E+01 at (18,1,6)
+       Min divergence: -0.12E+01 at (16,1,15)
        Max VN number:   0.18E+00 at (18,2,23)
-       Total Heat Release Rate:             71.195 kW
-       Radiation Loss to Boundaries:       -17.901 kW
+       Total Heat Release Rate:             71.228 kW
+       Radiation Loss to Boundaries:       -17.961 kW
  
-       Time Step      100   January 28, 2026  15:40:09
-       Step Size:    0.149E-01 s, Total Time:       2.61 s
+       Time Step      100   January 30, 2026  13:47:48
+       Step Size:    0.143E-01 s, Total Time:       0.60 s
        Pressure Iterations: 4
-       Maximum Velocity Error:  0.27E-01 on Mesh 1 at (17,20,24)
-       Maximum Pressure Error:  0.11E+03 on Mesh 2 at (17,2,30)
+       Maximum Velocity Error:  0.29E-01 on Mesh 1 at (15,20,16)
+       Maximum Pressure Error:  0.91E+02 on Mesh 1 at (16,19,22)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.93E+00 at (16,19,22)
-       Max divergence:  0.26E+01 at (16,18,6)
-       Min divergence: -0.11E+01 at (16,20,10)
-       Max VN number:   0.23E+00 at (14,19,27)
-       Total Heat Release Rate:             71.091 kW
-       Radiation Loss to Boundaries:       -16.949 kW
+       Max CFL number:  0.86E+00 at (16,19,21)
+       Max divergence:  0.25E+01 at (16,18,6)
+       Min divergence: -0.95E+00 at (15,20,17)
+       Max VN number:   0.25E+00 at (14,19,27)
+       Total Heat Release Rate:             71.140 kW
+       Radiation Loss to Boundaries:       -17.196 kW
        Mesh    2
-       Max CFL number:  0.95E+00 at (16,1,23)
-       Max divergence:  0.26E+01 at (16,3,6)
-       Min divergence: -0.97E+00 at (16,1,8)
-       Max VN number:   0.26E+00 at (17,2,29)
-       Total Heat Release Rate:             71.459 kW
-       Radiation Loss to Boundaries:       -17.623 kW
+       Max CFL number:  0.90E+00 at (16,1,24)
+       Max divergence:  0.25E+01 at (15,3,6)
+       Min divergence: -0.12E+01 at (16,1,11)
+       Max VN number:   0.26E+00 at (17,2,28)
+       Total Heat Release Rate:             71.364 kW
+       Radiation Loss to Boundaries:       -17.561 kW
  
-       Time Step      200   January 28, 2026  15:40:19
-       Step Size:    0.133E-01 s, Total Time:       3.92 s
+       Time Step      200   January 30, 2026  13:47:57
+       Step Size:    0.138E-01 s, Total Time:       1.97 s
        Pressure Iterations: 4
-       Maximum Velocity Error:  0.30E-01 on Mesh 1 at (17,20,28)
-       Maximum Pressure Error:  0.13E+03 on Mesh 1 at (17,20,30)
+       Maximum Velocity Error:  0.31E-01 on Mesh 1 at (16,20,22)
+       Maximum Pressure Error:  0.10E+03 on Mesh 1 at (15,19,30)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.80E+00 at (17,20,26)
-       Max divergence:  0.28E+01 at (18,20,6)
-       Min divergence: -0.99E+00 at (16,20,16)
-       Max VN number:   0.47E+00 at (30,16,29)
-       Total Heat Release Rate:             71.986 kW
-       Radiation Loss to Boundaries:       -17.280 kW
+       Max CFL number:  0.92E+00 at (16,20,22)
+       Max divergence:  0.26E+01 at (18,20,6)
+       Min divergence: -0.12E+01 at (16,20,10)
+       Max VN number:   0.38E+00 at (23,1,27)
+       Total Heat Release Rate:             72.252 kW
+       Radiation Loss to Boundaries:       -18.810 kW
        Mesh    2
-       Max CFL number:  0.81E+00 at (17,1,25)
-       Max divergence:  0.28E+01 at (18,1,6)
-       Min divergence: -0.12E+01 at (16,1,13)
-       Max VN number:   0.53E+00 at (30,5,29)
-       Total Heat Release Rate:             70.735 kW
-       Radiation Loss to Boundaries:       -16.641 kW
+       Max CFL number:  0.92E+00 at (16,1,24)
+       Max divergence:  0.23E+01 at (18,1,6)
+       Min divergence: -0.12E+01 at (16,1,19)
+       Max VN number:   0.41E+00 at (13,11,30)
+       Total Heat Release Rate:             71.422 kW
+       Radiation Loss to Boundaries:       -16.237 kW
  
-       Time Step      277   January 28, 2026  15:40:26
-       Step Size:    0.113E-01 s, Total Time:       5.00 s
+       Time Step      300   January 30, 2026  13:48:06
+       Step Size:    0.138E-01 s, Total Time:       3.34 s
        Pressure Iterations: 3
-       Maximum Velocity Error:  0.31E-01 on Mesh 1 at (17,20,23)
-       Maximum Pressure Error:  0.92E+02 on Mesh 1 at (18,18,30)
+       Maximum Velocity Error:  0.43E-01 on Mesh 1 at (17,20,25)
+       Maximum Pressure Error:  0.14E+03 on Mesh 2 at (17,2,30)
        ---------------------------------------------------------------
        Mesh    1
-       Max CFL number:  0.67E+00 at (17,20,22)
-       Max divergence:  0.25E+01 at (17,18,6)
-       Min divergence: -0.90E+00 at (17,20,19)
-       Max VN number:   0.57E+00 at (18,14,30)
-       Total Heat Release Rate:             73.542 kW
-       Radiation Loss to Boundaries:       -18.773 kW
+       Max CFL number:  0.80E+00 at (16,20,25)
+       Max divergence:  0.27E+01 at (15,18,6)
+       Min divergence: -0.89E+00 at (15,20,12)
+       Max VN number:   0.36E+00 at (5,1,20)
+       Total Heat Release Rate:             73.510 kW
+       Radiation Loss to Boundaries:       -20.565 kW
        Mesh    2
-       Max CFL number:  0.66E+00 at (17,1,25)
-       Max divergence:  0.26E+01 at (14,3,1)
-       Min divergence: -0.99E+00 at (17,2,8)
-       Max VN number:   0.48E+00 at (20,7,30)
-       Total Heat Release Rate:             72.731 kW
-       Radiation Loss to Boundaries:       -16.855 kW
+       Max CFL number:  0.89E+00 at (16,1,26)
+       Max divergence:  0.24E+01 at (18,1,6)
+       Min divergence: -0.99E+00 at (16,1,19)
+       Max VN number:   0.44E+00 at (22,19,30)
+       Total Heat Release Rate:             71.096 kW
+       Radiation Loss to Boundaries:       -14.964 kW
+ 
+       Time Step      400   January 30, 2026  13:48:16
+       Step Size:    0.140E-01 s, Total Time:       4.71 s
+       Pressure Iterations: 4
+       Maximum Velocity Error:  0.27E-01 on Mesh 1 at (17,20,22)
+       Maximum Pressure Error:  0.11E+03 on Mesh 1 at (16,19,22)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.88E+00 at (16,20,22)
+       Max divergence:  0.28E+01 at (18,20,6)
+       Min divergence: -0.11E+01 at (16,20,11)
+       Max VN number:   0.41E+00 at (30,16,29)
+       Total Heat Release Rate:             72.941 kW
+       Radiation Loss to Boundaries:       -17.993 kW
+       Mesh    2
+       Max CFL number:  0.82E+00 at (18,2,27)
+       Max divergence:  0.23E+01 at (18,1,6)
+       Min divergence: -0.15E+01 at (16,1,15)
+       Max VN number:   0.75E+00 at (30,5,29)
+       Total Heat Release Rate:             70.551 kW
+       Radiation Loss to Boundaries:       -17.579 kW
+ 
+       Time Step      422   January 30, 2026  13:48:18
+       Step Size:    0.947E-03 s, Total Time:       5.00 s
+       Pressure Iterations: 1
+       Maximum Velocity Error:  0.42E-01 on Mesh 1 at (18,20,6)
+       Maximum Pressure Error:  0.79E+03 on Mesh 2 at (15,3,1)
+       ---------------------------------------------------------------
+       Mesh    1
+       Max CFL number:  0.60E-01 at (17,20,24)
+       Max divergence:  0.33E+01 at (18,20,6)
+       Min divergence: -0.92E+00 at (17,19,10)
+       Max VN number:   0.30E-01 at (27,1,19)
+       Total Heat Release Rate:             80.305 kW
+       Radiation Loss to Boundaries:       -20.788 kW
+       Mesh    2
+       Max CFL number:  0.55E-01 at (17,1,22)
+       Max divergence:  0.32E+01 at (14,3,1)
+       Min divergence: -0.93E+00 at (17,1,26)
+       Max VN number:   0.33E-01 at (30,5,29)
+       Total Heat Release Rate:             74.666 kW
+       Radiation Loss to Boundaries:       -15.651 kW
  
 
 
  DEVICE Activation Times
 
-         1    timer                     T           2.001
+         1    timer                     T           2.007
 
 
- Time Stepping Wall Clock Time (s):       25.922
- Total Elapsed Wall Clock Time (s):       27.500
+ Time Stepping Wall Clock Time (s):       39.881
+ Total Elapsed Wall Clock Time (s):       41.548
 
 STOP: FDS completed successfully (CHID: supply_exhaust_vents)

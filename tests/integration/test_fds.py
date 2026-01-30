@@ -147,12 +147,12 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     # Check metadata from input file
     assert run_data.metadata["input_file"]["_grp_devc_1"]["id"] == "flow_volume_supply"
 
-    # Check events from log
+    # Check events from log, check negative time upladed
     # Loosening requirement for this since Windows and Ubuntu will print slightly different times
     assert any(
-        [event.startswith("Time Step: 1, Simulation Time: 0.09") for event in events]
+        [event.startswith("Time Step: 1, Simulation Time: -1.") for event in events]
     )
-
+    
     # Check events from DEVC/CTRL log
     # Loosening requirement for this since Windows and Ubuntu will print slightly different times
     assert any(
@@ -177,6 +177,20 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
+    
+    # Check metrics from each possible type of file have a negative first time point
+    for metric in (
+        "HRR",
+        "flow_volume_supply",
+        "max_pressure_error",
+        "soot_visibility.z.2_0.min"
+    ):
+        _retrieved = client.get_metric_values(
+            run_ids=[run_id],
+            metric_names=[metric],
+            xaxis="time",
+        )
+        assert list(_retrieved[metric].keys())[0][0] < 0
 
     _retrieved = client.get_metric_values(
         run_ids=[run_id],

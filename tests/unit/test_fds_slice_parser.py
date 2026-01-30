@@ -146,7 +146,7 @@ def test_fds_slice_parser(folder_setup, results_path, slice_parameter, slice_ids
 @patch.object(FDSRun, '_find_fds_executable', lambda _: None)
 @patch.object(FDSRun, '_during_simulation', mock_during_sim)
 @patch.object(FDSRun, '_post_simulation', mock_post_sim)
-@pytest.mark.parametrize("slice_id", (None, "cell_centered_slice", "large_slice"), ids=("all_slices", "cell_centered_slice", "slice_too_big"))     
+@pytest.mark.parametrize("slice_id", (None, "cell_centered_slice", "large_slice", "wrong_id"), ids=("all_slices", "cell_centered_slice", "slice_too_big", "wrong_id"))     
 def test_fds_invalid_slice(folder_setup, caplog, slice_id):
     with FDSRun() as run:
         run.config(disable_resources_metrics = True)

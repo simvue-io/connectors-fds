@@ -56,7 +56,7 @@ class FDSRun(WrappedRun):
     _patterns: list[dict[str, typing.Pattern]] = [
         {"pattern": re.compile(r"\s+Time\sStep\s+(\d+)\s+([\w\s:,]+)"), "name": "step"},
         {
-            "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.]+)\ss.*"),
+            "pattern": re.compile(r"\s+Step\sSize:.*Total\sTime:\s+([\d\.\-]+)\ss.*"),
             "name": "time",
         },
         {
@@ -581,7 +581,11 @@ class FDSRun(WrappedRun):
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
         except OSError as e:
             logger.warning(
-                f"No simulation data found in output directory '{sim_dir}'. Slice parsing is disabled for this run."
+                f"""
+                Unable to load slice data found in output directory '{sim_dir}'. Slice parsing is disabled for this run.
+                This is because: {e}
+                Please correct the issue described above, or raise a bug report via the UI if you think this is incorrect.
+                """
             )
             return False
         slices: list[Slice] = (
@@ -589,6 +593,9 @@ class FDSRun(WrappedRun):
             if self.slice_parse_ids
             else sim.slices
         )
+        # Get rid of any Nones - caused by slice IDs not found in results
+        slices = [slice for slice in slices if slice is not None]
+
         if self.slice_parse_quantities:
             slices = [
                 slice
@@ -647,8 +654,12 @@ class FDSRun(WrappedRun):
                 value = str(round(coords[axis][0], 3)).replace(".", "_")
                 metric_name = f"{quantity}.{axis}.{value}"
 
+            # If grid is too large, just go to next one as not tracking
+            if metric_name in self._grids_too_large:
+                continue
+
             # Define grid if first pass
-            if not self._grids_defined:
+            if metric_name not in self._grids_defined:
                 # Check size doesn't breach server limit
                 if (
                     coords[slice.extent_dirs[0]].shape[0]
@@ -658,7 +669,9 @@ class FDSRun(WrappedRun):
                     logger.warning(
                         f"Slice '{metric_name}' exceeds the maximum size for upload to the server - ignoring this metric."
                     )
+                    self._grids_too_large.append(metric_name)
                     continue
+
                 self.assign_metric_to_grid(
                     metric_name=metric_name,
                     axes_ticks=[
@@ -667,20 +680,23 @@ class FDSRun(WrappedRun):
                     ],
                     axes_labels=slice.extent_dirs,
                 )
+                self._grids_defined.append(metric_name)
+
             times_to_process = times[self._slice_processed_idx :]
             for time_idx, time_val in enumerate(times_to_process):
                 values_at_time = values[time_idx, ...]
                 values_no_obst = values_at_time[~numpy.isnan(values_at_time)]
 
                 slice_metrics.setdefault(time_val, {})
-                slice_metrics[time_val].update(
-                    {
-                        metric_name: numpy.nan_to_num(values_at_time).T,
-                        f"{metric_name}.min": numpy.min(values_no_obst),
-                        f"{metric_name}.max": numpy.max(values_no_obst),
-                        f"{metric_name}.avg": numpy.mean(values_no_obst),
-                    }
-                )
+                if metric_name in self._grids_defined:
+                    slice_metrics[time_val].update(
+                        {
+                            metric_name: numpy.nan_to_num(values_at_time).T,
+                            f"{metric_name}.min": numpy.min(values_no_obst),
+                            f"{metric_name}.max": numpy.max(values_no_obst),
+                            f"{metric_name}.avg": numpy.mean(values_no_obst),
+                        }
+                    )
 
                 # Need to estimate timestamp which this measurement would correspond to
                 # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
@@ -701,7 +717,6 @@ class FDSRun(WrappedRun):
             )
             self._slice_step += 1
 
-        self._grids_defined = True
         self._last_parse_time = datetime.now(timezone.utc).timestamp()
         self._slice_processed_idx = (
             times.shape[0] if times is not None else self._slice_processed_idx
@@ -1014,7 +1029,8 @@ class FDSRun(WrappedRun):
 
         self._activation_times = False
         self._activation_times_data = {}
-        self._grids_defined = False
+        self._grids_defined = []
+        self._grids_too_large = []
 
         logger.addHandler(simvue.Handler(self))
 
@@ -1109,7 +1125,8 @@ class FDSRun(WrappedRun):
 
         self.slice_parser = None
         self._loading_historic_run = True
-        self._grids_defined = False
+        self._grids_defined = []
+        self._grids_too_large = []
         self._concatenated_input_files = False
 
         logger.addHandler(simvue.Handler(self))
