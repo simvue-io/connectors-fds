@@ -648,6 +648,13 @@ class FDSRun(WrappedRun):
                     logger.debug(e)
                 continue
 
+            # In some cases, fdsreader returns two arrays which are a tiny offset from each other due to mesh boundaries
+            # We will just use the first one, since they should be almost identical...
+            if isinstance(values, tuple):
+                values = values[0]
+            if isinstance(coords, tuple):
+                coords = coords[0]
+
             # Get rid of values already uploaded, return if nothing left to upload
             values = values[self._slice_processed_idx :, ...]
             if values.shape[0] == 0:
@@ -734,8 +741,14 @@ class FDSRun(WrappedRun):
     def _slice_parser(self) -> None:
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
-            self._trigger.wait(timeout=self.slice_parse_interval)
-            slice_parsed = self._parse_slice()
+            try:
+                self._trigger.wait(timeout=self.slice_parse_interval)
+                slice_parsed = self._parse_slice()
+            except Exception as e:
+                logger.error(
+                    "Slice parsing has failed due to an unexpected error. Slice parsing is disabled for the remainder of this run."
+                )
+                raise e
 
             if self._trigger.is_set() or not slice_parsed:
                 break
