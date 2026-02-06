@@ -652,6 +652,7 @@ class FDSRun(WrappedRun):
             # We will just use the first one, since they should be almost identical...
             if isinstance(values, tuple):
                 values = values[0]
+                coords = coords[0]
 
             # Get rid of values already uploaded, return if nothing left to upload
             values = values[self._slice_processed_idx :, ...]
