@@ -944,12 +944,16 @@ class FDSRun(WrappedRun):
         self.update_metadata(self._activation_times_data)
 
         # Upload updated FDS file if '&CATF' namespace in FDS file
-        if self._concatenated_input_files:
+        if self.fds_input_file_path and self._concatenated_input_files:
             self.save_file(str(self.fds_input_file_path), "input")
 
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
-                if pathlib.Path(file).absolute() == self.fds_input_file_path.absolute():
+                if (
+                    self.fds_input_file_path
+                    and pathlib.Path(file).absolute()
+                    == self.fds_input_file_path.absolute()
+                ):
                     continue
                 self.save_file(file, "output")
         else:
@@ -961,7 +965,8 @@ class FDSRun(WrappedRun):
             for path in self.upload_files:
                 for file in glob.glob(path):
                     if (
-                        pathlib.Path(file).absolute()
+                        self.fds_input_file_path
+                        and pathlib.Path(file).absolute()
                         == self.fds_input_file_path.absolute()
                     ):
                         continue
@@ -1144,6 +1149,7 @@ class FDSRun(WrappedRun):
         self.slice_parse_fixed_dimensions = slice_parse_fixed_dimensions
         self.slice_parse_ids = slice_parse_ids
 
+        self.fds_input_file_path = None
         self.slice_parser = None
         self._loading_historic_run = True
         self._grids_defined = []
