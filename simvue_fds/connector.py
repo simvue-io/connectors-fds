@@ -720,6 +720,7 @@ class FDSRun(WrappedRun):
                     step=self._slice_step + time_idx,
                     timestamp=datetime.fromtimestamp(timestamp, tz=timezone.utc),
                 )
+            sim.clear_cache()
 
         self._slice_step += len(times_to_process)
 
@@ -802,6 +803,8 @@ class FDSRun(WrappedRun):
         fdsreader.settings.IGNORE_ERRORS = True
         # Disable caching so that it doesnt create pickle files inside the results directory
         fdsreader.settings.ENABLE_CACHING = False
+        # Enable lazy loading to reduce memory usage
+        fdsreader.settings.LAZY_LOAD = True
 
         super().__init__(
             mode=mode,
