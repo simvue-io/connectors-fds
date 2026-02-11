@@ -621,11 +621,8 @@ class FDSRun(WrappedRun):
                 )
             ]
 
-        # Calculate the metrics which need to be sent, store in format:
-        # {time: {metric_name: [], timestamp: ""}}
-        slice_metrics: dict[float, dict] = {}
         times = None
-
+        times_to_process = None
         for slice in slices:
             if not slice:
                 continue
@@ -722,7 +719,7 @@ class FDSRun(WrappedRun):
                 )
             sim.clear_cache()
 
-        self._slice_step += len(times_to_process)
+        self._slice_step += len(times_to_process) if times_to_process is not None else 0
 
         self._last_parse_time = datetime.now(timezone.utc).timestamp()
         self._slice_processed_idx = (
