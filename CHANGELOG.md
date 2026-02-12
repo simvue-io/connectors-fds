@@ -1,5 +1,9 @@
 # Change log
 
+## [v2.0.6](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.6) - 2026-02-12
+* Fixes bug where missing input file causes Load to crash in some cases
+* Restructure slice parsing to make more memory efficient
+
 ## [v2.0.5](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.5) - 2026-02-06
 * Fixes bug where slice parser crashes if uploading a slice located between boundaries
 
