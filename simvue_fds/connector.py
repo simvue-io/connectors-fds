@@ -621,11 +621,8 @@ class FDSRun(WrappedRun):
                 )
             ]
 
-        # Calculate the metrics which need to be sent, store in format:
-        # {time: {metric_name: [], timestamp: ""}}
-        slice_metrics: dict[float, dict] = {}
         times = None
-
+        times_to_process = None
         for slice in slices:
             if not slice:
                 continue
@@ -697,40 +694,35 @@ class FDSRun(WrappedRun):
                 )
                 self._grids_defined.append(metric_name)
 
+            if metric_name not in self._grids_defined:
+                continue
+
             times_to_process = times[self._slice_processed_idx :]
             for time_idx, time_val in enumerate(times_to_process):
                 values_at_time = values[time_idx, ...]
                 values_no_obst = values_at_time[~numpy.isnan(values_at_time)]
 
-                slice_metrics.setdefault(time_val, {})
-                if metric_name in self._grids_defined:
-                    slice_metrics[time_val].update(
-                        {
-                            metric_name: numpy.nan_to_num(values_at_time).T,
-                            f"{metric_name}.min": numpy.min(values_no_obst),
-                            f"{metric_name}.max": numpy.max(values_no_obst),
-                            f"{metric_name}.avg": numpy.mean(values_no_obst),
-                        }
-                    )
-
                 # Need to estimate timestamp which this measurement would correspond to
                 # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
-                if not slice_metrics[time_val].get("timestamp"):
-                    slice_metrics[time_val]["timestamp"] = self._last_parse_time + (
-                        datetime.now(timezone.utc).timestamp() - self._last_parse_time
-                    ) * ((time_idx + 1) / len(times_to_process))
+                timestamp = self._last_parse_time + (
+                    datetime.now(timezone.utc).timestamp() - self._last_parse_time
+                ) * ((time_idx + 1) / len(times_to_process))
 
-        for time_val, metrics in slice_metrics.items():
-            timestamp = metrics.pop("timestamp", None)
-            self.log_metrics(
-                metrics,
-                time=time_val,
-                step=self._slice_step,
-                timestamp=datetime.fromtimestamp(timestamp, tz=timezone.utc)
-                if timestamp
-                else None,
-            )
-            self._slice_step += 1
+                self.log_metrics(
+                    {
+                        metric_name: numpy.nan_to_num(values_at_time).T,
+                        f"{metric_name}.min": numpy.min(values_no_obst),
+                        f"{metric_name}.max": numpy.max(values_no_obst),
+                        f"{metric_name}.avg": numpy.mean(values_no_obst),
+                    },
+                    time=time_val,
+                    step=self._slice_step + time_idx,
+                    timestamp=datetime.fromtimestamp(timestamp, tz=timezone.utc),
+                )
+            # TODO: Should lear cache, but this has a bug in fdsreader: Issue #104 in fdsreader repo
+            # sim.clear_cache()
+
+        self._slice_step += len(times_to_process) if times_to_process is not None else 0
 
         self._last_parse_time = datetime.now(timezone.utc).timestamp()
         self._slice_processed_idx = (
@@ -811,6 +803,8 @@ class FDSRun(WrappedRun):
         fdsreader.settings.IGNORE_ERRORS = True
         # Disable caching so that it doesnt create pickle files inside the results directory
         fdsreader.settings.ENABLE_CACHING = False
+        # Enable lazy loading to reduce memory usage
+        fdsreader.settings.LAZY_LOAD = True
 
         super().__init__(
             mode=mode,
@@ -944,12 +938,16 @@ class FDSRun(WrappedRun):
         self.update_metadata(self._activation_times_data)
 
         # Upload updated FDS file if '&CATF' namespace in FDS file
-        if self._concatenated_input_files:
+        if self.fds_input_file_path and self._concatenated_input_files:
             self.save_file(str(self.fds_input_file_path), "input")
 
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
-                if pathlib.Path(file).absolute() == self.fds_input_file_path.absolute():
+                if (
+                    self.fds_input_file_path
+                    and pathlib.Path(file).absolute()
+                    == self.fds_input_file_path.absolute()
+                ):
                     continue
                 self.save_file(file, "output")
         else:
@@ -961,7 +959,8 @@ class FDSRun(WrappedRun):
             for path in self.upload_files:
                 for file in glob.glob(path):
                     if (
-                        pathlib.Path(file).absolute()
+                        self.fds_input_file_path
+                        and pathlib.Path(file).absolute()
                         == self.fds_input_file_path.absolute()
                     ):
                         continue
@@ -1144,6 +1143,7 @@ class FDSRun(WrappedRun):
         self.slice_parse_fixed_dimensions = slice_parse_fixed_dimensions
         self.slice_parse_ids = slice_parse_ids
 
+        self.fds_input_file_path = None
         self.slice_parser = None
         self._loading_historic_run = True
         self._grids_defined = []
