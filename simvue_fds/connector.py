@@ -579,6 +579,9 @@ class FDSRun(WrappedRun):
         sim_dir = self.workdir_path if self.workdir_path else pathlib.Path.cwd()
         try:
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
+            import pdb
+
+            pdb.set_trace()
         except OSError as e:
             if "no simulations were found in the directory" in str(e).lower():
                 logger.warning(f"""
@@ -717,7 +720,8 @@ class FDSRun(WrappedRun):
                     step=self._slice_step + time_idx,
                     timestamp=datetime.fromtimestamp(timestamp, tz=timezone.utc),
                 )
-            sim.clear_cache()
+            # TODO: Should lear cache, but this has a bug in fdsreader: Issue #104 in fdsreader repo
+            # sim.clear_cache()
 
         self._slice_step += len(times_to_process) if times_to_process is not None else 0
 
