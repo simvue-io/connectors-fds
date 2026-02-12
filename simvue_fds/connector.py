@@ -702,6 +702,8 @@ class FDSRun(WrappedRun):
                 values_at_time = values[time_idx, ...]
                 values_no_obst = values_at_time[~numpy.isnan(values_at_time)]
 
+                # Need to estimate timestamp which this measurement would correspond to
+                # Will use estimate = timestamp of last parse + (now - last parse) * (idx/len(times_out))
                 timestamp = self._last_parse_time + (
                     datetime.now(timezone.utc).timestamp() - self._last_parse_time
                 ) * ((time_idx + 1) / len(times_to_process))
