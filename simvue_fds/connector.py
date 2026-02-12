@@ -579,9 +579,6 @@ class FDSRun(WrappedRun):
         sim_dir = self.workdir_path if self.workdir_path else pathlib.Path.cwd()
         try:
             sim = fdsreader.Simulation(str(sim_dir.absolute()))
-            import pdb
-
-            pdb.set_trace()
         except OSError as e:
             if "no simulations were found in the directory" in str(e).lower():
                 logger.warning(f"""
