@@ -276,7 +276,6 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
         slice_var=None,
         slice_fixed_dim=None,
         load=load,
-        upload_input_metadata=False
     )
     time.sleep(2)
 
@@ -304,8 +303,8 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
     else:
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
-    # Check metadata from input file NOT uploaded
-    assert not run_data.metadata.get("input_file")
+    # Check metadata from input file uploaded
+    assert run_data.metadata["input_file"]["time"]["t_end"] == 1750
 
     # Check metadata from concatenated files
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "HRRPUA"
@@ -361,6 +360,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
         slice_var="TEMPERATURE",
         slice_fixed_dim=None,
         load=load,
+        upload_input_metadata=False
     )
     time.sleep(2)
 
@@ -388,11 +388,8 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     else:
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
-    # Check metadata from input file
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 10
-
-    # Check metadata from input file
-    assert run_data.metadata["input_file"]["spec"]["id"] == "WATER VAPOR"
+    # Check metadata from input file NOT uploaded
+    assert not run_data.metadata.get("input_file")
 
     # Check events from log
     assert any(
