@@ -12,7 +12,7 @@ import requests
 from simvue.config.user import SimvueConfiguration
 
 
-def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load):
+def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, upload_input_metadata=True):
     """Function demonstrating how to launch FDS runs with Simvue.
 
     Parameters
@@ -274,6 +274,7 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
         slice_var=None,
         slice_fixed_dim=None,
         load=load,
+        upload_input_metadata=False
     )
     time.sleep(2)
 
@@ -301,8 +302,8 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
     else:
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
-    # Check metadata from input file
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 1750
+    # Check metadata from input file NOT uploaded
+    assert not run_data.metadata.get("input_file")
 
     # Check metadata from concatenated files
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "HRRPUA"
