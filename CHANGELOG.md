@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.0.7](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.7) - 2026-03-02
+* Adds option to disable metadata upload from input file
+
 ## [v2.0.6](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.6) - 2026-02-12
 * Fixes bug where missing input file causes Load to crash in some cases
 * Restructure slice parsing to make more memory efficient
