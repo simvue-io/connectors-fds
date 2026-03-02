@@ -59,7 +59,8 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, uplo
                     results_dir=file_path,
                     slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities = [slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None
+                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None,
+                    upload_input_metadata=upload_input_metadata
                 )
             else:
                 # Then call the .launch() method to start your FDS simulation, providing the path to the input file
@@ -75,6 +76,7 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, uplo
                     # And you can choose whether to run it in parallel
                     run_in_parallel = parallel,
                     num_processors = 2,
+                    upload_input_metadata=upload_input_metadata
                 )
             
             # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
