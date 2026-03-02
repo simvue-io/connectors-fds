@@ -405,7 +405,8 @@ class FDSRun(WrappedRun):
 
     def _input_file_callback(self, data: dict, meta: dict):
         self._input_dict = {k: v for k, v in data.items() if v}
-        self.update_metadata({"input_file": self._input_dict})
+        if self.upload_input_metadata:
+            self.update_metadata({"input_file": self._input_dict})
 
     def _metrics_callback(self, data: dict, meta: dict) -> None:
         """Log metrics extracted from a log file to Simvue.
@@ -734,7 +735,7 @@ class FDSRun(WrappedRun):
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
             try:
-                self._trigger.wait(timeout=self.slice_parse_interval)
+                trigger_set = self._trigger.wait(timeout=self.slice_parse_interval)
                 slice_parsed = self._parse_slice()
             except Exception as e:
                 logger.error(
@@ -742,7 +743,7 @@ class FDSRun(WrappedRun):
                 )
                 raise e
 
-            if self._trigger.is_set() or not slice_parsed:
+            if trigger_set or not slice_parsed:
                 break
 
     def __init__(
@@ -978,6 +979,7 @@ class FDSRun(WrappedRun):
         fds_input_file_path: pydantic.FilePath,
         workdir_path: str | pathlib.Path = None,
         clean_workdir: bool = False,
+        upload_input_metadata: bool = True,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
@@ -1004,6 +1006,8 @@ class FDSRun(WrappedRun):
         clean_workdir : bool, optional
             Whether to remove all FDS related files from the working directory, by default False
             Useful when doing optimisation problems to remove results from previous runs.
+        upload_input_metadata: bool, optional
+            Whether to upload the input file as metadata, default is True
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the working directory specified above (if specified, otherwise relative to cwd)
@@ -1034,6 +1038,7 @@ class FDSRun(WrappedRun):
         """
         self.fds_input_file_path = pathlib.Path(fds_input_file_path)
         self.workdir_path = pathlib.Path(workdir_path) if workdir_path else None
+        self.upload_input_metadata = upload_input_metadata
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
@@ -1102,6 +1107,7 @@ class FDSRun(WrappedRun):
     def load(
         self,
         results_dir: pydantic.DirectoryPath,
+        upload_input_metadata: bool = True,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
@@ -1114,6 +1120,8 @@ class FDSRun(WrappedRun):
         ----------
         results_dir : pydantic.DirectoryPath
             The directory where the results are stored
+        upload_input_metadata: bool, optional
+            Whether to upload the input file as metadata, default is True
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the results directory specified above
@@ -1137,6 +1145,7 @@ class FDSRun(WrappedRun):
 
         """
         self.workdir_path = pathlib.Path(results_dir)
+        self.upload_input_metadata = upload_input_metadata
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
         self.slice_parse_quantities = slice_parse_quantities
@@ -1184,7 +1193,8 @@ class FDSRun(WrappedRun):
             # Load input file, upload as metadata
             self._input_dict = f90nml.read(self.fds_input_file_path).todict()
             self._chid = self._input_dict["head"]["chid"]
-            self.update_metadata({"input_file": self._input_dict})
+            if self.upload_input_metadata:
+                self.update_metadata({"input_file": self._input_dict})
 
             if self.slice_parse_enabled and self.fds_input_file_path.stem != self._chid:
                 logger.warning(

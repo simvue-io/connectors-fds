@@ -12,7 +12,7 @@ import requests
 from simvue.config.user import SimvueConfiguration
 
 
-def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load):
+def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, upload_input_metadata=True):
     """Function demonstrating how to launch FDS runs with Simvue.
 
     Parameters
@@ -59,7 +59,8 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load):
                     results_dir=file_path,
                     slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities = [slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None
+                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None,
+                    upload_input_metadata=upload_input_metadata
                 )
             else:
                 # Then call the .launch() method to start your FDS simulation, providing the path to the input file
@@ -75,6 +76,7 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load):
                     # And you can choose whether to run it in parallel
                     run_in_parallel = parallel,
                     num_processors = 2,
+                    upload_input_metadata=upload_input_metadata
                 )
             
             # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
@@ -301,7 +303,7 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
     else:
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
-    # Check metadata from input file
+    # Check metadata from input file uploaded
     assert run_data.metadata["input_file"]["time"]["t_end"] == 1750
 
     # Check metadata from concatenated files
@@ -358,6 +360,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
         slice_var="TEMPERATURE",
         slice_fixed_dim=None,
         load=load,
+        upload_input_metadata=False
     )
     time.sleep(2)
 
@@ -385,11 +388,8 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     else:
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
-    # Check metadata from input file
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 10
-
-    # Check metadata from input file
-    assert run_data.metadata["input_file"]["spec"]["id"] == "WATER VAPOR"
+    # Check metadata from input file NOT uploaded
+    assert not run_data.metadata.get("input_file")
 
     # Check events from log
     assert any(
