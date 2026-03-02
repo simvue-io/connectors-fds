@@ -12,10 +12,10 @@ def folder_setup():
     yield folder
     # Will be executed after the last test
     client = simvue.Client()
-    # if client.get_folder(folder):
-    #    # Avoid trying to delete folder while one of the runs is still closing
-    #    time.sleep(1)
-    #    client.delete_folder(folder, remove_runs=True)
+    if client.get_folder(folder):
+        # Avoid trying to delete folder while one of the runs is still closing
+        time.sleep(1)
+        client.delete_folder(folder, remove_runs=True)
 
 
 @pytest.fixture()
@@ -26,4 +26,3 @@ def offline_cache_setup(monkeypatch):
     yield cache_dir
     # Will be executed after test
     cache_dir.cleanup()
-
