@@ -735,7 +735,7 @@ class FDSRun(WrappedRun):
         """Read and process all 2D slice files in a loop, uploading min, max and mean as metrics."""
         while True:
             try:
-                self._trigger.wait(timeout=self.slice_parse_interval)
+                trigger_set = self._trigger.wait(timeout=self.slice_parse_interval)
                 slice_parsed = self._parse_slice()
             except Exception as e:
                 logger.error(
@@ -743,7 +743,7 @@ class FDSRun(WrappedRun):
                 )
                 raise e
 
-            if self._trigger.is_set() or not slice_parsed:
+            if trigger_set or not slice_parsed:
                 break
 
     def __init__(
