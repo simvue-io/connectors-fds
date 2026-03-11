@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.0.8](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.8) - 2026-03-11
+* Changes default behaviour to disable input file metadata upload
+
 ## [v2.0.7](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.7) - 2026-03-02
 * Adds option to disable metadata upload from input file
 
