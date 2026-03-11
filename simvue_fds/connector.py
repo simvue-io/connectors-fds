@@ -979,7 +979,7 @@ class FDSRun(WrappedRun):
         fds_input_file_path: pydantic.FilePath,
         workdir_path: str | pathlib.Path = None,
         clean_workdir: bool = False,
-        upload_input_metadata: bool = True,
+        upload_input_metadata: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
@@ -1007,7 +1007,7 @@ class FDSRun(WrappedRun):
             Whether to remove all FDS related files from the working directory, by default False
             Useful when doing optimisation problems to remove results from previous runs.
         upload_input_metadata: bool, optional
-            Whether to upload the input file as metadata, default is True
+            Whether to upload the input file as metadata, default is False
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the working directory specified above (if specified, otherwise relative to cwd)
@@ -1107,7 +1107,7 @@ class FDSRun(WrappedRun):
     def load(
         self,
         results_dir: pydantic.DirectoryPath,
-        upload_input_metadata: bool = True,
+        upload_input_metadata: bool = False,
         upload_files: list[str] | None = None,
         slice_parse_enabled: bool = False,
         slice_parse_quantities: list[str] | None = None,
@@ -1121,7 +1121,7 @@ class FDSRun(WrappedRun):
         results_dir : pydantic.DirectoryPath
             The directory where the results are stored
         upload_input_metadata: bool, optional
-            Whether to upload the input file as metadata, default is True
+            Whether to upload the input file as metadata, default is False
         upload_files : list[str] | None, optional
             List of results file names to upload to the Simvue server for storage, by default None
             These should be supplied as relative to the results directory specified above
