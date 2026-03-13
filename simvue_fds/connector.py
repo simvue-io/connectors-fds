@@ -11,6 +11,7 @@ import platform
 import re
 import shlex
 import shutil
+import subprocess
 import threading
 import time
 import typing
@@ -856,15 +857,25 @@ class FDSRun(WrappedRun):
             fds_bin = self._find_fds_executable()
             command = []
             if platform.system() == "Windows":
+                # fds_local.bat cannot deal with filenames containing spaces
+                # so we create an alias drive pointing directly to the folder containing the fds input file
+                preferred_drives = "XYZWVUTSRQPONMLKJIHGFEDCBA"
+                used_drives = {d for d in preferred_drives if os.path.exists(f"{d}:\\")}
+                free_drives = [d for d in preferred_drives if d not in used_drives]
+                drive_alias = free_drives[0]
+
+                fds_input_file_path_to_use = self.fds_input_file_path if self.run_in_parallel else self.fds_input_file_path.absolute()
+                subprocess.run(f"subst {drive_alias}: \"{fds_input_file_path_to_use.parent}\"", shell=True)
+
                 if self.run_in_parallel:
                     command += [
                         f"{fds_bin}",
                         "-p",
                         str(self.num_processors),
-                        str(self.fds_input_file_path),
+                        str(fds_input_file_path_to_use.name),
                     ]
                 else:
-                    command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
+                    command += [f"{fds_bin}", f"{drive_alias}:\\{fds_input_file_path_to_use.name}"]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
@@ -879,6 +890,9 @@ class FDSRun(WrappedRun):
             cwd=self.workdir_path,
             completion_callback=check_for_errors,
         )
+
+        if platform.system() == "Windows":
+            subprocess.run("subst {drive_alias}: /D", shell=True)
 
         if self.slice_parse_enabled:
             self.slice_parser = threading.Thread(
