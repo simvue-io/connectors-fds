@@ -862,10 +862,12 @@ class FDSRun(WrappedRun):
                 preferred_drives = "XYZWVUTSRQPONMLKJIHGFEDCBA"
                 used_drives = {d for d in preferred_drives if os.path.exists(f"{d}:\\")}
                 free_drives = [d for d in preferred_drives if d not in used_drives]
+                if not free_drives:
+                    raise RuntimeError("No free drives available")
                 drive_alias = free_drives[0]
 
                 fds_input_file_path_to_use = self.fds_input_file_path if self.run_in_parallel else self.fds_input_file_path.absolute()
-                subprocess.run(f"subst {drive_alias}: \"{fds_input_file_path_to_use.parent}\"", shell=True)
+                subprocess.run(f"subst {drive_alias}: \"{fds_input_file_path_to_use.parent}\"")
 
                 if self.run_in_parallel:
                     command += [
@@ -892,7 +894,7 @@ class FDSRun(WrappedRun):
         )
 
         if platform.system() == "Windows":
-            subprocess.run("subst {drive_alias}: /D", shell=True)
+            subprocess.run(f"subst {drive_alias}: /D")
 
         if self.slice_parse_enabled:
             self.slice_parser = threading.Thread(
