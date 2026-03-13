@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.0.9](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.9) - 2026-03-13
+* Fix bug where path names containing spaces on Windows caused crashes
+
 ## [v2.0.8](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.8) - 2026-03-11
 * Changes default behaviour to disable input file metadata upload
 
