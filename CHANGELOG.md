@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.0.10](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.10) - 2026-03-13
+* Fix bug where created alias drives were not deleted
+
 ## [v2.0.9](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.9) - 2026-03-13
 * Fix bug where path names containing spaces on Windows caused crashes
 
