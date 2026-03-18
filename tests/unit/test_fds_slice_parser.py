@@ -64,6 +64,7 @@ def test_fds_slice_parser(
     load,
 ):
     with FDSRun() as run:
+        run._dispatch_mode = "direct"
         run.config(disable_resources_metrics=True)
         run.init(
             f"testing_{results_path}_{'enabled' if enabled else 'disabled'}_{'quantities' if slice_parameter else 'no-quantities'}_{'ids' if slice_ids else 'no-ids'}_{'load' if load else 'launch'}",
@@ -129,7 +130,6 @@ def test_fds_slice_parser(
 
         if not enabled:
             expected_slices = None
-        time.sleep(2)
         client = simvue.Client()
 
         metrics_names = [item for item in client.get_metrics_names(run_id)]
@@ -171,7 +171,6 @@ def test_fds_slice_parser(
                 # Check multidimensional metrics are present
                 # TODO: Temporary solution since client mehods for multi-d metrics not yet available
                 # Check step at 0 (start), 10 (middle), and 25 (end) exists
-                time.sleep(1)
                 for i in (0, 10, 25):
                     response = requests.get(
                         url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
