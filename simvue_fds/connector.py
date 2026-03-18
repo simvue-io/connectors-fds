@@ -827,6 +827,8 @@ class FDSRun(WrappedRun):
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
+            logger.warning("STOPPING")
+            time.sleep(10)
             self._trigger.set()
             if "ERROR" in std_err or status_code != 0:
                 click.secho(
