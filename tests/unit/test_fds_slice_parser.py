@@ -64,7 +64,6 @@ def test_fds_slice_parser(
     load,
 ):
     with FDSRun() as run:
-        run._dispatch_mode = "direct"
         run.config(disable_resources_metrics=True)
         run.init(
             f"testing_{results_path}_{'enabled' if enabled else 'disabled'}_{'quantities' if slice_parameter else 'no-quantities'}_{'ids' if slice_ids else 'no-ids'}_{'load' if load else 'launch'}",
@@ -92,85 +91,85 @@ def test_fds_slice_parser(
                 slice_parse_interval=3,
             )
 
-        # Mesh is 30x40x30 cells, this means 31x41x31 grid points
-        # The data is then transposed so that it is in (row, col) which is what multidimensional metrics expects
-        # This means the shapes below are flipped, eg for a slice at fixed x:
-        # y dimension = 41
-        # z dimension = 31
-        # Shape in geometric notation = (41, 31)
-        # Shape in row, col notation = (31, 41)
-        _slice_dims = [(31, 41), (31, 31), (41, 31), (41, 31)]
+    # Mesh is 30x40x30 cells, this means 31x41x31 grid points
+    # The data is then transposed so that it is in (row, col) which is what multidimensional metrics expects
+    # This means the shapes below are flipped, eg for a slice at fixed x:
+    # y dimension = 41
+    # z dimension = 31
+    # Shape in geometric notation = (41, 31)
+    # Shape in row, col notation = (31, 41)
+    _slice_dims = [(31, 41), (31, 31), (41, 31), (41, 31)]
 
-        # Check all metrics from slice have been created
-        expected_slices = {
-            "temperature.x.1_5": (31, 41),
-            "temperature_slice": (31, 31),
-            "temperature.z.1_5": (41, 31),
-            "temperature.z.2_5": (41, 31),
-            "soot_visibility.x.1_5": (31, 41),
-            "visibility_slice": (31, 31),
-            "soot_visibility.z.1_5": (41, 31),
-            "soot_visibility.z.2_5": (41, 31),
-            "velocity_slice": (31, 31),
-        }
-        if slice_parameter:
-            expected_slices.pop("velocity_slice", None)
-        if slice_fixed_dims:
-            expected_slices.pop("soot_visibility.z.1_5", None)
-            expected_slices.pop("soot_visibility.z.2_5", None)
-            expected_slices.pop("temperature.z.1_5", None)
-            expected_slices.pop("temperature.z.2_5", None)
-        if slice_ids:
-            expected_slices.pop("soot_visibility.z.1_5", None)
-            expected_slices.pop("soot_visibility.z.2_5", None)
-            expected_slices.pop("soot_visibility.x.1_5", None)
-            expected_slices.pop("temperature.z.1_5", None)
-            expected_slices.pop("temperature.z.2_5", None)
-            expected_slices.pop("temperature.x.1_5", None)
+    # Check all metrics from slice have been created
+    expected_slices = {
+        "temperature.x.1_5": (31, 41),
+        "temperature_slice": (31, 31),
+        "temperature.z.1_5": (41, 31),
+        "temperature.z.2_5": (41, 31),
+        "soot_visibility.x.1_5": (31, 41),
+        "visibility_slice": (31, 31),
+        "soot_visibility.z.1_5": (41, 31),
+        "soot_visibility.z.2_5": (41, 31),
+        "velocity_slice": (31, 31),
+    }
+    if slice_parameter:
+        expected_slices.pop("velocity_slice", None)
+    if slice_fixed_dims:
+        expected_slices.pop("soot_visibility.z.1_5", None)
+        expected_slices.pop("soot_visibility.z.2_5", None)
+        expected_slices.pop("temperature.z.1_5", None)
+        expected_slices.pop("temperature.z.2_5", None)
+    if slice_ids:
+        expected_slices.pop("soot_visibility.z.1_5", None)
+        expected_slices.pop("soot_visibility.z.2_5", None)
+        expected_slices.pop("soot_visibility.x.1_5", None)
+        expected_slices.pop("temperature.z.1_5", None)
+        expected_slices.pop("temperature.z.2_5", None)
+        expected_slices.pop("temperature.x.1_5", None)
 
-        if not enabled:
-            expected_slices = None
-        client = simvue.Client()
+    if not enabled:
+        expected_slices = None
+    client = simvue.Client()
 
-        metrics_names = [item for item in client.get_metrics_names(run_id)]
+    metrics_names = [item for item in client.get_metrics_names(run_id)]
 
-        if not expected_slices:
-            assert not metrics_names
-        else:
-            # Check at least 6 times recorded (since we stopped the sim at ~5s)
-            for metric, slice_dims in expected_slices.items():
-                assert metric + ".max" in metrics_names
-                assert metric + ".min" in metrics_names
-                assert metric + ".avg" in metrics_names
-                _retrieved = client.get_metric_values(
-                    run_ids=[run_id],
-                    metric_names=[metric + ".max", metric + ".min", metric + ".avg"],
-                    xaxis="time",
+    if not expected_slices:
+        assert not metrics_names
+    else:
+        # Check at least 6 times recorded (since we stopped the sim at ~5s)
+        for metric, slice_dims in expected_slices.items():
+            assert metric + ".max" in metrics_names
+            assert metric + ".min" in metrics_names
+            assert metric + ".avg" in metrics_names
+            _retrieved = client.get_metric_values(
+                run_ids=[run_id],
+                metric_names=[metric + ".max", metric + ".min", metric + ".avg"],
+                xaxis="time",
+            )
+            _max = numpy.array(list(_retrieved[f"{metric + '.max'}"].values()))
+            _min = numpy.array(list(_retrieved[f"{metric + '.min'}"].values()))
+            _avg = numpy.array(list(_retrieved[f"{metric + '.avg'}"].values()))
+
+            # Each measurement should have 6 entries
+            # Since we manually stopped the FDS run after 5s, should have all times 0-5
+            assert len(_max) == 6
+            assert len(_min) == 6
+            assert len(_avg) == 6
+
+            # Check all max >= avg >= min
+            assert numpy.all(_max >= _avg)
+            assert numpy.all(_avg >= _min)
+
+            # Check multidimensional metrics are present
+            # TODO: Temporary solution since client mehods for multi-d metrics not yet available
+            # Check step at 0 (start), 3 (middle), and 5 (end) exists
+            for i in (0, 3, 5):
+                response = requests.get(
+                    url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
+                    headers=run._sv_obj._headers,
                 )
-                _max = numpy.array(list(_retrieved[f"{metric + '.max'}"].values()))
-                _min = numpy.array(list(_retrieved[f"{metric + '.min'}"].values()))
-                _avg = numpy.array(list(_retrieved[f"{metric + '.avg'}"].values()))
-
-                # Each measurement should have 6 entries
-                # Since we manually stopped the FDS run after 5s, should have all times 0-5
-                assert len(_max) == 6
-                assert len(_min) == 6
-                assert len(_avg) == 6
-
-                # Check all max >= avg >= min
-                assert numpy.all(_max >= _avg)
-                assert numpy.all(_avg >= _min)
-
-                # Check multidimensional metrics are present
-                # TODO: Temporary solution since client mehods for multi-d metrics not yet available
-                # Check step at 0 (start), 3 (middle), and 5 (end) exists
-                for i in (0, 3, 5):
-                    response = requests.get(
-                        url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
-                        headers=run._sv_obj._headers,
-                    )
-                    assert response.status_code == 200
-                    assert numpy.array(response.json().get("array")).shape == slice_dims
+                assert response.status_code == 200
+                assert numpy.array(response.json().get("array")).shape == slice_dims
 
 
 @patch.object(FDSRun, "add_process", mock_fds_process)
