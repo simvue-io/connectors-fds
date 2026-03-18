@@ -13,8 +13,8 @@ import shlex
 import shutil
 import subprocess
 import threading
-import time
 import typing
+import contextlib
 from datetime import datetime, timezone
 
 import pandas
@@ -220,7 +220,7 @@ class FDSRun(WrappedRun):
             # Find path to FDS executable
             fds_bin = shutil.which("fds")
 
-        else:
+        elif not (fds_bin := shutil.which("fds_local")):
             for search_loc in (
                 pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
                 pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
@@ -228,8 +228,16 @@ class FDSRun(WrappedRun):
             ):
                 if not search_loc.exists():
                     continue
-                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
-                    fds_bin = f"{next(search)}"
+                _fds_search = pathlib.Path(search_loc).rglob("**/fds_local.bat")
+
+                with contextlib.suppress(StopIteration):
+                    fds_bin = f"{next(_fds_search)}"
+                    logger.warning(
+                        "FDS was not found in PATH, "
+                        + "however the following binary was found in common paths "
+                        + f"and will be used: '{fds_bin}'"
+                    )
+
                     break
 
         if not fds_bin:
@@ -866,8 +874,14 @@ class FDSRun(WrappedRun):
                     raise RuntimeError("No free drives available")
                 drive_alias = free_drives[0]
 
-                fds_input_file_path_to_use = self.fds_input_file_path if self.run_in_parallel else self.fds_input_file_path.absolute()
-                subprocess.run(f"subst {drive_alias}: \"{fds_input_file_path_to_use.parent}\"")
+                fds_input_file_path_to_use = (
+                    self.fds_input_file_path
+                    if self.run_in_parallel
+                    else self.fds_input_file_path.absolute()
+                )
+                subprocess.run(
+                    f'subst {drive_alias}: "{fds_input_file_path_to_use.parent}"'
+                )
 
                 if self.run_in_parallel:
                     command += [
@@ -877,7 +891,10 @@ class FDSRun(WrappedRun):
                         str(fds_input_file_path_to_use.name),
                     ]
                 else:
-                    command += [f"{fds_bin}", f"{drive_alias}:\\{fds_input_file_path_to_use.name}"]
+                    command += [
+                        f"{fds_bin}",
+                        f"{drive_alias}:\\{fds_input_file_path_to_use.name}",
+                    ]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
