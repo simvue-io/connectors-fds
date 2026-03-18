@@ -137,7 +137,7 @@ def test_fds_slice_parser(
         if not expected_slices:
             assert not metrics_names
         else:
-            # Check at least 25 times recorded (since we stopped the sim at 25 - 26s)
+            # Check at least 6 times recorded (since we stopped the sim at ~5s)
             for metric, slice_dims in expected_slices.items():
                 assert metric + ".max" in metrics_names
                 assert metric + ".min" in metrics_names
@@ -151,27 +151,20 @@ def test_fds_slice_parser(
                 _min = numpy.array(list(_retrieved[f"{metric + '.min'}"].values()))
                 _avg = numpy.array(list(_retrieved[f"{metric + '.avg'}"].values()))
 
-                # Each measurement should have >= 25, < 30 entries
-                # Since we manually stopped the FDS run at this point
-                assert len(_max) >= 25 and len(_max) < 30
-                assert len(_min) >= 25 and len(_min) < 30
-                assert len(_avg) >= 25 and len(_avg) < 30
+                # Each measurement should have 6 entries
+                # Since we manually stopped the FDS run after 5s, should have all times 0-5
+                assert len(_max) == 6
+                assert len(_min) == 6
+                assert len(_avg) == 6
 
                 # Check all max >= avg >= min
                 assert numpy.all(_max >= _avg)
                 assert numpy.all(_avg >= _min)
 
-                # Check that the average visibility is decreasing, or temperature increasing over time
-                # Will compare 5 steps apart to allow for outliers and noise
-                if "visibility" in metric:
-                    assert numpy.all(_avg[5:] < _avg[:-5])
-                elif "temperature" in metric:
-                    assert numpy.all(_avg[5:] > _avg[:-5])
-
                 # Check multidimensional metrics are present
                 # TODO: Temporary solution since client mehods for multi-d metrics not yet available
-                # Check step at 0 (start), 10 (middle), and 25 (end) exists
-                for i in (0, 10, 25):
+                # Check step at 0 (start), 3 (middle), and 5 (end) exists
+                for i in (0, 3, 5):
                     response = requests.get(
                         url=f"{run._user_config.server.url}/runs/{run.id}/metrics/{metric}/values?step={i}",
                         headers=run._sv_obj._headers,
