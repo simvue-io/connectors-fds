@@ -866,8 +866,14 @@ class FDSRun(WrappedRun):
                     raise RuntimeError("No free drives available")
                 drive_alias = free_drives[0]
 
-                fds_input_file_path_to_use = self.fds_input_file_path if self.run_in_parallel else self.fds_input_file_path.absolute()
-                subprocess.run(f"subst {drive_alias}: \"{fds_input_file_path_to_use.parent}\"")
+                fds_input_file_path_to_use = (
+                    self.fds_input_file_path
+                    if self.run_in_parallel
+                    else self.fds_input_file_path.absolute()
+                )
+                subprocess.run(
+                    f'subst {drive_alias}: "{fds_input_file_path_to_use.parent}"'
+                )
 
                 if self.run_in_parallel:
                     command += [
@@ -877,7 +883,10 @@ class FDSRun(WrappedRun):
                         str(fds_input_file_path_to_use.name),
                     ]
                 else:
-                    command += [f"{fds_bin}", f"{drive_alias}:\\{fds_input_file_path_to_use.name}"]
+                    command += [
+                        f"{fds_bin}",
+                        f"{drive_alias}:\\{fds_input_file_path_to_use.name}",
+                    ]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
@@ -893,7 +902,7 @@ class FDSRun(WrappedRun):
             completion_callback=check_for_errors,
         )
 
-        if platform.system() == "Windows":
+        if platform.system() == "Windows" and not os.getenv("SIMVUE_FDS_RUN_COMMAND"):
             subprocess.run(f"subst {drive_alias}: /D")
 
         if self.slice_parse_enabled:
