@@ -18,6 +18,7 @@ def write_to_log(self, example_file, temp_logfile):
         # Write headers and first line together
         if i == 0:
             temp_logfile.write(line)
+            temp_logfile.write(line)
         temp_logfile.write(line)
         time.sleep(0.2)
     temp_logfile.flush()
