@@ -916,6 +916,9 @@ class FDSRun(WrappedRun):
 
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
+        logger.warning("Inside during simulation")
+        logger.warning(f"Input file is {str(self.fds_input_file_path)}")
+        logger.warning(f"Looking for files with prefix {self._results_prefix}")
         # Upload data from input file as metadata
         self.file_monitor.track(
             path_glob_exprs=str(self.fds_input_file_path),
