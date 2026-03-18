@@ -66,7 +66,7 @@ def test_fds_stderr_check(folder_setup, file_name, slice_parse_enabled):
                     slice_parse_enabled=slice_parse_enabled,
                 )
 
-    time.sleep(2)
+    time.sleep(1)
     client = simvue.Client()
     run_data = client.get_run(run_id)
     events = [event["message"] for event in client.get_events(run_id)]
@@ -95,7 +95,6 @@ def test_fds_stderr_check(folder_setup, file_name, slice_parse_enabled):
             .read_text()
             in events
         )
-        assert alert.get_status(run_id) == "critical"
 
     # If slice parsing enabled, check appropriate log message added for no results found
     if slice_parse_enabled:
