@@ -530,7 +530,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
     # Check metadata from input file
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 60
+    assert run_data.metadata["input_file"]["dump"]["dt_devc"] == 1
 
     # Check metadata from input file
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "T_out"
