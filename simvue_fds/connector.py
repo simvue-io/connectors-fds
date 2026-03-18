@@ -910,7 +910,7 @@ class FDSRun(WrappedRun):
             completion_callback=check_for_errors,
         )
 
-        if platform.system() == "Windows":
+        if platform.system() == "Windows" and not os.getenv("SIMVUE_FDS_RUN_COMMAND"):
             subprocess.run(f"subst {drive_alias}: /D")
 
         if self.slice_parse_enabled:
