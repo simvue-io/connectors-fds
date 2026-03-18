@@ -827,8 +827,6 @@ class FDSRun(WrappedRun):
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
-            logger.warning("STOPPING")
-            time.sleep(10)
             self._trigger.set()
             if "ERROR" in std_err or status_code != 0:
                 click.secho(
@@ -918,9 +916,6 @@ class FDSRun(WrappedRun):
 
     def _during_simulation(self):
         """Describe which files should be monitored during the simulation by Multiparser."""
-        logger.warning("Inside during simulation")
-        logger.warning(f"Input file is {str(self.fds_input_file_path)}")
-        logger.warning(f"Looking for files with prefix {self._results_prefix}")
         # Upload data from input file as metadata
         self.file_monitor.track(
             path_glob_exprs=str(self.fds_input_file_path),
