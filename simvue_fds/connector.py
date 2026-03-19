@@ -13,8 +13,8 @@ import shlex
 import shutil
 import subprocess
 import threading
-import time
 import typing
+import contextlib
 from datetime import datetime, timezone
 
 import pandas
@@ -220,7 +220,7 @@ class FDSRun(WrappedRun):
             # Find path to FDS executable
             fds_bin = shutil.which("fds")
 
-        else:
+        elif not (fds_bin := shutil.which("fds_local")):
             for search_loc in (
                 pathlib.Path(os.environ["PROGRAMFILES"]).joinpath("firemodels"),
                 pathlib.Path(os.environ["LOCALAPPDATA"]).joinpath("firemodels"),
@@ -228,9 +228,20 @@ class FDSRun(WrappedRun):
             ):
                 if not search_loc.exists():
                     continue
-                if search := pathlib.Path(search_loc).rglob("**/fds_local.bat"):
-                    fds_bin = f"{next(search)}"
-                    break
+
+                _fds_search = next(
+                    pathlib.Path(search_loc).rglob("**/fds_local.bat"), None
+                )
+
+                if _fds_search:
+                    fds_bin = f"{_fds_search}"
+                    logger.warning(
+                        "FDS was not found in PATH, "
+                        + "however the following binary was found in common paths "
+                        + f"and will be used: '{fds_bin}'"
+                    )
+
+                break
 
         if not fds_bin:
             raise EnvironmentError("FDS executable could not be found!")
