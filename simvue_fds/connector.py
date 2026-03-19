@@ -228,17 +228,20 @@ class FDSRun(WrappedRun):
             ):
                 if not search_loc.exists():
                     continue
-                _fds_search = pathlib.Path(search_loc).rglob("**/fds_local.bat")
 
-                with contextlib.suppress(StopIteration):
-                    fds_bin = f"{next(_fds_search)}"
+                _fds_search = next(
+                    pathlib.Path(search_loc).rglob("**/fds_local.bat"), None
+                )
+
+                if _fds_search:
+                    fds_bin = f"{_fds_search}"
                     logger.warning(
                         "FDS was not found in PATH, "
                         + "however the following binary was found in common paths "
                         + f"and will be used: '{fds_bin}'"
                     )
 
-                    break
+                break
 
         if not fds_bin:
             raise EnvironmentError("FDS executable could not be found!")
