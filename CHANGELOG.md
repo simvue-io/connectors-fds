@@ -1,5 +1,10 @@
 # Change log
 
+## [v2.0.11](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.11) - 2026-03-19
+* Copy FDS input file into working directory before beginning simulation
+* Remove drive alias fix
+* Prioritise FDS which is on path
+
 ## [v2.0.10](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.10) - 2026-03-13
 * Fix bug where created alias drives were not deleted
 
