@@ -12,7 +12,15 @@ import requests
 from simvue.config.user import SimvueConfiguration
 
 
-def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, upload_input_metadata=True):
+def run_fds(
+    file_path,
+    parallel,
+    offline,
+    slice_var,
+    slice_fixed_dim,
+    load,
+    upload_input_metadata=True,
+):
     """Function demonstrating how to launch FDS runs with Simvue.
 
     Parameters
@@ -43,8 +51,7 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, uplo
                 description="An example of using the FDSRun Connector to track an FDS simulation.",
                 folder="/fds_connector_integration_tests",
                 tags=sorted(["fds", "integration", "test", platform.system()]),
-                retention_period="2 hours"
-                
+                retention_period="2 hours",
             )
             # You can use any of the Simvue Run() methods to upload extra information before/after the simulation
             run.create_metric_threshold_alert(
@@ -57,40 +64,44 @@ def run_fds(file_path, parallel, offline, slice_var, slice_fixed_dim, load, uplo
             if load:
                 run.load(
                     results_dir=file_path,
-                    slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
-                    slice_parse_quantities = [slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None,
-                    upload_input_metadata=upload_input_metadata
+                    slice_parse_enabled=True if slice_var or slice_fixed_dim else False,
+                    slice_parse_quantities=[slice_var] if slice_var else None,
+                    slice_parse_fixed_dimensions=[slice_fixed_dim]
+                    if slice_fixed_dim
+                    else None,
+                    upload_input_metadata=upload_input_metadata,
                 )
             else:
                 # Then call the .launch() method to start your FDS simulation, providing the path to the input file
                 run.launch(
-                    fds_input_file_path = file_path,
+                    fds_input_file_path=file_path,
                     workdir_path=tempd,
                     clean_workdir=True,
                     # You can optionally have the connector track slices in your simulation
-                    slice_parse_enabled = True if slice_var or slice_fixed_dim else False,
-                    slice_parse_quantities = [slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions = [slice_fixed_dim] if slice_fixed_dim else None,
-                    slice_parse_interval = 10,
+                    slice_parse_enabled=True if slice_var or slice_fixed_dim else False,
+                    slice_parse_quantities=[slice_var] if slice_var else None,
+                    slice_parse_fixed_dimensions=[slice_fixed_dim]
+                    if slice_fixed_dim
+                    else None,
+                    slice_parse_interval=10,
                     # And you can choose whether to run it in parallel
-                    run_in_parallel = parallel,
-                    num_processors = 2,
-                    upload_input_metadata=upload_input_metadata
+                    run_in_parallel=parallel,
+                    num_processors=2,
+                    upload_input_metadata=upload_input_metadata,
                 )
-            
+
             # Once the simulation is complete, you can upload any final items to the Simvue run before it closes
             run.log_event("Test...")
-            
+
             run_id = run.id
-            
+
             time.sleep(2)
-            
+
             if offline:
                 sender = Sender(throw_exceptions=True)
                 sender.upload()
                 run_id = sender._id_mapping.get(run_id)
-        
+
         return run_id
 
 
@@ -154,7 +165,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert any(
         [event.startswith("Time Step: 1, Simulation Time: -1.") for event in events]
     )
-    
+
     # Check events from DEVC/CTRL log
     # Loosening requirement for this since Windows and Ubuntu will print slightly different times
     assert any(
@@ -179,13 +190,13 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
     assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
-    
+
     # Check metrics from each possible type of file have a negative first time point
     for metric in (
         "HRR",
         "flow_volume_supply",
         "max_pressure_error",
-        "soot_visibility.z.2_0.min"
+        "soot_visibility.z.2_0.min",
     ):
         _retrieved = client.get_metric_values(
             run_ids=[run_id],
@@ -229,16 +240,16 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     )
     assert response.status_code == 200
     numpy.array(response.json().get("array")).shape == (41, 31)
-    
+
     # Check line DEVC uploaded as 2D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
+    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
     response = requests.get(
         url=f"{_user_config.server.url}/runs/{run_id}/metrics/visibility_time_averaged/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",
             "Accept-Encoding": "gzip",
-        }
+        },
     )
     assert response.status_code == 200
     numpy.array(response.json().get("array")).shape == (100)
@@ -304,7 +315,7 @@ def test_fds_aalto_woods(folder_setup, offline_cache_setup, offline, parallel, l
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
     # Check metadata from input file uploaded
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 1750
+    assert run_data.metadata["input_file"]["time"]["dt"] == 0.5
 
     # Check metadata from concatenated files
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "HRRPUA"
@@ -360,7 +371,7 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
         slice_var="TEMPERATURE",
         slice_fixed_dim=None,
         load=load,
-        upload_input_metadata=False
+        upload_input_metadata=False,
     )
     time.sleep(2)
 
@@ -519,7 +530,7 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
         assert run_data.metadata["fds"]["mpi_processes"] == "1"
 
     # Check metadata from input file
-    assert run_data.metadata["input_file"]["time"]["t_end"] == 60
+    assert run_data.metadata["input_file"]["dump"]["dt_devc"] == 1
 
     # Check metadata from input file
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "T_out"
