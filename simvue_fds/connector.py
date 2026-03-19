@@ -578,13 +578,12 @@ class FDSRun(WrappedRun):
             Whether the slice was successfuly extracted
 
         """
-        sim_dir = self.workdir_path if self.workdir_path else pathlib.Path.cwd()
         try:
-            sim = fdsreader.Simulation(str(sim_dir.absolute()))
+            sim = fdsreader.Simulation(str(self.workdir_path.absolute()))
         except OSError as e:
             if "no simulations were found in the directory" in str(e).lower():
                 logger.warning(f"""
-                    Unable to load slice data found in output directory '{sim_dir}' - no simulation data found.
+                    Unable to load slice data found in output directory '{self.workdir_path}' - no simulation data found.
                     This could be because FDS is taking longer than exepcted to initialize the simulation, or an invalid workdir_path has been provided to the connector.
                     Retrying in {self.slice_parse_interval}s...
                     """)
@@ -592,7 +591,7 @@ class FDSRun(WrappedRun):
 
             logger.warning(
                 f"""
-                Unable to load slice data found in output directory '{sim_dir}'. Slice parsing is disabled for this run.
+                Unable to load slice data found in output directory '{self.workdir_path}'. Slice parsing is disabled for this run.
                 This is because: {e}
                 Please correct the issue described above, or raise a bug report via the UI if you think this is incorrect.
                 """
@@ -777,7 +776,7 @@ class FDSRun(WrappedRun):
 
         """
         self.fds_input_file_path: pathlib.Path = None
-        self.workdir_path: pathlib.Path | None = None
+        self.workdir_path: pathlib.Path = None
         self.upload_files: list[str] = None
         self.slice_parse_enabled: bool = False
         self.slice_parse_ids: list[str] | None = None
@@ -851,47 +850,29 @@ class FDSRun(WrappedRun):
             command: list = shlex.split(
                 run_command, posix=platform.system() == "Windows"
             )
-            command.append(str(self.fds_input_file_path.absolute()))
+            command.append(str(self.fds_input_file_path.name))
 
         else:
             fds_bin = self._find_fds_executable()
             command = []
             if platform.system() == "Windows":
-                # fds_local.bat cannot deal with filenames containing spaces
-                # so we create an alias drive pointing directly to the folder containing the fds input file
-                preferred_drives = "XYZWVUTSRQPONMLKJIHGFEDCBA"
-                used_drives = {d for d in preferred_drives if os.path.exists(f"{d}:\\")}
-                free_drives = [d for d in preferred_drives if d not in used_drives]
-                if not free_drives:
-                    raise RuntimeError("No free drives available")
-                drive_alias = free_drives[0]
-
-                fds_input_file_path_to_use = (
-                    self.fds_input_file_path
-                    if self.run_in_parallel
-                    else self.fds_input_file_path.absolute()
-                )
-                subprocess.run(
-                    f'subst {drive_alias}: "{fds_input_file_path_to_use.parent}"'
-                )
-
                 if self.run_in_parallel:
                     command += [
                         f"{fds_bin}",
                         "-p",
                         str(self.num_processors),
-                        str(fds_input_file_path_to_use.name),
+                        str(self.fds_input_file_path.name),
                     ]
                 else:
                     command += [
                         f"{fds_bin}",
-                        f"{drive_alias}:\\{fds_input_file_path_to_use.name}",
+                        str(self.fds_input_file_path.name),
                     ]
             else:
                 if self.run_in_parallel:
                     command += ["mpiexec", "-n", str(self.num_processors)]
                     command += format_command_env_vars(self.mpiexec_env_vars)
-                command += [f"{fds_bin}", str(self.fds_input_file_path.absolute())]
+                command += [f"{fds_bin}", str(self.fds_input_file_path.name)]
 
             command += format_command_env_vars(self.fds_env_vars)
 
@@ -901,9 +882,6 @@ class FDSRun(WrappedRun):
             cwd=self.workdir_path,
             completion_callback=check_for_errors,
         )
-
-        if platform.system() == "Windows" and not os.getenv("SIMVUE_FDS_RUN_COMMAND"):
-            subprocess.run(f"subst {drive_alias}: /D")
 
         if self.slice_parse_enabled:
             self.slice_parser = threading.Thread(
@@ -977,10 +955,9 @@ class FDSRun(WrappedRun):
                     continue
                 self.save_file(file, "output")
         else:
-            if self.workdir_path:
-                self.upload_files = [
-                    str(self.workdir_path.joinpath(path)) for path in self.upload_files
-                ]
+            self.upload_files = [
+                str(self.workdir_path.joinpath(path)) for path in self.upload_files
+            ]
 
             for path in self.upload_files:
                 for file in glob.glob(path):
@@ -1060,9 +1037,18 @@ class FDSRun(WrappedRun):
         mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
+        Raises
+        ------
+        ValueError
+            Raised if a different FDS file than the one provided already exists in the working directory
+
         """
         self.fds_input_file_path = pathlib.Path(fds_input_file_path)
-        self.workdir_path = pathlib.Path(workdir_path) if workdir_path else None
+        self.workdir_path = (
+            pathlib.Path(workdir_path)
+            if workdir_path
+            else self.fds_input_file_path.parent
+        )
         self.upload_input_metadata = upload_input_metadata
         self.upload_files = upload_files
         self.slice_parse_enabled = slice_parse_enabled
@@ -1095,37 +1081,43 @@ class FDSRun(WrappedRun):
         if self._concatenated_input_files:
             self._chid += "_cat"
 
-        if self.workdir_path:
-            self.workdir_path.mkdir(exist_ok=True)
+        self.workdir_path.mkdir(exist_ok=True)
 
-            if clean_workdir:
-                for file in self.workdir_path.glob(f"{self._chid}*"):
-                    if (
-                        pathlib.Path(file).absolute()
-                        == self.fds_input_file_path.absolute()
-                        or file.name in self._concatenated_input_files
-                    ):
-                        continue
-                    pathlib.Path(file).unlink()
-
-            # Copy files to concatenate together into working directory
-            for concat_file in self._concatenated_input_files:
-                concat_path = self.fds_input_file_path.parent.joinpath(concat_file)
+        if clean_workdir:
+            for file in self.workdir_path.glob(f"{self._chid}*"):
                 if (
-                    concat_path.exists()
-                    and concat_path.absolute()
-                    != self.workdir_path.joinpath(concat_file).absolute()
+                    pathlib.Path(file).absolute() == self.fds_input_file_path.absolute()
+                    or file.name in self._concatenated_input_files
                 ):
-                    shutil.copy(
-                        concat_path,
-                        self.workdir_path.joinpath(concat_file),
-                    )
+                    continue
+                pathlib.Path(file).unlink()
 
-        self._results_prefix = (
-            str(self.workdir_path.joinpath(self._chid))
-            if self.workdir_path
-            else self._chid
-        )
+        # Copy input file into working directory
+        if self.fds_input_file_path.parent != self.workdir_path:
+            copy_path = self.workdir_path.joinpath(self.fds_input_file_path.name)
+            if copy_path.exists():
+                if clean_workdir:
+                    copy_path.unlink()
+                else:
+                    raise ValueError(
+                        "Input file with the same name already exists inside working directory!"
+                    )
+            shutil.copy(self.fds_input_file_path, copy_path)
+
+        # Copy files to concatenate together into working directory
+        for concat_file in self._concatenated_input_files:
+            concat_path = self.fds_input_file_path.parent.joinpath(concat_file)
+            if (
+                concat_path.exists()
+                and concat_path.absolute()
+                != self.workdir_path.joinpath(concat_file).absolute()
+            ):
+                shutil.copy(
+                    concat_path,
+                    self.workdir_path.joinpath(concat_file),
+                )
+
+        self._results_prefix = str(self.workdir_path.joinpath(self._chid))
 
         super().launch()
 
