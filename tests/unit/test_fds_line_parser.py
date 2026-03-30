@@ -5,6 +5,7 @@ import requests
 from simvue.config.user import SimvueConfiguration
 import pandas
 import numpy
+import logging
 
 def parse_line_data(run, scenario_name):
         # Load input file as data (normally done by Multiparser)
@@ -160,6 +161,41 @@ def test_single_devc_no_id(folder_setup):
         
         # Should skip devices which have no ID provided
         assert run._line_var_coords == {}
+        
+        
+def test_single_devc_unexpected_nan(folder_setup, caplog):
+    caplog.set_level(logging.WARNING)
+    scenario_name = "single_devc_unexpected_nan"
+    with FDSRun() as run:
+        run._dispatch_mode = "direct"
+        run.init(name=scenario_name, folder=folder_setup)
+        
+        parse_line_data(run, scenario_name)
+        
+        # Check device has got correct axes
+        assert len(run._line_var_coords["visibility_time_averaged"]["ticks"]) == 100
+        
+        extract_line_metrics(run, scenario_name)
+        
+        # Check warning thrown
+        assert "Unexpected NaN value found in line metric 'visibility_time_averaged': This metric will not be recorded." in caplog.text
+        
+        # Try extracting again, warning should not be thrown again
+        caplog.clear()
+        extract_line_metrics(run, scenario_name)
+        assert "Unexpected NaN value found in line metric 'visibility_time_averaged': This metric will not be recorded." not in caplog.text
+        
+        # Check no metric uploaded
+        _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode='online')
+        response = requests.get(
+            url=f"{_user_config.server.url}/runs/{run.id}/metrics/visibility_time_averaged/values?step=0",
+            headers={
+                "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
+                "User-Agent": "Simvue Python client",
+                "Accept-Encoding": "gzip",
+            }
+        )
+        assert response.status_code == 404
         
 def test_multi_devc(folder_setup):
     scenario_name = "multi_devc"

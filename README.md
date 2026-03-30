@@ -34,7 +34,7 @@ A customised `FDSRun` class has been created which automatically does the follow
 * Tracks variable values output in the DEVC and HRR CSV files after each step, logging them as metrics
 * Tracks the DEVC and CTRL log, recording activations as metadata and events
 * Uploads results files as Output artifacts
-* Optionally parses 2D slice files for a given variable, and uploads the slice as a 3D metric, as well as summary metrics as 1D metrics
+* Optionally parses 2D slice files and uploads the slice as a 3D metric, as well as summary metrics as 1D metrics
 
 The `FDSRun` class also inherits from the `Run()` class of the Simvue Python API, allowing for further detailed control over how your simulation is tracked.
 
@@ -117,7 +117,8 @@ if __name__ == "__main__":
             workdir_path='path/to/my/results_dir',      # Path where results should be created
             run_in_parallel=True,                       # Whether to run in parallel using MPI
             num_processors=2                            # Number of cores to use if in parallel
-            slice_parse_quantity="TEMPERATURE"          # Parse 2D slices of temperature data
+            slice_parse_enabled=True                    # Whether to parse and upload 2D slices
+            slice_parse_quantities=["TEMPERATURE"]      # Parse 2D slices of temperature data
             )
 
 ```
@@ -148,7 +149,8 @@ if __name__ == "__main__":
         # Load FDS simulation results into Simvue
         run.load(
             results_dir='path/to/my/results_dir',      # Path where results are located
-            slice_parse_quantity="TEMPERATURE",        # Parse 2D slices of temperature data
+            slice_parse_enabled=True                    # Whether to parse and upload 2D slices
+            slice_parse_quantities=["TEMPERATURE"]      # Parse 2D slices of temperature data
         )
 ```
 

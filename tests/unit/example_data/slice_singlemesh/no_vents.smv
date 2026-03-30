@@ -2,13 +2,13 @@ TITLE
  no_vents
 
 FDSVERSION
-FDS-6.9.1-0-g889da6a-release
+FDS-6.10.1-0-g12efa16-release
 
 INPF
  no_vents.fds
 
 REVISION
-Revisio                                                                                                                                                                                                                                                        
+Revisio
 
 CHID
  no_vents
@@ -26,7 +26,7 @@ CSVF
  no_vents_devc.csv
 
 NMESHES
-  1
+     1
 
 TIMES
           0.000         60.000
@@ -37,6 +37,12 @@ VIEWTIMES
 ALBEDO
       0.30000
 
+HRRPUV_MINMAX
+      0.00000   1200.00000
+
+TEMP_MINMAX
+     20.00000   2000.00000
+
 IBLANK
  1
 
@@ -44,73 +50,73 @@ GVEC
       0.00000      0.00000     -9.80665
 
 SURFDEF
- INERT                                                       
+ INERT
 
 SURFACE
- INERT                                                       
+ INERT
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- fire1                                                       
+ fire1
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- OPEN                                                        
+ OPEN
  5000.00    1.00
  2      1.00000      1.00000      1.00000      0.00000      1.00000      1.00000
- null                                                        
+ null
 
 SURFACE
- MIRROR                                                      
+ MIRROR
  5000.00    1.00
 -2      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- INTERPOLATED                                                
+ INTERPOLATED
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- PERIODIC                                                    
+ PERIODIC
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- HVAC                                                        
+ HVAC
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- MASSLESS TRACER                                             
+ MASSLESS TRACER
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- DROPLET                                                     
+ DROPLET
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- MASSLESS TARGET                                             
+ MASSLESS TARGET
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 SURFACE
- PERIODIC FLOW ONLY                                          
+ PERIODIC FLOW ONLY
  5000.00    1.00
  0      1.00000      1.00000      1.00000      0.80000      0.40000      1.00000
- null                                                        
+ null
 
 OUTLINE
   12
@@ -149,11 +155,11 @@ PROP
   0
 
 DEVICE
- eye_level_visibility % VISIBILITY                                                  
-       1.50000       0.00100       1.50000       0.00000       0.00000      -1.00000  0  0 #        1.50000       0.00000       1.50000       1.50000       0.00000       1.50000 % null
+ eye_level_visibility % VISIBILITY
+       1.50000       0.00100       1.50000       0.00000       0.00000      -1.00000  0  0 % null
 
 DEVICE
- air_temperature % TEMPERATURE                                                 
+ air_temperature % TEMPERATURE
        1.50000       0.00100       1.50000       0.00000       0.00000      -1.00000  0  0 % null
 
 VENTORIG
@@ -163,7 +169,7 @@ OFFSET
       0.00000      0.00000      0.00000
 
 GRID   MESH_0000001
-   30   40   30    0
+    30    40    30     0     0     0     0     0     0
 
 PDIM
        0.00000       3.00000       0.00000       4.00000       0.00000       3.00000       0.00000       0.00000       0.00000
@@ -284,8 +290,8 @@ OBST
            2
        1.25000       1.75000       1.25000       1.75000       1.25000       1.75000      1   0   0   0   0   0   0  ! OBST-1
        1.30000       1.70000       1.80000       2.20000       0.00000       0.50000      2   1   1   1   1   1   1  ! OBST-2
-   13   18   13   18   13   18   -1   -1
-   13   17   18   22    0    5   -3   -1      1.00000      0.00000      0.00000      1.00000
+   13   18   13   18   13   18   -1   -1 ! F  1 1 1 1 1 1
+   13   17   18   22    0    5   -3   -1      1.00000      0.00000      0.00000      1.00000 ! F  1 1 1 1 1 1
 
 VENT
     6    6
@@ -305,6 +311,7 @@ VENT
 CVENT
     0
 
+
 XYZ
  no_vents_1.xyz
 SMOKF3D     1   8700.000
@@ -322,71 +329,76 @@ SMOKF3D     1      0.000
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0
+SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0      2
  no_vents_1_1.sf
  VELOCITY
  vel
  m/s
-SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0
+SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0      2
  no_vents_1_2.sf
  U-VELOCITY
  U-VEL
  m/s
-SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0
+SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0      2
  no_vents_1_3.sf
  V-VELOCITY
  V-VEL
  m/s
-SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0
+SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      1      0      2
  no_vents_1_4.sf
  W-VELOCITY
  W-VEL
  m/s
-SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      2      0
+SLCF     1 # STRUCTURED &     0    30    20    20     0    30 !      2      0      2
  no_vents_1_5.sf
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &     0    30     0    40    25    25 !      3      0
+SLCF     1 # STRUCTURED &     0    30     0    40    25    25 !      3      0      3
  no_vents_1_6.sf
  SOOT VISIBILITY
  VIS_C
  m
-SLCF     1 # STRUCTURED &     0    30     0    40    15    15 !      4      0
+SLCF     1 # STRUCTURED &     0    30     0    40    15    15 !      4      0      3
  no_vents_1_7.sf
  SOOT VISIBILITY
  VIS_C
  m
-SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      5      0
+SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      5      0      1
  no_vents_1_8.sf
  SOOT VISIBILITY
  VIS_C
  m
-SLCF     1 # STRUCTURED &     0    30    15    15     0    30 !      6      0
+SLCF     1 # STRUCTURED %visibility_slice &     0    30    15    15     0    30 !      6      0      2
  no_vents_1_9.sf
  SOOT VISIBILITY
  VIS_C
  m
-SLCF     1 # STRUCTURED &     0    30     0    40    25    25 !      7      0
+SLCF     1 # STRUCTURED &     0    30     0    40    25    25 !      7      0      3
  no_vents_1_10.sf
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &     0    30     0    40    15    15 !      8      0
+SLCF     1 # STRUCTURED &     0    30     0    40    15    15 !      8      0      3
  no_vents_1_11.sf
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      9      0
+SLCF     1 # STRUCTURED &    15    15     0    40     0    30 !      9      0      1
  no_vents_1_12.sf
  TEMPERATURE
  temp
  C
-SLCF     1 # STRUCTURED &     0    30    15    15     0    30 !     10      0
+SLCF     1 # STRUCTURED %temperature_slice &     0    30    15    15     0    30 !     10      0      2
  no_vents_1_13.sf
  TEMPERATURE
  temp
  C
+SLCF     1 # STRUCTURED %velocity_slice &     0    30    15    15     0    30 !     11      0      2
+ no_vents_1_14.sf
+ VELOCITY
+ vel
+ m/s
 DEVICE_ACT     eye_level_visibility
      1      0.00     0
 DEVICE_ACT     air_temperature

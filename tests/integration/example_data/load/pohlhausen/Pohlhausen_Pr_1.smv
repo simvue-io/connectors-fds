@@ -3515,7 +3515,7 @@ SLCF     1 # STRUCTURED &     0    10     1     1     0     8 !      1      0
  W-VELOCITY
  W-VEL
  m/s
-SLCC     1 # STRUCTURED &     0    10     1     1     0     8 !      2      1
+SLCF     1 # STRUCTURED &     0    10     1     1     0     8 !      2      0
  Pohlhausen_Pr_1_1_4.sf
  TEMPERATURE
  temp
@@ -4437,7 +4437,7 @@ SLCF     2 # STRUCTURED &     0    10     1     1     0     8 !      1      0
  W-VELOCITY
  W-VEL
  m/s
-SLCC     2 # STRUCTURED &     0    10     1     1     0     8 !      2      1
+SLCF     2 # STRUCTURED &     0    10     1     1     0     8 !      2      0
  Pohlhausen_Pr_1_2_4.sf
  TEMPERATURE
  temp

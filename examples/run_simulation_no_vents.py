@@ -36,6 +36,7 @@ with FDSRun() as run:
     # Call any other simvue Run() methods, such as adding tags or alerts
     run.update_tags(["fds", "no_vents"])
 
+    # Create alert based on DEVC device
     run.create_metric_threshold_alert(
         name="visibility_below_three_metres",
         metric="eye_level_visibility",
@@ -46,6 +47,10 @@ with FDSRun() as run:
         trigger_abort=True,
     )
     
+    # Create alert based on our temperature slice at y=2
+    # The connector automatically collects the max, min and mean as metrics.
+    # The metric will use the slice ID as its name, if available, with .max, .min, or .avg appended.
+    # Otherwise, the name will be in the form '{quantity}.{constant_axis}.{fixed_value}.{max/min/avg}'.
     run.create_metric_threshold_alert(
         name="average_temperature_above_100_degrees",
         metric="temperature.y.2_0.avg",
@@ -61,6 +66,8 @@ with FDSRun() as run:
         fds_input_file_path=pathlib.Path(__file__).parent.joinpath("input_no_vents.fds"),
         workdir_path=str(pathlib.Path(__file__).parent.joinpath("results_no_vents")),
         clean_workdir=True,
-        slice_parse_quantity = "TEMPERATURE",
+        slice_parse_enabled=True,
+        slice_parse_quantities=["TEMPERATURE"],
+        slice_parse_interval=10
     )
         

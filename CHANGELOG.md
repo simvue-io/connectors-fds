@@ -1,6 +1,58 @@
 # Change log
 
-## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11
+## [v2.0.11](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.11) - 2026-03-19
+* Copy FDS input file into working directory before beginning simulation
+* Remove drive alias fix
+* Prioritise FDS which is on path
+
+## [v2.0.10](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.10) - 2026-03-13
+* Fix bug where created alias drives were not deleted
+
+## [v2.0.9](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.9) - 2026-03-13
+* Fix bug where path names containing spaces on Windows caused crashes
+
+## [v2.0.8](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.8) - 2026-03-11
+* Changes default behaviour to disable input file metadata upload
+
+## [v2.0.7](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.7) - 2026-03-02
+* Adds option to disable metadata upload from input file
+
+## [v2.0.6](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.6) - 2026-02-12
+* Fixes bug where missing input file causes Load to crash in some cases
+* Restructure slice parsing to make more memory efficient
+
+## [v2.0.5](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.5) - 2026-02-06
+* Fixes bug where slice parser crashes if uploading a slice located between boundaries
+
+## [v2.0.4](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.3) - 2026-01-30
+* Adds option to filter slices uploaded by their fixed dimension
+* Adds support for FDS simulations with negative timesteps
+* Fixes bug where slices may fail to upload a grid on the first iteration
+* Makes slice parser error messages more descriptive
+
+## [v2.0.3](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.4) - 2026-01-30
+* Makes the slice parser retry if it fails to find simulation data initially
+
+## [v2.0.2](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.2) - 2026-01-16
+* Improves handling of error thrown by fdsreader.Simulation if no results are found
+* Improves responsiveness of FDSRun() is the FDS simulation fails
+* Fixes bugs related to passing paths to the input file or workdir as strings
+
+## [v2.0.1](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.1) - 2026-01-16
+* Fixes bug where slice parsing wouldn't work if a working dir not specified
+
+## [v2.0.0](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.0) - 2026-01-15
+* Makes slice parsing more efficient by using FDSReader
+* Slices to parse can now be specified by ID as well as by quantities
+* Breaking change to input format to launch and load commands
+* Changes license to GPL3
+
+## [v1.3.3](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.3) - 2026-01-15
+* Fixes bug where IndexError is thrown if the FDS Simulation alert is not available
+* Fixes bug caused by an edge case in FDS which gives NaNs in DEVC Line devices
+* Adds environment variable to be able to specify the FDS run command manually
+
+## [v1.3.2](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.2) - 2025-12-11
 * Add zip of example results to releas artifacts
 
 ## [v1.3.1](https://github.com/simvue-io/connectors-fds/releases/tag/v1.3.1) - 2025-12-11

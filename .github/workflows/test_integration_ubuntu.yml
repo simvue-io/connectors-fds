@@ -28,9 +28,10 @@ jobs:
       - name: Install poetry
         run: python3 -m pip install poetry
       - name: Install dependencies and run tests
+        timeout-minutes: 60
         run: |
           apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
           export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
           export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
           poetry install --all-extras
-          poetry run pytest tests/integration/ -v
+          poetry run pytest tests/integration/ -n 4 -v
