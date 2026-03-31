@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.1.0](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.0) - 2026-03-31
+* Add helper functions which parse OBST lines in FDS input files
+
 ## [v2.0.11](https://github.com/simvue-io/connectors-fds/releases/tag/v2.0.11) - 2026-03-19
 * Copy FDS input file into working directory before beginning simulation
 * Remove drive alias fix
