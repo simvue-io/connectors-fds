@@ -4,7 +4,7 @@ import f90nml
 
 
 def read_obst_rectangles(
-    file_path: str, size: dict[str, float], heights: dict[str, list[float]]
+    file_path: str, size: dict[str, float], heights: list[float]
 ) -> list[dict[str, tuple[float, float] | float]]:
     """Read all the obstacles from a specified horizontal region in an FDS file.
 
@@ -26,9 +26,8 @@ def read_obst_rectangles(
         - "y" : horizontal total width in the y-direction
         - "z" : vertical height  in the z-direction
 
-    heights : dict[str, list[float]]
-        The floor levels to investigate.
-        Must contain key "z" with a list of heights.
+    heights : list[float]
+        The floor levels to investigate. A list of heights.
 
     Returns
     -------
@@ -50,7 +49,6 @@ def read_obst_rectangles(
     ------
     RuntimeError
         Raised if any required size key ("x", "y", or "z") is
-        missing, or if heights does not contain "z".
 
     Notes
     -----
@@ -67,7 +65,7 @@ def read_obst_rectangles(
         rects = read_obst_rectangles(
             "case.fds",
             size={"x": 0.2, "y": 0.2, "z": 3.0},
-            heights={"z": [0.0, 3.0]},
+            heights=[0.0, 3.0],
         )
 
     A returned entry has the form::
@@ -92,11 +90,6 @@ def read_obst_rectangles(
             '"z" height must be provided to read_obst_rectangles in the size dictionary'
         )
 
-    if "z" not in heights:
-        raise RuntimeError(
-            '"z" heights must be provided to read_obst_rectangles in the heights dictionary'
-        )
-
     x_radius = size["x"] / 2.0
     y_radius = size["y"] / 2.0
 
@@ -104,7 +97,7 @@ def read_obst_rectangles(
 
     rects: list[dict[str, tuple[float, float] | float]] = []
 
-    for base in heights["z"]:
+    for base in heights:
         top = base + size["z"]
 
         for key, val in nml.items():
@@ -124,7 +117,7 @@ def read_obst_rectangles(
 
 
 def read_floor_rectangles(
-    file_path: str, heights: dict[str, list[float]]
+    file_path: str, heights: list[float]
 ) -> list[dict[str, tuple[float, float] | float]]:
     """Read all the floor rectangles from a specified set of heights in an FDS file.
 
@@ -138,9 +131,8 @@ def read_floor_rectangles(
     file_path : str
         Path to the FDS input file.
 
-    heights : dict[str, list[float]]
-        The floor levels to investigate.
-        Must contain key "z" with a list of heights.
+    heights : list[float]
+        The floor levels to investigate. A list of heights.
 
     Returns
     -------
@@ -153,11 +145,6 @@ def read_floor_rectangles(
                 "y": (y_min, y_max),
                 "z": base_elevation,
             }
-
-    Raises
-    ------
-    RuntimeError
-        Raised if heights does not contain "z".
 
     Notes
     -----
@@ -185,16 +172,11 @@ def read_floor_rectangles(
         }
 
     """
-    if "z" not in heights:
-        raise RuntimeError(
-            '"z" heights must be provided to read_floor_rectangles in the heights dictionary'
-        )
-
     nml = f90nml.read(file_path)
 
     rects: list[dict[str, tuple[float, float] | float]] = []
 
-    for base in heights["z"]:
+    for base in heights:
         for key, val in nml.items():
             if "obst" in key:
                 coords = val["xb"]
