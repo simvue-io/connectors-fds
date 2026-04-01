@@ -3,6 +3,7 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
+import contextlib
 import csv
 import glob
 import os
@@ -14,7 +15,6 @@ import shutil
 import subprocess
 import threading
 import typing
-import contextlib
 from datetime import datetime, timezone
 
 import pandas
@@ -1052,6 +1052,7 @@ class FDSRun(WrappedRun):
         ------
         ValueError
             Raised if a different FDS file than the one provided already exists in the working directory
+            Raised if an invalid FDS file has been supplied to the connector
 
         """
         self.fds_input_file_path = pathlib.Path(fds_input_file_path)
@@ -1082,7 +1083,9 @@ class FDSRun(WrappedRun):
         logger.addHandler(simvue.Handler(self))
 
         nml = f90nml.read(self.fds_input_file_path).todict()
-        self._chid = nml["head"]["chid"]
+        self._chid = nml.get("head", {}).get("chid", None)
+        if not self._chid:
+            raise ValueError("Invalid FDS file specified!")
 
         # Need to find if this FDS input file will concatenate together other files
         self._concatenated_input_files = []
@@ -1170,6 +1173,7 @@ class FDSRun(WrappedRun):
         ValueError
             Raised if more than one FDS input file found in specified directory
             Raised if no input file present and CHID could not be determined from results file names
+            Raised if an invalid FDS file has been supplied
 
         """
         self.workdir_path = pathlib.Path(results_dir)
@@ -1220,7 +1224,9 @@ class FDSRun(WrappedRun):
 
             # Load input file, upload as metadata
             self._input_dict = f90nml.read(self.fds_input_file_path).todict()
-            self._chid = self._input_dict["head"]["chid"]
+            self._chid = self._input_dict.get("head", {}).get("chid", None)
+            if not self._chid:
+                raise ValueError("Invalid FDS file specified!")
             if self.upload_input_metadata:
                 self.update_metadata({"input_file": self._input_dict})
 
