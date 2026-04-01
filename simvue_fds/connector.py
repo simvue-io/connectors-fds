@@ -498,9 +498,9 @@ class FDSRun(WrappedRun):
         with open(input_file) as in_f:
             _file_lines = in_f.readlines()
 
-        # If loading historic runs, no point looking through entire .out file - just look at first 20 lines:
+        # If loading historic runs, no point looking through entire .out file - just look at first 100 lines:
         if self._loading_historic_run:
-            _file_lines = _file_lines[:20]
+            _file_lines = _file_lines[:100]
 
         _components_regex: dict[str, typing.Pattern[typing.AnyStr]] = {
             "revision": re.compile(r"^\s*Revision\s+\:\s*([\w\d\.\-\_][^\n]+)"),
@@ -1285,6 +1285,9 @@ class FDSRun(WrappedRun):
             _meta, _data = self._header_metadata(
                 input_file=f"{self._results_prefix}.out"
             )
+            import pdb
+
+            pdb.set_trace()
             self._header_callback(data=_data)
 
             with open(f"{self._results_prefix}.out", "r") as log_file:
