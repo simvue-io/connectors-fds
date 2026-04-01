@@ -1285,9 +1285,7 @@ class FDSRun(WrappedRun):
             _meta, _data = self._header_metadata(
                 input_file=f"{self._results_prefix}.out"
             )
-            import pdb
 
-            pdb.set_trace()
             self._header_callback(data=_data)
 
             with open(f"{self._results_prefix}.out", "r") as log_file:
