@@ -3,6 +3,7 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
+import contextlib
 import csv
 import glob
 import os
@@ -14,8 +15,7 @@ import shutil
 import subprocess
 import threading
 import typing
-import contextlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pandas
 
@@ -395,6 +395,33 @@ class FDSRun(WrappedRun):
                                     ],
                                 )
                             )
+                        elif (
+                            self._fds_start_time is not None
+                            and self._fds_end_time is not None
+                        ):
+                            # Estimate how long is left of the simulation
+
+                            # Record seconds elapsed
+                            time_taken = (
+                                datetime.now().timestamp() - self._simulation_start_time
+                            )
+
+                            # Only estimate if we are some fraction into the simulation to avoid jittery estimates early on
+                            if int(_out_record["step"]) < 100 or time_taken < 60:
+                                continue
+
+                            # Find what fraction through the simulation we are
+                            fraction_completed = (
+                                float(_out_record["time"]) - self._fds_start_time
+                            ) / (self._fds_end_time - self._fds_start_time)
+
+                            # Estimate time remaining, assuming roughly constant rate of solve
+                            total_time = time_taken / fraction_completed
+                            time_remaining = int(total_time - time_taken)
+
+                            self.log_event(
+                                f"Estimated time remaining: {str(timedelta(seconds=time_remaining))}"
+                            )
 
                     break
 
@@ -471,9 +498,9 @@ class FDSRun(WrappedRun):
         with open(input_file) as in_f:
             _file_lines = in_f.readlines()
 
-        # If loading historic runs, no point looking through entire .out file - just look at first 20 lines:
+        # If loading historic runs, no point looking through entire .out file - just look at first 100 lines:
         if self._loading_historic_run:
-            _file_lines = _file_lines[:20]
+            _file_lines = _file_lines[:100]
 
         _components_regex: dict[str, typing.Pattern[typing.AnyStr]] = {
             "revision": re.compile(r"^\s*Revision\s+\:\s*([\w\d\.\-\_][^\n]+)"),
@@ -491,16 +518,27 @@ class FDSRun(WrappedRun):
             "mpi_library_version": re.compile(
                 r"^\s*MPI library version:\s*([\w\d\.\s\*\(\)\[\]\-\_][^\n]+)"
             ),
+            "start_time": re.compile(r"^\s*Simulation Start Time \(s\)\s*([\d\.]+)"),
+            "end_time": re.compile(r"^\s*Simulation End Time \(s\)\s*([\d\.]+)"),
         }
 
-        _output_metadata: dict[str, str] = {"fds": {}}
+        _output_metadata: dict[str, str] = {}
 
         for line in _file_lines:
             for key, regex in _components_regex.items():
                 if search_res := regex.findall(line):
-                    _output_metadata["fds"][key] = search_res[0]
+                    _output_metadata[key] = search_res[0]
 
         return {}, _output_metadata
+
+    def _header_callback(self, data: dict, *_) -> None:
+        start_time = data.pop("start_time", None)
+        self._fds_start_time = float(start_time) if start_time is not None else None
+
+        end_time = data.pop("end_time", None)
+        self._fds_end_time = float(end_time) if end_time is not None else None
+
+        self.update_metadata({"fds": data})
 
     def _ctrl_log_callback(self, data: dict, *_) -> None:
         """Log metrics extracted from the CTRL log file to Simvue.
@@ -810,6 +848,9 @@ class FDSRun(WrappedRun):
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
         self._input_dict: dict = {}
         self._line_var_coords: dict | None = None
+        self._fds_start_time: float | None = None
+        self._fds_end_time: float | None = None
+        self._simulation_start_time: float = datetime.now().timestamp()
 
         # Need this so that we dont get spammed with non-critical timestamp warning from fdsreader
         fdsreader.settings.IGNORE_ERRORS = True
@@ -893,6 +934,7 @@ class FDSRun(WrappedRun):
             cwd=self.workdir_path,
             completion_callback=check_for_errors,
         )
+        self._simulation_start_time = datetime.now().timestamp()
 
         if self.slice_parse_enabled:
             self.slice_parser = threading.Thread(
@@ -916,7 +958,7 @@ class FDSRun(WrappedRun):
         self.file_monitor.track(
             path_glob_exprs=f"{self._results_prefix}.out",
             parser_func=mp_file_parser.file_parser(self._header_metadata),
-            callback=lambda data, meta: self.update_metadata({**data, **meta}),
+            callback=self._header_callback,
             static=True,
         )
         # Track line.csv file, can be entirely overwritten on each time step
@@ -1240,10 +1282,11 @@ class FDSRun(WrappedRun):
 
         # Extract metadata and metrics from log (.out) file
         if pathlib.Path(f"{self._results_prefix}.out").exists():
-            _data, _meta = self._header_metadata(
+            _meta, _data = self._header_metadata(
                 input_file=f"{self._results_prefix}.out"
             )
-            self.update_metadata({**_data, **_meta})
+
+            self._header_callback(data=_data)
 
             with open(f"{self._results_prefix}.out", "r") as log_file:
                 _, _log_metrics = self._log_parser(file_content=log_file.read())
