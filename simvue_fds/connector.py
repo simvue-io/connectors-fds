@@ -395,34 +395,33 @@ class FDSRun(WrappedRun):
                                     ],
                                 )
                             )
-                        else:
+                        elif (
+                            self._fds_start_time is not None
+                            and self._fds_end_time is not None
+                        ):
                             # Estimate how long is left of the simulation
-                            if (
-                                self._fds_start_time is not None
-                                and self._fds_end_time is not None
-                            ):
-                                # Record seconds elapsed
-                                time_taken = (
-                                    datetime.now().timestamp()
-                                    - self._simulation_start_time
-                                )
 
-                                # Only estimate if we are some fraction into the simulation to avoid jittery estimates early on
-                                if int(_out_record["step"]) < 100 or time_taken < 60:
-                                    continue
+                            # Record seconds elapsed
+                            time_taken = (
+                                datetime.now().timestamp() - self._simulation_start_time
+                            )
 
-                                # Find what fraction through the simulation we are
-                                fraction_completed = (
-                                    float(_out_record["time"]) - self._fds_start_time
-                                ) / (self._fds_end_time - self._fds_start_time)
+                            # Only estimate if we are some fraction into the simulation to avoid jittery estimates early on
+                            if int(_out_record["step"]) < 100 or time_taken < 60:
+                                continue
 
-                                # Estimate time remaining, assuming roughly constant rate of solve
-                                total_time = time_taken / fraction_completed
-                                time_remaining = int(total_time - time_taken)
+                            # Find what fraction through the simulation we are
+                            fraction_completed = (
+                                float(_out_record["time"]) - self._fds_start_time
+                            ) / (self._fds_end_time - self._fds_start_time)
 
-                                self.log_event(
-                                    f"Estimated time remaining: {str(timedelta(seconds=time_remaining))}"
-                                )
+                            # Estimate time remaining, assuming roughly constant rate of solve
+                            total_time = time_taken / fraction_completed
+                            time_remaining = int(total_time - time_taken)
+
+                            self.log_event(
+                                f"Estimated time remaining: {str(timedelta(seconds=time_remaining))}"
+                            )
 
                     break
 

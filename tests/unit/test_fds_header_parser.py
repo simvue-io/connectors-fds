@@ -19,7 +19,7 @@ def mock_fds_process(self, *_, **__):
     def create_header(self):
         shutil.copy(
             pathlib.Path(__file__).parent.joinpath("example_data", "fds_header.txt"),
-            pathlib.Path(self.workdir_path).joinpath(f"fds_test.out"),
+            pathlib.Path(self.workdir_path).joinpath("fds_test.out"),
         )
         time.sleep(1)
         self._trigger.set()
