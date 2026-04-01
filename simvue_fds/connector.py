@@ -398,8 +398,8 @@ class FDSRun(WrappedRun):
                         else:
                             # Estimate how long is left of the simulation
                             if (
-                                self._start_time is not None
-                                and self._end_time is not None
+                                self._fds_start_time is not None
+                                and self._fds_end_time is not None
                             ):
                                 # Record seconds elapsed
                                 time_taken = (
@@ -413,8 +413,8 @@ class FDSRun(WrappedRun):
 
                                 # Find what fraction through the simulation we are
                                 fraction_completed = (
-                                    float(_out_record["time"]) - self._start_time
-                                ) / (self._end_time - self._start_time)
+                                    float(_out_record["time"]) - self._fds_start_time
+                                ) / (self._fds_end_time - self._fds_start_time)
 
                                 # Estimate time remaining, assuming roughly constant rate of solve
                                 total_time = time_taken / fraction_completed
@@ -534,10 +534,10 @@ class FDSRun(WrappedRun):
 
     def _header_callback(self, data: dict, *_) -> None:
         start_time = data.pop("start_time", None)
-        self._start_time = float(start_time) if start_time is not None else None
+        self._fds_start_time = float(start_time) if start_time is not None else None
 
         end_time = data.pop("end_time", None)
-        self._end_time = float(end_time) if end_time is not None else None
+        self._fds_end_time = float(end_time) if end_time is not None else None
 
         self.update_metadata({"fds": data})
 
@@ -849,8 +849,8 @@ class FDSRun(WrappedRun):
         self._timestamp_mapping: numpy.ndarray = numpy.empty((0, 2))
         self._input_dict: dict = {}
         self._line_var_coords: dict | None = None
-        self._start_time: float | None = None
-        self._end_time: float | None = None
+        self._fds_start_time: float | None = None
+        self._fds_end_time: float | None = None
         self._simulation_start_time: float = datetime.now().timestamp()
 
         # Need this so that we dont get spammed with non-critical timestamp warning from fdsreader
@@ -1283,10 +1283,10 @@ class FDSRun(WrappedRun):
 
         # Extract metadata and metrics from log (.out) file
         if pathlib.Path(f"{self._results_prefix}.out").exists():
-            _data, _meta = self._header_metadata(
+            _meta, _data = self._header_metadata(
                 input_file=f"{self._results_prefix}.out"
             )
-            self.update_metadata({**_data, **_meta})
+            self._header_callback(data=_data)
 
             with open(f"{self._results_prefix}.out", "r") as log_file:
                 _, _log_metrics = self._log_parser(file_content=log_file.read())
