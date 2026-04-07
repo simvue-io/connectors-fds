@@ -3,7 +3,6 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
-import contextlib
 import csv
 import glob
 import os
@@ -12,7 +11,6 @@ import platform
 import re
 import shlex
 import shutil
-import subprocess
 import threading
 import typing
 from datetime import datetime, timezone
