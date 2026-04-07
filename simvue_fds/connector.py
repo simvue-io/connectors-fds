@@ -447,7 +447,20 @@ class FDSRun(WrappedRun):
 
         return {}, {k: v for k, v in file_content.items() if v}
 
-    def _input_file_callback(self, data: dict, **__):
+    def _input_file_callback(self, data: dict, meta: dict):
+        """Upload input file metadata to server, if requested.
+
+        Note: Need to parse the FDS input file during the simulation, rather than in launch,
+        because in the case of concatenated files, the full FDS input file is created by FDS.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary of data to log to Simvue as metadata
+        meta: dict
+            Dictionary of metadata added by Multiparser (unused)
+
+        """
         self._input_dict = data
         if self.upload_input_metadata:
             self.update_metadata({"input_file": self._input_dict})
