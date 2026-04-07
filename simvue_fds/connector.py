@@ -415,8 +415,40 @@ class FDSRun(WrappedRun):
 
         return {}, _out_data
 
-    def _input_file_callback(self, data: dict, meta: dict):
-        self._input_dict = {k: v for k, v in data.items() if v}
+    def _input_file_parser(
+        self, input_file: str, **__
+    ) -> tuple[dict[str, typing.Any], dict[str, typing.Any]]:
+        """Parse an FDS input file and returns it as a dictionary.
+
+        Parameters
+        ----------
+        input_file : str
+            The path to the input file
+        **__
+            Additional unused keyword arguments
+
+        Returns
+        -------
+        tuple[dict[str, typing.Any], dict[str, typing.Any]]
+            An (empty) dictionary of metadata, and a dictionary of data from the FDS input file, if valid.
+
+        """
+        # Need to read the FDS input file and skip any lines added before the first namespace
+        # This is because eg PyroSim adds non-comment text, which is not supported by f90nml
+        with open(input_file, "r") as in_file:
+            content = in_file.read()
+
+        pattern = re.compile(r"[\s\S]*(&HEAD[\s\S]*)")
+        match = re.match(pattern, content)
+        if not match:
+            return {}, {}
+        trimmed_content = match.group(1)
+        file_content = f90nml.reads(trimmed_content).todict()
+
+        return {}, {k: v for k, v in file_content.items() if v}
+
+    def _input_file_callback(self, data: dict, **__):
+        self._input_dict = data
         if self.upload_input_metadata:
             self.update_metadata({"input_file": self._input_dict})
 
@@ -909,7 +941,7 @@ class FDSRun(WrappedRun):
         self.file_monitor.track(
             path_glob_exprs=str(self.fds_input_file_path),
             callback=self._input_file_callback,
-            file_type="fortran",
+            parser_func=mp_file_parser.file_parser(self._input_file_parser),
             static=True,
         )
         # Upload metadata from file header
@@ -1082,9 +1114,11 @@ class FDSRun(WrappedRun):
 
         logger.addHandler(simvue.Handler(self))
 
-        nml = f90nml.read(self.fds_input_file_path).todict()
+        _, nml = self._input_file_parser(self.fds_input_file_path)
+
         self._chid = nml.get("head", {}).get("chid", None)
-        if not self._chid:
+
+        if not nml or not self._chid:
             raise ValueError("Invalid FDS file specified!")
 
         # Need to find if this FDS input file will concatenate together other files
@@ -1223,10 +1257,12 @@ class FDSRun(WrappedRun):
             self.save_file(self.fds_input_file_path, "input")
 
             # Load input file, upload as metadata
-            self._input_dict = f90nml.read(self.fds_input_file_path).todict()
+            _, self._input_dict = self._input_file_parser(self.fds_input_file_path)
             self._chid = self._input_dict.get("head", {}).get("chid", None)
-            if not self._chid:
+
+            if not self._input_dict or not self._chid:
                 raise ValueError("Invalid FDS file specified!")
+
             if self.upload_input_metadata:
                 self.update_metadata({"input_file": self._input_dict})
 
