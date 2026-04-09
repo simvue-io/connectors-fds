@@ -841,10 +841,11 @@ class FDSRun(WrappedRun):
     def __init__(
         self,
         mode: typing.Literal["online", "offline", "disabled"] = "online",
-        abort_callback: typing.Optional[typing.Callable[[Self], None]] = None,
-        server_token: typing.Optional[str] = None,
-        server_url: typing.Optional[str] = None,
+        abort_callback: typing.Callable[[Self], None] | None = None,
+        server_token: str | None = None,
+        server_url: str | None = None,
         debug: bool = False,
+        server_profile: str | None = None,
     ):
         """Initialize the FDSRun instance.
 
@@ -857,14 +858,18 @@ class FDSRun(WrappedRun):
                 online - objects sent directly to Simvue server
                 offline - everything is written to disk for later dispatch
                 disabled - disable monitoring completelyby default "online"
-        abort_callback : typing.Optional[typing.Callable[[Self], None]], optional
+        abort_callback : typing.Callable[[Self], None] | None, optional
             callback executed when the run is aborted, by default None
-        server_token : typing.Optional[str], optional
+        server_token : str | None, optional
             overwrite value for server token, by default None
-        server_url : typing.Optional[str], optional
+        server_url : str | None, optional
             overwrite value for server URL, by default None
         debug : bool, optional
             run in debug mode, by default False
+        server_profile : str | None, optional
+            specify alternative profile to use for server, this assumes
+            additional profiles have been specified in the configuration.
+            Default is to use the main server.
 
         """
         self.fds_input_file_path: pathlib.Path = None
@@ -908,6 +913,7 @@ class FDSRun(WrappedRun):
             server_token=server_token,
             server_url=server_url,
             debug=debug,
+            server_profile=server_profile,
         )
 
     def _pre_simulation(self):
@@ -1085,10 +1091,10 @@ class FDSRun(WrappedRun):
         slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
-        fds_env_vars: typing.Optional[dict[str, typing.Any]] = None,
+        fds_env_vars: dict[str, typing.Any] | None = None,
         run_in_parallel: bool = False,
         num_processors: int = 1,
-        mpiexec_env_vars: typing.Optional[dict[str, typing.Any]] = None,
+        mpiexec_env_vars: dict[str, typing.Any] | None = None,
     ):
         """Command to launch the FDS simulation and track it with Simvue.
 
@@ -1124,13 +1130,13 @@ class FDSRun(WrappedRun):
             Interval (in seconds) at which to parse and upload 2D slice data, default is 60
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
-        fds_env_vars : typing.Optional[dict[str, typing.Any]], optional
+        fds_env_vars : dict[str, typing.Any] | None, optional
             Environment variables to provide to FDS when executed, by default None
         run_in_parallel: bool, optional
             Whether to run the FDS simulation in parallel, by default False
         num_processors : int, optional
             The number of processors to run a parallel FDS job across, by default 1
-        mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
+        mpiexec_env_vars : dict[str, typing.Any] | None, optional
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
         Raises
