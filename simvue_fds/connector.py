@@ -464,7 +464,7 @@ class FDSRun(WrappedRun):
             content = in_file.read()
 
         pattern = re.compile(r"[\s\S]*(&HEAD[\s\S]*)")
-        match = re.match(pattern, content)
+        match = pattern.match(content)
         if not match:
             return {}, {}
         trimmed_content = match.group(1)
