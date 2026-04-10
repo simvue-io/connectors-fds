@@ -1,5 +1,10 @@
 # Change log
 
+## [v2.1.1](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.1) - 2026-04-10
+* Add estimate for remaining time in simulations
+* Fix bug where Pyrosim file headers would mean FDS file read incorrectly
+* Update to support latest versions of python API and base connector
+
 ## [v2.1.0](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.0) - 2026-03-31
 * Add helper functions which parse OBST lines in FDS input files
 
