@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 ## License
 
-Released under the terms of the [Apache 2](https://github.com/simvue-io/client/blob/main/LICENSE) license.
+Released under the terms of the [GPL-3.0](https://github.com/simvue-io/client/blob/main/LICENSE) license.
 
 ## Citation
 
