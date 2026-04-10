@@ -3,7 +3,6 @@
 This module provides functionality for using Simvue to track and monitor an FDS (Fire Dynamics Simulator) simulation.
 """
 
-import contextlib
 import csv
 import glob
 import os
@@ -12,7 +11,6 @@ import platform
 import re
 import shlex
 import shutil
-import subprocess
 import threading
 import typing
 from datetime import datetime, timedelta, timezone
@@ -442,8 +440,53 @@ class FDSRun(WrappedRun):
 
         return {}, _out_data
 
+    def _input_file_parser(
+        self, input_file: str, **__
+    ) -> tuple[dict[str, typing.Any], dict[str, typing.Any]]:
+        """Parse an FDS input file and returns it as a dictionary.
+
+        Parameters
+        ----------
+        input_file : str
+            The path to the input file
+        **__
+            Additional unused keyword arguments
+
+        Returns
+        -------
+        tuple[dict[str, typing.Any], dict[str, typing.Any]]
+            An (empty) dictionary of metadata, and a dictionary of data from the FDS input file, if valid.
+
+        """
+        # Need to read the FDS input file and skip any lines added before the first namespace
+        # This is because eg PyroSim adds non-comment text, which is not supported by f90nml
+        with open(input_file, "r") as in_file:
+            content = in_file.read()
+
+        pattern = re.compile(r"[\s\S]*(&HEAD[\s\S]*)")
+        match = pattern.match(content)
+        if not match:
+            return {}, {}
+        trimmed_content = match.group(1)
+        file_content = f90nml.reads(trimmed_content).todict()
+
+        return {}, {k: v for k, v in file_content.items() if v}
+
     def _input_file_callback(self, data: dict, meta: dict):
-        self._input_dict = {k: v for k, v in data.items() if v}
+        """Upload input file metadata to server, if requested.
+
+        Note: Need to parse the FDS input file during the simulation, rather than in launch,
+        because in the case of concatenated files, the full FDS input file is created by FDS.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary of data to log to Simvue as metadata
+        meta: dict
+            Dictionary of metadata added by Multiparser (unused)
+
+        """
+        self._input_dict = data
         if self.upload_input_metadata:
             self.update_metadata({"input_file": self._input_dict})
 
@@ -798,10 +841,11 @@ class FDSRun(WrappedRun):
     def __init__(
         self,
         mode: typing.Literal["online", "offline", "disabled"] = "online",
-        abort_callback: typing.Optional[typing.Callable[[Self], None]] = None,
-        server_token: typing.Optional[str] = None,
-        server_url: typing.Optional[str] = None,
+        abort_callback: typing.Callable[[Self], None] | None = None,
+        server_token: str | None = None,
+        server_url: str | None = None,
         debug: bool = False,
+        server_profile: str | None = None,
     ):
         """Initialize the FDSRun instance.
 
@@ -814,14 +858,18 @@ class FDSRun(WrappedRun):
                 online - objects sent directly to Simvue server
                 offline - everything is written to disk for later dispatch
                 disabled - disable monitoring completelyby default "online"
-        abort_callback : typing.Optional[typing.Callable[[Self], None]], optional
+        abort_callback : typing.Callable[[Self], None] | None, optional
             callback executed when the run is aborted, by default None
-        server_token : typing.Optional[str], optional
+        server_token : str | None, optional
             overwrite value for server token, by default None
-        server_url : typing.Optional[str], optional
+        server_url : str | None, optional
             overwrite value for server URL, by default None
         debug : bool, optional
             run in debug mode, by default False
+        server_profile : str | None, optional
+            specify alternative profile to use for server, this assumes
+            additional profiles have been specified in the configuration.
+            Default is to use the main server.
 
         """
         self.fds_input_file_path: pathlib.Path = None
@@ -865,6 +913,7 @@ class FDSRun(WrappedRun):
             server_token=server_token,
             server_url=server_url,
             debug=debug,
+            server_profile=server_profile,
         )
 
     def _pre_simulation(self):
@@ -951,7 +1000,7 @@ class FDSRun(WrappedRun):
         self.file_monitor.track(
             path_glob_exprs=str(self.fds_input_file_path),
             callback=self._input_file_callback,
-            file_type="fortran",
+            parser_func=mp_file_parser.file_parser(self._input_file_parser),
             static=True,
         )
         # Upload metadata from file header
@@ -1042,10 +1091,10 @@ class FDSRun(WrappedRun):
         slice_parse_ids: list[str] | None = None,
         slice_parse_interval: int = 60,
         ulimit: typing.Literal["unlimited"] | int = "unlimited",
-        fds_env_vars: typing.Optional[dict[str, typing.Any]] = None,
+        fds_env_vars: dict[str, typing.Any] | None = None,
         run_in_parallel: bool = False,
         num_processors: int = 1,
-        mpiexec_env_vars: typing.Optional[dict[str, typing.Any]] = None,
+        mpiexec_env_vars: dict[str, typing.Any] | None = None,
     ):
         """Command to launch the FDS simulation and track it with Simvue.
 
@@ -1081,19 +1130,20 @@ class FDSRun(WrappedRun):
             Interval (in seconds) at which to parse and upload 2D slice data, default is 60
         ulimit : typing.Literal["unlimited"] | int, optional
             Value to set your stack size to (for Linux and MacOS), by default "unlimited"
-        fds_env_vars : typing.Optional[dict[str, typing.Any]], optional
+        fds_env_vars : dict[str, typing.Any] | None, optional
             Environment variables to provide to FDS when executed, by default None
         run_in_parallel: bool, optional
             Whether to run the FDS simulation in parallel, by default False
         num_processors : int, optional
             The number of processors to run a parallel FDS job across, by default 1
-        mpiexec_env_vars : typing.Optional[dict[str, typing.Any]]
+        mpiexec_env_vars : dict[str, typing.Any] | None, optional
             Any environment variables to pass to mpiexec on startup if running in parallel, by default None
 
         Raises
         ------
         ValueError
             Raised if a different FDS file than the one provided already exists in the working directory
+            Raised if an invalid FDS file has been supplied to the connector
 
         """
         self.fds_input_file_path = pathlib.Path(fds_input_file_path)
@@ -1123,8 +1173,12 @@ class FDSRun(WrappedRun):
 
         logger.addHandler(simvue.Handler(self))
 
-        nml = f90nml.read(self.fds_input_file_path).todict()
-        self._chid = nml["head"]["chid"]
+        _, nml = self._input_file_parser(self.fds_input_file_path)
+
+        self._chid = nml.get("head", {}).get("chid", None)
+
+        if not nml or not self._chid:
+            raise ValueError("Invalid FDS file specified!")
 
         # Need to find if this FDS input file will concatenate together other files
         self._concatenated_input_files = []
@@ -1212,6 +1266,7 @@ class FDSRun(WrappedRun):
         ValueError
             Raised if more than one FDS input file found in specified directory
             Raised if no input file present and CHID could not be determined from results file names
+            Raised if an invalid FDS file has been supplied
 
         """
         self.workdir_path = pathlib.Path(results_dir)
@@ -1261,8 +1316,12 @@ class FDSRun(WrappedRun):
             self.save_file(self.fds_input_file_path, "input")
 
             # Load input file, upload as metadata
-            self._input_dict = f90nml.read(self.fds_input_file_path).todict()
-            self._chid = self._input_dict["head"]["chid"]
+            _, self._input_dict = self._input_file_parser(self.fds_input_file_path)
+            self._chid = self._input_dict.get("head", {}).get("chid", None)
+
+            if not self._input_dict or not self._chid:
+                raise ValueError("Invalid FDS file specified!")
+
             if self.upload_input_metadata:
                 self.update_metadata({"input_file": self._input_dict})
 
