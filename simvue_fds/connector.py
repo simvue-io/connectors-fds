@@ -816,7 +816,7 @@ class FDSRun(WrappedRun):
 
                 self.log_metrics(
                     {
-                        metric_name: numpy.nan_to_num(values_at_time).T,
+                        metric_name: values_at_time.T,
                         f"{metric_name}.min": numpy.min(values_no_obst),
                         f"{metric_name}.max": numpy.max(values_no_obst),
                         f"{metric_name}.avg": numpy.mean(values_no_obst),
