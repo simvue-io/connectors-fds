@@ -787,6 +787,19 @@ class FDSRun(WrappedRun):
                 )
                 self._grids_defined.append(metric_name)
 
+                # Record the colorbar this slice should use:
+                self.update_metadata(
+                    {
+                        "simvue": {
+                            "plots": {
+                                metric_name: "Rainbow (inverse)"
+                                if "visibility" in slice.quantity.quantity.lower()
+                                else "Rainbow"
+                            }
+                        }
+                    }
+                )
+
             if metric_name not in self._grids_defined:
                 continue
 
@@ -946,7 +959,7 @@ class FDSRun(WrappedRun):
 
         if run_command := os.getenv("SIMVUE_FDS_RUN_COMMAND"):
             logger.warning(
-                "Custom FDS run command provided - environment variables passed into launch will be ignored."
+                "Custom FDS run command provided - parallel settings and environment variables passed into launch will be ignored."
             )
             command: list = shlex.split(
                 run_command, posix=platform.system() == "Windows"
