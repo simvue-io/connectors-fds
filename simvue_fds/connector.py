@@ -792,9 +792,11 @@ class FDSRun(WrappedRun):
                     {
                         "simvue": {
                             "plots": {
-                                metric_name: "Rainbow (inverse)"
-                                if "visibility" in slice.quantity.quantity.lower()
-                                else "Rainbow"
+                                metric_name: {
+                                    "colourscale": "Rainbow (inverse)"
+                                    if "visibility" in slice.quantity.quantity.lower()
+                                    else "Rainbow"
+                                }
                             }
                         }
                     }
