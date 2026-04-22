@@ -4,14 +4,16 @@ import f90nml
 
 
 def read_obst_rectangles(
-    file_path: str, size: dict[str, float], heights: list[float]
+    file_path: str,
+    size: dict[str, float],
+    heights: list[float],
 ) -> list[dict[str, tuple[float, float] | float]]:
     """Read all the obstacles from a specified horizontal region in an FDS file.
 
-    This determines which areas are 'blocked' from containing an item of a specified size.
-    The inputs are the path, the size of the object, and the heights of the floors to investigate.
-    This returns a dictionary containing the size and positions of all of
-    the rectangles that must be avoided along with their heights.
+    This determines which areas are blocked from containing an item of a specified
+    size. The inputs are the path, the size of the object, and the heights of the
+    floors to investigate. This returns a list containing the positions and sizes
+    of all rectangles that must be avoided, along with their base heights.
 
     Parameters
     ----------
@@ -19,21 +21,21 @@ def read_obst_rectangles(
         Path to the FDS input file.
 
     size : dict[str, float]
-        The 3 dimensional size/footprint of the object
+        The 3-dimensional size/footprint of the object.
 
         Required keys are:
-        - "x" : horizontal width in the x-direction
-        - "y" : horizontal total width in the y-direction
-        - "z" : vertical height  in the z-direction
+        - ``"x"`` : horizontal width in the x-direction
+        - ``"y"`` : horizontal total width in the y-direction
+        - ``"z"`` : vertical height in the z-direction
 
     heights : list[float]
-        The floor levels to investigate. A list of heights.
+        The floor levels to investigate.
 
     Returns
     -------
     list[dict[str, tuple[float, float] | float]]
-        Rectangles representing regions in which the centre of the object cannot be located
-        Each item has the form::
+        Rectangles representing regions in which the centre of the object cannot
+        be located. Each item has the form::
 
             {
                 "x": (x_min, x_max),
@@ -48,14 +50,16 @@ def read_obst_rectangles(
     Raises
     ------
     RuntimeError
-        Raised if any required size key ("x", "y", or "z") is
+        Raised if any required size key (``"x"``, ``"y"``, or ``"z"``) is missing
+        from the ``size`` dictionary.
 
     Notes
     -----
-    - Only OBST lines in the input file are considered, and XB values are used to determine sizes
+    - Only ``OBST`` entries in the input file are considered, and ``XB`` values
+      are used to determine sizes.
     - Vertical intersection is tested using strict inequalities, so an obstacle
-      whose bottom just touches the top of the object you're trying to place is not included
-    - The returned footprints use the FDS XB x/y bounds, then pads them by half
+      whose bottom just touches the top of the object being placed is not included.
+    - The returned footprints use the FDS ``XB`` x/y bounds, then pad them by half
       the supplied object size on each side.
 
     Examples
@@ -101,7 +105,7 @@ def read_obst_rectangles(
         top = base + size["z"]
 
         for key, val in nml.items():
-            if "obst" in key:
+            if key.lower() == "obst":
                 coords = val["xb"]
 
                 if base < coords[5] and top > coords[4]:
@@ -117,14 +121,15 @@ def read_obst_rectangles(
 
 
 def read_floor_rectangles(
-    file_path: str, heights: list[float]
+    file_path: str,
+    heights: list[float],
 ) -> list[dict[str, tuple[float, float] | float]]:
     """Read all the floor rectangles from a specified set of heights in an FDS file.
 
-    This determines which areas correspond exactly to floor surfaces at the specified
-    levels. The inputs are the path and the heights of the floors to investigate.
-    This returns a dictionary containing the size and positions of all of
-    the rectangles found at those floor heights.
+    This determines which areas correspond exactly to floor surfaces at the
+    specified levels. The inputs are the path and the heights of the floors to
+    investigate. This returns a list containing the positions and sizes of all
+    rectangles found at those floor heights.
 
     Parameters
     ----------
@@ -132,7 +137,7 @@ def read_floor_rectangles(
         Path to the FDS input file.
 
     heights : list[float]
-        The floor levels to investigate. A list of heights.
+        The floor levels to investigate.
 
     Returns
     -------
@@ -148,11 +153,12 @@ def read_floor_rectangles(
 
     Notes
     -----
-    - Only OBST lines in the input file are considered, and XB values are used to determine sizes
+    - Only ``OBST`` entries in the input file are considered, and ``XB`` values
+      are used to determine sizes.
     - A rectangle is only returned when the top of the obstacle lies exactly at
-      the requested floor height
-    - The returned footprints use the FDS XB x/y bounds directly, with no padding
-      or offset applied
+      the requested floor height.
+    - The returned footprints use the FDS ``XB`` x/y bounds directly, with no
+      padding or offset applied.
 
     Examples
     --------
@@ -160,7 +166,7 @@ def read_floor_rectangles(
 
         rects = read_floor_rectangles(
             "case.fds",
-            heights={"z": [0.0, 3.0]},
+            heights=[0.0, 3.0],
         )
 
     A returned entry has the form::
@@ -178,7 +184,7 @@ def read_floor_rectangles(
 
     for base in heights:
         for key, val in nml.items():
-            if "obst" in key:
+            if key.lower() == "obst":
                 coords = val["xb"]
 
                 if base == coords[5]:
