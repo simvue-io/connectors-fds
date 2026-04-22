@@ -132,12 +132,20 @@ def test_fds_slice_parser(
     client = simvue.Client()
 
     metrics_names = [item for item in client.get_metrics_names(run_id)]
+    run_metadata = client.get_run(run_id).metadata
 
     if not expected_slices:
         assert not metrics_names
     else:
         # Check at least 6 times recorded (since we stopped the sim at ~5s)
         for metric, slice_dims in expected_slices.items():
+            # Check colorbar information uploaded
+            assert (
+                run_metadata["simvue"]["plots"][metric].get("colourscale")
+                == "Rainbow (inverse)"
+                if "soot_visibility" in metric
+                else "Rainbow"
+            )
             assert metric + ".max" in metrics_names
             assert metric + ".min" in metrics_names
             assert metric + ".avg" in metrics_names
