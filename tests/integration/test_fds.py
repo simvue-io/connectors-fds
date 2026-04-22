@@ -125,7 +125,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
             parallel=parallel,
             offline=offline,
             slice_var=None,
-            slice_fixed_dim="z",
+            slice_fixed_dim=["y", "z"],
             load=load,
         )
     except Exception as e:
@@ -160,6 +160,17 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     # Check metadata from input file
     assert run_data.metadata["input_file"]["_grp_devc_1"]["id"] == "flow_volume_supply"
 
+    # Check metadata for slice colorbars uploaded
+    # Temperature should use Rainbow
+    assert (
+        run_data.metadata["simvue"]["plots"]["temperature.y.2_0"]["colourscale"]
+        == "Rainbow"
+    )
+    # Visibility should use Rainbow (Inverse)
+    assert (
+        run_data.metadata["simvue"]["plots"]["soot_visibility.z.2_0"]["colourscale"]
+        == "Rainbow (inverse)"
+    )
     # Check events from log, check negative time upladed
     # Loosening requirement for this since Windows and Ubuntu will print slightly different times
     assert any(
@@ -187,16 +198,16 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert metrics["max_divergence.mesh.2"]["count"] > 0
 
     # Check metrics from slice
-    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
-    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
-    assert metrics["soot_visibility.z.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
+    assert metrics["temperature.y.2_0.min"]["count"] > 0
 
     # Check metrics from each possible type of file have a negative first time point
     for metric in (
         "HRR",
         "flow_volume_supply",
         "max_pressure_error",
-        "soot_visibility.z.2_0.min",
+        "temperature.y.2_0.min",
     ):
         _retrieved = client.get_metric_values(
             run_ids=[run_id],
@@ -208,30 +219,25 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     _retrieved = client.get_metric_values(
         run_ids=[run_id],
         metric_names=[
-            "soot_visibility.z.2_0.max",
-            "soot_visibility.z.2_0.min",
-            "soot_visibility.z.2_0.avg",
+            "temperature.y.2_0.max",
+            "temperature.y.2_0.min",
+            "temperature.y.2_0.avg",
         ],
         xaxis="time",
     )
-    _max = numpy.array(list(_retrieved["soot_visibility.z.2_0.max"].values()))
-    _min = numpy.array(list(_retrieved["soot_visibility.z.2_0.min"].values()))
-    _avg = numpy.array(list(_retrieved["soot_visibility.z.2_0.avg"].values()))
+    _max = numpy.array(list(_retrieved["temperature.y.2_0.max"].values()))
+    _min = numpy.array(list(_retrieved["temperature.y.2_0.min"].values()))
+    _avg = numpy.array(list(_retrieved["temperature.y.2_0.avg"].values()))
 
     # Check all max >= avg >= min
     assert numpy.all(_max >= _avg)
     assert numpy.all(_avg >= _min)
     assert numpy.all(_min > 0)
 
-    # From smokeview, min = 20, max = 574.316
-    # Check our calculations are within 0.1 of this
-    # numpy.testing.assert_allclose(_max.max(), 574.316, atol=0.1)
-    # numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
-
     # Check slice uploaded as 3D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
     response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/soot_visibility.z.2_0/values?step=0",
+        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=0",
         headers={
             "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
             "User-Agent": "Simvue Python client",
@@ -239,7 +245,12 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
         },
     )
     assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (41, 31)
+    arr = numpy.array(response.json().get("array"))
+    assert arr.shape == (31, 31)
+
+    # Check fire obstructions uploaded as NaNs (come back as None's over API)
+    # Obstruction is on the floor (z=0) from x=1.3 to x=1.7
+    assert all(arr[0, 13:17] == None)
 
     # Check line DEVC uploaded as 2D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
@@ -402,6 +413,13 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     # Check metadata from input file NOT uploaded
     assert not run_data.metadata.get("input_file")
 
+    # Check metadata for slice colorbars uploaded
+    # Temperature should use Rainbow
+    assert (
+        run_data.metadata["simvue"]["plots"]["temperature.y.0_0"]["colourscale"]
+        == "Rainbow"
+    )
+
     # Check events from log
     assert any(
         [event.startswith("Time Step: 1, Simulation Time: 0.05") for event in events]
@@ -534,6 +552,13 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
 
     # Check metadata from input file
     assert run_data.metadata["input_file"]["_grp_devc_0"]["id"] == "T_out"
+
+    # Check metadata for slice colorbars uploaded
+    # Temperature should use Rainbow
+    assert (
+        run_data.metadata["simvue"]["plots"]["temperature.y.0_1"]["colourscale"]
+        == "Rainbow"
+    )
 
     # Check events from log
     assert any(
