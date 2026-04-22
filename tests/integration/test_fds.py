@@ -66,7 +66,7 @@ def run_fds(
                     results_dir=file_path,
                     slice_parse_enabled=True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities=[slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions=[slice_fixed_dim]
+                    slice_parse_fixed_dimensions=slice_fixed_dim
                     if slice_fixed_dim
                     else None,
                     upload_input_metadata=upload_input_metadata,
@@ -80,7 +80,7 @@ def run_fds(
                     # You can optionally have the connector track slices in your simulation
                     slice_parse_enabled=True if slice_var or slice_fixed_dim else False,
                     slice_parse_quantities=[slice_var] if slice_var else None,
-                    slice_parse_fixed_dimensions=[slice_fixed_dim]
+                    slice_parse_fixed_dimensions=slice_fixed_dim
                     if slice_fixed_dim
                     else None,
                     slice_parse_interval=10,
