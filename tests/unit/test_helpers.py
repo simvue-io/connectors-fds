@@ -139,6 +139,33 @@ def test_read_obst_rectangles_with_empty_heights_returns_empty_list(tmp_path):
     assert result == []
 
 
+def test_read_obst_rectangles_ignores_non_obst_lines(tmp_path):
+    path = _write_fds(
+        tmp_path,
+        """
+        &HEAD CHID='test' /
+        &TIME T_END=10.0 /
+        &MESH IJK=10,10,10, XB=0.0,1.0,0.0,1.0,0.0,1.0 /
+        &VENT XB=100.0,200.0,100.0,200.0,0.0,5.0, SURF_ID='OPEN' /
+        &OBST XB=1.0,3.0,10.0,14.0,0.5,2.0 /
+        """,
+    )
+
+    result = helpers.read_obst_rectangles(
+        str(path),
+        size={"x": 2.0, "y": 4.0, "z": 1.0},
+        heights=[1.0],
+    )
+
+    assert result == [
+        {
+            "x": (0.0, 4.0),
+            "y": (8.0, 16.0),
+            "z": 1.0,
+        }
+    ]
+
+
 def test_read_floor_rectangles_returns_exact_matches_at_requested_heights(tmp_path):
     path = _write_fds(
         tmp_path,
@@ -188,3 +215,26 @@ def test_read_floor_rectangles_with_empty_heights_returns_empty_list(tmp_path):
     result = helpers.read_floor_rectangles(str(path), heights=[])
 
     assert result == []
+
+
+def test_read_floor_rectangles_ignores_non_obst_lines(tmp_path):
+    path = _write_fds(
+        tmp_path,
+        """
+        &HEAD CHID='test' /
+        &TIME T_END=10.0 /
+        &MESH IJK=10,10,10, XB=0.0,1.0,0.0,1.0,0.0,1.0 /
+        &VENT XB=100.0,200.0,100.0,200.0,0.0,3.0, SURF_ID='OPEN' /
+        &OBST XB=0.0,8.0,0.0,6.0,0.0,3.0 /
+        """,
+    )
+
+    result = helpers.read_floor_rectangles(str(path), heights=[3.0])
+
+    assert result == [
+        {
+            "x": (0.0, 8.0),
+            "y": (0.0, 6.0),
+            "z": 3.0,
+        }
+    ]
