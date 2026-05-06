@@ -2,13 +2,35 @@
 
 import f90nml
 import numpy
+from fdsreader.slcf.slice import Slice
 
 
-def create_obst_mask(input_file_path, slice):
+def create_obst_mask(file_path: str, slice: Slice) -> numpy.ndarray:
+    """Create a boolean mask of OBSTs for a given slice through the mesh.
+
+    Note that this OBST blocks which touch, but do not cross, the slice are not included.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the FDS input file.
+
+    slice: Slice
+        The slice to create a mask for, loaded by fdsreader
+
+    Returns
+    -------
+    mask: numpy.ndarray
+        A boolean mask representing areas covered by OBSTs
+
+
+    """
+    # Load coordinates from the slice
     all_coords = slice.get_coordinates()
     dims = slice.extent_dirs
     mask = numpy.full((len(all_coords[dims[0]]), len(all_coords[dims[1]])), False)
 
+    # Find which dimension of the slice is a fixed value
     if "x" not in dims:
         fixed_val = all_coords["x"][0]
         fixed_idx = 0
@@ -19,8 +41,10 @@ def create_obst_mask(input_file_path, slice):
         fixed_val = all_coords["z"][0]
         fixed_idx = 4
 
-    # TEMP use input file instead of fdsreader obsts
-    nml = f90nml.read(input_file_path)
+    # Load FDS input file and loop through obstruction lines
+    # Note that we do this instead of using `simulation.obstructions` from fdsreader,
+    # as that seems to be inaccurate
+    nml = f90nml.read(file_path)
     for key, val in nml.items():
         if key.lower() != "obst":
             continue
@@ -30,9 +54,12 @@ def create_obst_mask(input_file_path, slice):
             obst_coords[fixed_idx] < fixed_val
             and obst_coords[fixed_idx + 1] > fixed_val
         ):
+            # Remove fixed dimension coordinates from obst line
             obst_coords.pop(fixed_idx + 1)
             obst_coords.pop(fixed_idx)
 
+            # Find indexes which correspond to the start and end points of the OBST within the slice
+            # If the OBST does not exist inside the slice, it will return two equal values
             i_start = numpy.searchsorted(all_coords[dims[0]], obst_coords[0])
             i_end = numpy.searchsorted(
                 all_coords[dims[0]], obst_coords[1], side="right"
@@ -43,11 +70,14 @@ def create_obst_mask(input_file_path, slice):
                 all_coords[dims[1]], obst_coords[3], side="right"
             )
 
-            # Replace coords with NaNs
+            # Slice to replace OBSTs with True in the mask
+            # If values above are equal nothing will happen,
+            # hence this does not affect OBSTs which dont intersect the slice
             mask[
                 i_start:i_end,
                 j_start:j_end,
             ] = True
+
     return mask
 
 

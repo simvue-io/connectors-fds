@@ -729,6 +729,7 @@ class FDSRun(WrappedRun):
             # Due to edge cases which may break fdsreader, we cover this in a try... except
             try:
                 coords: dict[str, numpy.ndarray] = slice.get_coordinates()
+                times = slice.times
                 dims = slice.extent_dirs
                 values = numpy.zeros(
                     (len(slice.times), len(coords[dims[0]]), len(coords[dims[1]]))
@@ -771,7 +772,7 @@ class FDSRun(WrappedRun):
                         start_idx[0] : start_idx[0] + subslice_expanded.shape[1],
                         start_idx[1] : start_idx[1] + subslice_expanded.shape[2],
                     ] = subslice_expanded
-                times = slice.times
+
             except Exception as e:
                 if not self._grids_defined:
                     logger.warning(
