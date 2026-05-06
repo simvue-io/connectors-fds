@@ -34,10 +34,14 @@ def create_obst_mask(input_file_path, slice):
             obst_coords.pop(fixed_idx)
 
             i_start = numpy.searchsorted(all_coords[dims[0]], obst_coords[0])
-            i_end = numpy.searchsorted(all_coords[dims[0]], obst_coords[1])
+            i_end = numpy.searchsorted(
+                all_coords[dims[0]], obst_coords[1], side="right"
+            )
 
             j_start = numpy.searchsorted(all_coords[dims[1]], obst_coords[2])
-            j_end = numpy.searchsorted(all_coords[dims[1]], obst_coords[3])
+            j_end = numpy.searchsorted(
+                all_coords[dims[1]], obst_coords[3], side="right"
+            )
 
             # Replace coords with NaNs
             mask[
