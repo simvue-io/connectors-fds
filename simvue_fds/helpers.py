@@ -4,7 +4,7 @@ import f90nml
 import numpy
 
 
-def create_obst_mask(obstructions, slice):
+def create_obst_mask(input_file_path, slice):
     all_coords = slice.get_coordinates()
     dims = slice.extent_dirs
     mask = numpy.full((len(all_coords[dims[0]]), len(all_coords[dims[1]])), False)
@@ -19,8 +19,12 @@ def create_obst_mask(obstructions, slice):
         fixed_val = all_coords["z"][0]
         fixed_idx = 4
 
-    for obst in obstructions:
-        obst_coords = obst.bounding_box.as_list(reduced=False)
+    # TEMP use input file instead of fdsreader obsts
+    nml = f90nml.read(input_file_path)
+    for key, val in nml.items():
+        if key.lower() != "obst":
+            continue
+        obst_coords = list(val["xb"])
         # Check if obst exists over fixed dim
         if (
             obst_coords[fixed_idx] < fixed_val
