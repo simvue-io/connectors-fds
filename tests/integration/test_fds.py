@@ -250,7 +250,8 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
 
     # Check fire obstructions uploaded as NaNs (come back as None's over API)
     # Obstruction is on the floor (z=0) from x=1.3 to x=1.7
-    assert all(arr[0, 13:17] == None)
+    # Edges of obstructions not marked as NaNs, so cells 1.4m - 1.6m should be marked NaN
+    assert all(arr[0, 14:17] == None)
 
     # Check line DEVC uploaded as 2D metric
     _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
