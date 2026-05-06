@@ -824,7 +824,7 @@ class FDSRun(WrappedRun):
 
                 # Create NaN masks
                 self._slice_masks[metric_name] = create_obst_mask(
-                    sim.obstructions, slice
+                    self.fds_input_file_path, slice
                 )
 
                 # Record the colorbar this slice should use:
