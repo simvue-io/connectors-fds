@@ -1,6 +1,46 @@
 """Helpers for extracting useful information from FDS files."""
 
 import f90nml
+import numpy
+
+
+def create_obst_mask(obstructions, slice):
+    all_coords = slice.get_coordinates()
+    dims = slice.extent_dirs
+    mask = numpy.full((len(all_coords[dims[0]]), len(all_coords[dims[1]])), False)
+
+    if "x" not in dims:
+        fixed_val = all_coords["x"][0]
+        fixed_idx = 0
+    elif "y" not in dims:
+        fixed_val = all_coords["y"][0]
+        fixed_idx = 2
+    else:
+        fixed_val = all_coords["z"][0]
+        fixed_idx = 4
+
+    for obst in obstructions:
+        obst_coords = obst.bounding_box.as_list(reduced=False)
+        # Check if obst exists over fixed dim
+        if (
+            obst_coords[fixed_idx] < fixed_val
+            and obst_coords[fixed_idx + 1] > fixed_val
+        ):
+            obst_coords.pop(fixed_idx + 1)
+            obst_coords.pop(fixed_idx)
+
+            i_start = numpy.searchsorted(all_coords[dims[0]], obst_coords[0])
+            i_end = numpy.searchsorted(all_coords[dims[0]], obst_coords[1])
+
+            j_start = numpy.searchsorted(all_coords[dims[1]], obst_coords[2])
+            j_end = numpy.searchsorted(all_coords[dims[1]], obst_coords[3])
+
+            # Replace coords with NaNs
+            mask[
+                i_start:i_end,
+                j_start:j_end,
+            ] = True
+    return mask
 
 
 def read_obst_rectangles(
@@ -107,6 +147,7 @@ def read_obst_rectangles(
         for key, val in nml.items():
             if key.lower() == "obst":
                 coords = val["xb"]
+                print(coords)
 
                 if base < coords[5] and top > coords[4]:
                     rects.append(
