@@ -728,13 +728,16 @@ class FDSRun(WrappedRun):
             try:
                 coords: dict[str, numpy.ndarray] = slice.get_coordinates()
                 dims = slice.extent_dirs
-                values = numpy.full(
-                    (len(slice.times), len(coords[dims[0]]), len(coords[dims[1]])),
-                    numpy.nan,
+                values = numpy.zeros(
+                    (len(slice.times), len(coords[dims[0]]), len(coords[dims[1]]))
                 )
                 # Loop through subslices
                 for subslice in slice.subslices:
                     subslice_vals: numpy.ndarray = subslice.data
+                    obst_mask = subslice.mesh.get_obstruction_mask_slice(
+                        subslice
+                    ).squeeze()
+                    subslice_vals = numpy.where(obst_mask, subslice_vals, numpy.nan)
                     start_idx = []
                     end_idx = []
                     insert_indices = []
