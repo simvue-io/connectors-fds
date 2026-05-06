@@ -726,9 +726,47 @@ class FDSRun(WrappedRun):
             # Get the values, coordinates, times
             # Due to edge cases which may break fdsreader, we cover this in a try... except
             try:
-                values, coords = slice.to_global(
-                    masked=True, fill=numpy.nan, return_coordinates=True
+                coords: dict[str, numpy.ndarray] = slice.get_coordinates()
+                dims = slice.extent_dirs
+                values = numpy.full(
+                    (len(slice.times), len(coords[dims[0]]), len(coords[dims[1]])),
+                    numpy.nan,
                 )
+                # Loop through subslices
+                for subslice in slice.subslices:
+                    subslice_vals: numpy.ndarray = subslice.data
+                    start_idx = []
+                    end_idx = []
+                    insert_indices = []
+                    # Loop through dimensions
+                    for i, dim in enumerate(dims):
+                        # Get coords for subslice
+                        sub_coords = subslice.get_coordinates()
+                        # Find indexes in global coords where subslice coords start and end
+                        start_idx.append(
+                            numpy.where(coords[dim] == sub_coords[dim][0])[0][0]
+                        )
+                        end_idx.append(
+                            numpy.where(coords[dim] == sub_coords[dim][-1])[0][0]
+                        )
+
+                        # Cut global coords to be same start and end as subslice coords
+                        trimmed_all_coords = coords[dim][start_idx[i] : end_idx[i] + 1]
+                        # Could use searchsorted to find indexes to insert elements into to maintain order of coords
+                        insert_indices.append(
+                            numpy.searchsorted(sub_coords[dim], trimmed_all_coords)
+                        )
+
+                    # Expand subslice values using the indices which maintain order
+                    subslice_expanded = subslice_vals[
+                        :, insert_indices[0][:, None], insert_indices[1][None, :]
+                    ]
+                    # Insert into correct place in grid
+                    values[
+                        :,
+                        start_idx[0] : start_idx[0] + subslice_expanded.shape[1],
+                        start_idx[1] : start_idx[1] + subslice_expanded.shape[2],
+                    ] = subslice_expanded
                 times = slice.times
             except Exception as e:
                 if not self._grids_defined:
