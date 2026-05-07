@@ -36,7 +36,7 @@ from fdsreader.slcf.slice import Slice
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
-from simvue_fds.helpers import create_obst_mask
+from simvue_fds.helpers import create_heterogeneous_slice, create_obst_mask
 
 logger = logging.getLogger(__name__)
 MAXIMUM_SLICE_SIZE: int = 50000
@@ -728,50 +728,8 @@ class FDSRun(WrappedRun):
             # Get the values, coordinates, times
             # Due to edge cases which may break fdsreader, we cover this in a try... except
             try:
-                coords: dict[str, numpy.ndarray] = slice.get_coordinates()
                 times = slice.times
-                dims = slice.extent_dirs
-                values = numpy.zeros(
-                    (len(slice.times), len(coords[dims[0]]), len(coords[dims[1]]))
-                )
-                # Loop through subslices
-                for subslice in slice.subslices:
-                    start_idx = []
-                    end_idx = []
-                    insert_indices = []
-
-                    # Get subslice data
-                    subslice_vals: numpy.ndarray = subslice.data
-
-                    # Loop through dimensions
-                    for i, dim in enumerate(dims):
-                        # Get coords for subslice
-                        sub_coords = subslice.get_coordinates()
-                        # Find indexes in global coords where subslice coords start and end
-                        start_idx.append(
-                            numpy.where(coords[dim] == sub_coords[dim][0])[0][0]
-                        )
-                        end_idx.append(
-                            numpy.where(coords[dim] == sub_coords[dim][-1])[0][0]
-                        )
-
-                        # Cut global coords to be same start and end as subslice coords
-                        trimmed_all_coords = coords[dim][start_idx[i] : end_idx[i] + 1]
-                        # Could use searchsorted to find indexes to insert elements into to maintain order of coords
-                        insert_indices.append(
-                            numpy.searchsorted(sub_coords[dim], trimmed_all_coords)
-                        )
-
-                    # Expand subslice values using the indices which maintain order
-                    subslice_expanded = subslice_vals[
-                        :, insert_indices[0][:, None], insert_indices[1][None, :]
-                    ]
-                    # Insert into correct place in grid
-                    values[
-                        :,
-                        start_idx[0] : start_idx[0] + subslice_expanded.shape[1],
-                        start_idx[1] : start_idx[1] + subslice_expanded.shape[2],
-                    ] = subslice_expanded
+                coords, values = create_heterogeneous_slice(slice)
 
             except Exception as e:
                 if not self._grids_defined:

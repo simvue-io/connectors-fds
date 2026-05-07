@@ -5,10 +5,63 @@ import numpy
 from fdsreader.slcf.slice import Slice
 
 
+def create_heterogeneous_slice(
+    slice: Slice,
+) -> tuple[dict[str, numpy.ndarray], numpy.ndarray]:
+    """Create a single array of values for a slice, with heterogeneous mesh sizes.
+
+    As opposed to fdsreader's `to_global()` method, this function will only make the coarse
+    mesh finer around areas which are required to maintain a constant sized 2D array. This
+    results in a much less sparse array, saving memory.
+
+    When making the mesh finer in a section, values are repeated to reconstruct the appearance
+    of a coarser mesh.
+    """
+    coords: dict[str, numpy.ndarray] = slice.get_coordinates()
+    dims = slice.extent_dirs
+    values = numpy.zeros((len(slice.times), len(coords[dims[0]]), len(coords[dims[1]])))
+    # Loop through subslices
+    for subslice in slice.subslices:
+        start_idx = []
+        end_idx = []
+        insert_indices = []
+
+        # Get subslice data
+        subslice_vals: numpy.ndarray = subslice.data
+
+        # Loop through dimensions
+        for i, dim in enumerate(dims):
+            # Get coords for subslice
+            sub_coords = subslice.get_coordinates()
+            # Find indexes in global coords where subslice coords start and end
+            start_idx.append(numpy.where(coords[dim] == sub_coords[dim][0])[0][0])
+            end_idx.append(numpy.where(coords[dim] == sub_coords[dim][-1])[0][0])
+
+            # Cut global coords to be same start and end as subslice coords
+            trimmed_all_coords = coords[dim][start_idx[i] : end_idx[i] + 1]
+            # Could use searchsorted to find indexes to insert elements into to maintain order of coords
+            insert_indices.append(
+                numpy.searchsorted(sub_coords[dim], trimmed_all_coords)
+            )
+
+        # Expand subslice values using the indices which maintain order
+        subslice_expanded = subslice_vals[
+            :, insert_indices[0][:, None], insert_indices[1][None, :]
+        ]
+        # Insert into correct place in grid
+        values[
+            :,
+            start_idx[0] : start_idx[0] + subslice_expanded.shape[1],
+            start_idx[1] : start_idx[1] + subslice_expanded.shape[2],
+        ] = subslice_expanded
+
+    return coords, values
+
+
 def create_obst_mask(file_path: str, slice: Slice) -> numpy.ndarray:
     """Create a boolean mask of OBSTs for a given slice through the mesh.
 
-    Note that this OBST blocks which touch, but do not cross, the slice are not included.
+    Note that OBST blocks which touch, but do not cross, the slice are not included.
 
     Parameters
     ----------
