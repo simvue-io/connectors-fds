@@ -1,6 +1,138 @@
 """Helpers for extracting useful information from FDS files."""
 
 import f90nml
+import numpy
+from fdsreader.slcf.slice import Slice
+
+
+def create_heterogeneous_slice(
+    slice: Slice,
+) -> tuple[dict[str, numpy.ndarray], numpy.ndarray]:
+    """Create a single array of values for a slice, with heterogeneous mesh sizes.
+
+    As opposed to fdsreader's `to_global()` method, this function will only make the coarse
+    mesh finer around areas which are required to maintain a constant sized 2D array. This
+    results in a much less sparse array, saving memory.
+
+    When making the mesh finer in a section, values are repeated to reconstruct the appearance
+    of a coarser mesh.
+    """
+    coords: dict[str, numpy.ndarray] = slice.get_coordinates()
+    dims = slice.extent_dirs
+    values = numpy.zeros((len(slice.times), len(coords[dims[0]]), len(coords[dims[1]])))
+    # Loop through subslices
+    for subslice in slice.subslices:
+        start_idx = []
+        end_idx = []
+        insert_indices = []
+
+        # Get subslice data
+        subslice_vals: numpy.ndarray = subslice.data
+
+        # Get coords for subslice
+        sub_coords = subslice.get_coordinates()
+
+        # Loop through dimensions
+        for i, dim in enumerate(dims):
+            # Find indexes in global coords where subslice coords start and end
+            start_idx.append(numpy.where(coords[dim] == sub_coords[dim][0])[0][0])
+            end_idx.append(numpy.where(coords[dim] == sub_coords[dim][-1])[0][0])
+
+            # Cut global coords to be same start and end as subslice coords
+            trimmed_all_coords = coords[dim][start_idx[i] : end_idx[i] + 1]
+            # Could use searchsorted to find indexes to insert elements into to maintain order of coords
+            insert_indices.append(
+                numpy.searchsorted(sub_coords[dim], trimmed_all_coords)
+            )
+
+        # Expand subslice values using the indices which maintain order
+        subslice_expanded = subslice_vals[
+            :, insert_indices[0][:, None], insert_indices[1][None, :]
+        ]
+        # Insert into correct place in grid
+        values[
+            :,
+            start_idx[0] : start_idx[0] + subslice_expanded.shape[1],
+            start_idx[1] : start_idx[1] + subslice_expanded.shape[2],
+        ] = subslice_expanded
+
+    return coords, values
+
+
+def create_obst_mask(file_path: str, slice: Slice) -> numpy.ndarray:
+    """Create a boolean mask of OBSTs for a given slice through the mesh.
+
+    Note that OBST blocks which touch, but do not cross, the slice are not included.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the FDS input file.
+
+    slice: Slice
+        The slice to create a mask for, loaded by fdsreader
+
+    Returns
+    -------
+    mask: numpy.ndarray
+        A boolean mask representing areas covered by OBSTs
+
+
+    """
+    # Load coordinates from the slice
+    all_coords = slice.get_coordinates()
+    dims = slice.extent_dirs
+    mask = numpy.full((len(all_coords[dims[0]]), len(all_coords[dims[1]])), False)
+
+    # Find which dimension of the slice is a fixed value
+    if "x" not in dims:
+        fixed_val = all_coords["x"][0]
+        fixed_idx = 0
+    elif "y" not in dims:
+        fixed_val = all_coords["y"][0]
+        fixed_idx = 2
+    else:
+        fixed_val = all_coords["z"][0]
+        fixed_idx = 4
+
+    # Load FDS input file and loop through obstruction lines
+    # Note that we do this instead of using `simulation.obstructions` from fdsreader,
+    # as that seems to be inaccurate
+    nml = f90nml.read(file_path)
+    for key, val in nml.items():
+        if key.lower() != "obst":
+            continue
+        obst_coords = list(val["xb"])
+        # Check if obst exists over fixed dim
+        if (
+            obst_coords[fixed_idx] < fixed_val
+            and obst_coords[fixed_idx + 1] > fixed_val
+        ):
+            # Remove fixed dimension coordinates from obst line
+            obst_coords.pop(fixed_idx + 1)
+            obst_coords.pop(fixed_idx)
+
+            # Find indexes which correspond to the start and end points of the OBST within the slice
+            # If the OBST does not exist inside the slice, it will return two equal values
+            i_start = numpy.searchsorted(all_coords[dims[0]], obst_coords[0])
+            i_end = numpy.searchsorted(
+                all_coords[dims[0]], obst_coords[1], side="right"
+            )
+
+            j_start = numpy.searchsorted(all_coords[dims[1]], obst_coords[2])
+            j_end = numpy.searchsorted(
+                all_coords[dims[1]], obst_coords[3], side="right"
+            )
+
+            # Slice to replace OBSTs with True in the mask
+            # If values above are equal nothing will happen,
+            # hence this does not affect OBSTs which dont intersect the slice
+            mask[
+                i_start:i_end,
+                j_start:j_end,
+            ] = True
+
+    return mask
 
 
 def read_obst_rectangles(

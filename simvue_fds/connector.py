@@ -36,6 +36,8 @@ from fdsreader.slcf.slice import Slice
 from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
+from simvue_fds.helpers import create_heterogeneous_slice, create_obst_mask
+
 logger = logging.getLogger(__name__)
 MAXIMUM_SLICE_SIZE: int = 50000
 
@@ -726,10 +728,9 @@ class FDSRun(WrappedRun):
             # Get the values, coordinates, times
             # Due to edge cases which may break fdsreader, we cover this in a try... except
             try:
-                values, coords = slice.to_global(
-                    masked=True, fill=numpy.nan, return_coordinates=True
-                )
                 times = slice.times
+                coords, values = create_heterogeneous_slice(slice)
+
             except Exception as e:
                 if not self._grids_defined:
                     logger.warning(
@@ -737,13 +738,6 @@ class FDSRun(WrappedRun):
                     )
                     logger.debug(e)
                 continue
-
-            # In some cases, fdsreader returns two arrays which are a tiny offset from each other due to mesh boundaries
-            # We will just use the first one, since they should be almost identical...
-            if isinstance(values, tuple):
-                values = values[0]
-            if isinstance(coords, tuple):
-                coords = coords[0]
 
             # Get rid of values already uploaded, return if nothing left to upload
             values = values[self._slice_processed_idx :, ...]
@@ -763,7 +757,7 @@ class FDSRun(WrappedRun):
             if metric_name in self._grids_too_large:
                 continue
 
-            # Define grid if first pass
+            # Define grid and NaN mask if first pass
             if metric_name not in self._grids_defined:
                 # Check size doesn't breach server limit
                 if (
@@ -787,6 +781,11 @@ class FDSRun(WrappedRun):
                 )
                 self._grids_defined.append(metric_name)
 
+                # Create NaN masks
+                self._slice_masks[metric_name] = create_obst_mask(
+                    self.fds_input_file_path, slice
+                )
+
                 # Record the colorbar this slice should use:
                 self.update_metadata(
                     {
@@ -802,8 +801,14 @@ class FDSRun(WrappedRun):
                     }
                 )
 
-            if metric_name not in self._grids_defined:
+            if (
+                metric_name not in self._grids_defined
+                or metric_name not in self._slice_masks
+            ):
                 continue
+
+            # Apply NaN mask for OBSTs
+            values[:, self._slice_masks[metric_name]] = numpy.nan
 
             times_to_process = times[self._slice_processed_idx :]
             for time_idx, time_val in enumerate(times_to_process):
@@ -914,6 +919,7 @@ class FDSRun(WrappedRun):
         self._fds_start_time: float | None = None
         self._fds_end_time: float | None = None
         self._simulation_start_time: float = datetime.now().timestamp()
+        self._slice_masks = {}
 
         # Need this so that we dont get spammed with non-critical timestamp warning from fdsreader
         fdsreader.settings.IGNORE_ERRORS = True
