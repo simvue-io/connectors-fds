@@ -29,10 +29,11 @@ def create_heterogeneous_slice(
         # Get subslice data
         subslice_vals: numpy.ndarray = subslice.data
 
+        # Get coords for subslice
+        sub_coords = subslice.get_coordinates()
+
         # Loop through dimensions
         for i, dim in enumerate(dims):
-            # Get coords for subslice
-            sub_coords = subslice.get_coordinates()
             # Find indexes in global coords where subslice coords start and end
             start_idx.append(numpy.where(coords[dim] == sub_coords[dim][0])[0][0])
             end_idx.append(numpy.where(coords[dim] == sub_coords[dim][-1])[0][0])
@@ -238,7 +239,6 @@ def read_obst_rectangles(
         for key, val in nml.items():
             if key.lower() == "obst":
                 coords = val["xb"]
-                print(coords)
 
                 if base < coords[5] and top > coords[4]:
                     rects.append(
