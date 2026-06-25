@@ -16,6 +16,7 @@ import typing
 from datetime import datetime, timedelta, timezone
 
 import pandas
+import semver
 
 try:
     from typing import Self
@@ -37,6 +38,12 @@ from simvue_connector.connector import WrappedRun
 from simvue_connector.extras.create_command import format_command_env_vars
 
 from simvue_fds.helpers import create_heterogeneous_slice, create_obst_mask
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s %(name)s: %(message)s",
+    force=True,
+)
 
 logger = logging.getLogger(__name__)
 MAXIMUM_SLICE_SIZE: int = 50000
@@ -786,6 +793,20 @@ class FDSRun(WrappedRun):
                     self.fds_input_file_path, slice
                 )
 
+                # Check if noSim server version is compatible for NaNs
+                if (
+                    not self._user_config.nosim_version
+                    or self._user_config.nosim_version < semver.Version.parse("1.6.4")
+                ):
+                    logger.warning(
+                        """
+                        Your Simvue server is out of date, and is running a noSim version
+                        which is lower than the version required to support OBSTs within 3D metrics.
+                        Ask your admin to upgrade to noSim version 1.6.4 or higher.
+                        Falling back to uploading OBSTs as zeros...
+                        """
+                    )
+
                 # Record the colorbar this slice should use:
                 self.update_metadata(
                     {
@@ -808,7 +829,12 @@ class FDSRun(WrappedRun):
                 continue
 
             # Apply NaN mask for OBSTs
-            values[:, self._slice_masks[metric_name]] = numpy.nan
+            # Check noSim server version is compatible first
+            if (
+                self._user_config.nosim_version
+                and self._user_config.nosim_version >= semver.Version.parse("1.6.4")
+            ):
+                values[:, self._slice_masks[metric_name]] = numpy.nan
 
             times_to_process = times[self._slice_processed_idx :]
             for time_idx, time_val in enumerate(times_to_process):
@@ -944,7 +970,7 @@ class FDSRun(WrappedRun):
 
         # Save the FDS input file for this run to the Simvue server
         if self.upload_input_file and self.fds_input_file_path.exists():
-            self.save_file(self.fds_input_file_path, "input")
+            self.save_file(self.fds_input_file_path, category="input")
 
         def check_for_errors(status_code, std_out, std_err):
             """Need to check for 'ERROR' in logs, since FDS returns rc=0 even if it throws an error."""
@@ -1066,7 +1092,7 @@ class FDSRun(WrappedRun):
 
         # Upload updated FDS file if '&CATF' namespace in FDS file
         if self.fds_input_file_path and self._concatenated_input_files:
-            self.save_file(str(self.fds_input_file_path), "input")
+            self.save_file(str(self.fds_input_file_path), category="input")
 
         if self.upload_files is None:
             for file in glob.glob(f"{self._results_prefix}*"):
@@ -1076,7 +1102,7 @@ class FDSRun(WrappedRun):
                     == self.fds_input_file_path.absolute()
                 ):
                     continue
-                self.save_file(file, "output")
+                self.save_file(file, category="output")
         else:
             self.upload_files = [
                 str(self.workdir_path.joinpath(path)) for path in self.upload_files
@@ -1090,7 +1116,7 @@ class FDSRun(WrappedRun):
                         == self.fds_input_file_path.absolute()
                     ):
                         continue
-                    self.save_file(file, "output")
+                    self.save_file(file, category="output")
 
         # Then wait for slice parser to finish
         if self.slice_parser:
@@ -1334,7 +1360,7 @@ class FDSRun(WrappedRun):
             )
         else:
             self.fds_input_file_path = _fds_files[0]
-            self.save_file(self.fds_input_file_path, "input")
+            self.save_file(self.fds_input_file_path, category="input")
 
             # Load input file, upload as metadata
             _, self._input_dict = self._input_file_parser(self.fds_input_file_path)
