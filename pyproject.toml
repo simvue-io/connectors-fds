@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 dependencies = [
-    "simvue (>=2.4.0)",
+    "simvue (>=2.5.8)",
     "simvue-connector (>=1.1.1)",
     "ukaea-multiparser (>=1.0.5)",
     "f90nml (>1.4.3)",
