@@ -1435,14 +1435,14 @@ files = [
 
 [[package]]
 name = "simvue"
-version = "2.5.7"
+version = "2.5.8"
 description = "Simulation tracking and monitoring"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "simvue-2.5.7-py3-none-any.whl", hash = "sha256:b2c8177a55a0cfc9432e13033c025c8ae7058eb5f7f552825c306632df2d207d"},
-    {file = "simvue-2.5.7.tar.gz", hash = "sha256:92b76384959e6a60073e2dff61827ecc5f2f37fca562c59cb9eca6587b077c68"},
+    {file = "simvue-2.5.8-py3-none-any.whl", hash = "sha256:d5276ac8da4d4639740aca556cb30fae94d312363fd4634578ea715110ec1c23"},
+    {file = "simvue-2.5.8.tar.gz", hash = "sha256:1e998ae7d8ac9dbc21b1892c1a3f5cfb44422b4344e15e367bd3eac2779e1d48"},
 ]
 
 [package.dependencies]
@@ -1766,4 +1766,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "f39232301ee0790c3269e868be48b936eea48ac937d77d2d69c2b24317a8e995"
+content-hash = "3c8f4b38e89e6b4309c70ab599e4f43c379835bae33a71a13ec2f3d41dcc86ca"
