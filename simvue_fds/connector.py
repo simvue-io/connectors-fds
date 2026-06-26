@@ -794,7 +794,7 @@ class FDSRun(WrappedRun):
                 )
 
                 # Check if noSim server version is compatible for NaNs
-                if (
+                if self.mode == "online" and (
                     not self._user_config.nosim_version
                     or self._user_config.nosim_version < semver.Version.parse("1.6.4")
                 ):
@@ -830,7 +830,7 @@ class FDSRun(WrappedRun):
 
             # Apply NaN mask for OBSTs
             # Check noSim server version is compatible first
-            if (
+            if self.mode != "online" or (
                 self._user_config.nosim_version
                 and self._user_config.nosim_version >= semver.Version.parse("1.6.4")
             ):
