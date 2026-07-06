@@ -9,7 +9,7 @@ from simvue.sender import Sender
 from simvue_fds.connector import FDSRun
 import uuid
 import requests
-from simvue.config.user import SimvueConfiguration
+from simvue.api.objects import GridMetrics
 
 
 def run_fds(
@@ -235,17 +235,8 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert numpy.all(_min > 0)
 
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.2_0/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
-    )
-    assert response.status_code == 200
-    arr = numpy.array(response.json().get("array"))
+    metric = next(GridMetrics.get(runs=[run_id], metrics=["temperature.y.2_0"], step=0))
+    arr = numpy.array(metric.get("array"))
     assert arr.shape == (31, 31)
 
     # Check fire obstructions uploaded as NaNs (come back as None's over API)
@@ -254,17 +245,10 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     assert all(arr[0, 14:17] == None)
 
     # Check line DEVC uploaded as 2D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/visibility_time_averaged/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
+    metric = next(
+        GridMetrics.get(runs=[run_id], metrics=["visibility_time_averaged"], step=0)
     )
-    assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (100)
+    numpy.array(metric.get("array")).shape == (100)
 
     temp_dir = tempfile.TemporaryDirectory()
 
@@ -476,17 +460,8 @@ def test_fds_bre_spray(folder_setup, offline_cache_setup, offline, parallel, loa
     # numpy.testing.assert_allclose(_min.min(), 18.5283, atol=0.1)
 
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_0/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
-    )
-    assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (81, 61)
+    metric = next(GridMetrics.get(runs=[run_id], metrics=["temperature.y.0_0"], step=0))
+    numpy.array(metric.get("array")).shape == (81, 61)
 
     temp_dir = tempfile.TemporaryDirectory()
 
@@ -578,28 +553,11 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
     assert metrics["max_divergence.mesh.2"]["count"] > 0
 
     # Check metrics from DEVC line file
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/h_wall/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
-    )
-    assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (100,)
+    metric = next(GridMetrics.get(runs=[run_id], metrics=["h_wall"], step=0))
+    numpy.array(metric.get("array")).shape == (100,)
 
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/Uz/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
-    )
-    assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (50,)
+    metric = next(GridMetrics.get(runs=[run_id], metrics=["Uz"], step=0))
+    numpy.array(metric.get("array")).shape == (50,)
 
     # Check metrics from slice
     assert metrics["temperature.y.0_1.min"]["count"] > 0
@@ -629,17 +587,8 @@ def test_fds_pohlhausen(folder_setup, offline_cache_setup, offline, parallel, lo
     # numpy.testing.assert_allclose(_min.min(), 20.0, atol=0.1)
 
     # Check slice uploaded as 3D metric
-    _user_config: SimvueConfiguration = SimvueConfiguration.fetch(mode="online")
-    response = requests.get(
-        url=f"{_user_config.server.url}/runs/{run_id}/metrics/temperature.y.0_1/values?step=0",
-        headers={
-            "Authorization": f"Bearer {_user_config.server.token.get_secret_value()}",
-            "User-Agent": "Simvue Python client",
-            "Accept-Encoding": "gzip",
-        },
-    )
-    assert response.status_code == 200
-    numpy.array(response.json().get("array")).shape == (11, 9)
+    metric = next(GridMetrics.get(runs=[run_id], metrics=["temperature.y.0_1"], step=0))
+    numpy.array(metric.get("array")).shape == (11, 9)
 
     temp_dir = tempfile.TemporaryDirectory()
 
