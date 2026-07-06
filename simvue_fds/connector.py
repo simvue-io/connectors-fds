@@ -666,8 +666,12 @@ class FDSRun(WrappedRun):
             if numpy.any(metric):
                 _metric_data[key] = metric
         if _metric_data:
-            # Time is fixed to 1, since we have no way of knowing at which time line devices were recorded
-            _metric_data["time"] = 1
+            # Time is fixed to 0, since we have no way of knowing at which time line devices were recorded
+            # Step fixed to 0, since we cannot guarantee that multiparser will catch all writes to file
+            # Eg some writes may happen between sleeps within the thread
+            # TODO can we improve that?
+            _metric_data["time"] = 0
+            _metric_data["step"] = 0
             self._metrics_callback(_metric_data, meta)
 
     def _parse_slice(self) -> bool:
