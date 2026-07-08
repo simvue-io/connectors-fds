@@ -800,13 +800,13 @@ class FDSRun(WrappedRun):
                 # Check if noSim server version is compatible for NaNs
                 if self.mode == "online" and (
                     not self._user_config.nosim_version
-                    or self._user_config.nosim_version < semver.Version.parse("1.6.4")
+                    or self._user_config.nosim_version < semver.Version.parse("1.6.8")
                 ):
                     logger.warning(
                         """
                         Your Simvue server is out of date, and is running a noSim version
                         which is lower than the version required to support OBSTs within 3D metrics.
-                        Ask your admin to upgrade to noSim version 1.6.4 or higher.
+                        Ask your admin to upgrade to noSim version 1.6.8 or higher.
                         Falling back to uploading OBSTs as zeros...
                         """
                     )
@@ -836,7 +836,7 @@ class FDSRun(WrappedRun):
             # Check noSim server version is compatible first
             if self.mode != "online" or (
                 self._user_config.nosim_version
-                and self._user_config.nosim_version >= semver.Version.parse("1.6.4")
+                and self._user_config.nosim_version >= semver.Version.parse("1.6.8")
             ):
                 values[:, self._slice_masks[metric_name]] = numpy.nan
 
