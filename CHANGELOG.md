@@ -1,5 +1,10 @@
 # Change log
 
+## [v2.1.2](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.2) - 2026-07-08
+* Add slice colorbar metadata
+* Upload OBSTs as NaN values so that they appear blank in UI
+* Support Heterogeneous meshes to allow larger slices to be uploaded to server
+
 ## [v2.1.1](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.1) - 2026-04-10
 * Add estimate for remaining time in simulations
 * Fix bug where Pyrosim file headers would mean FDS file read incorrectly
