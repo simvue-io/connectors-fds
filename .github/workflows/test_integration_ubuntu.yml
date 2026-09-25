@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    branches: [ "main", "dev"]
+    branches: ["main", "dev"]
   workflow_dispatch:
 
 permissions:
@@ -27,11 +27,19 @@ jobs:
           python-version: "3.11"
       - name: Install poetry
         run: python3 -m pip install poetry
-      - name: Install dependencies and run tests
-        timeout-minutes: 60
+
+      - name: Run serial tests
+        timeout-minutes: 30
         run: |
           apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
           export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
           export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
-          poetry install --all-extras
-          poetry run pytest tests/integration/ -n 4 -v
+          python -m poetry run pytest -k serial tests/integration/ -n 4 -v
+
+      - name: Run parallel tests
+        timeout-minutes: 30
+        run: |
+          apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6
+          export SIMVUE_URL=${{ secrets.SIMVUE_URL }}
+          export SIMVUE_TOKEN=${{ secrets.SIMVUE_TOKEN }}
+          python -m poetry run pytest -k parallel tests/integration/ -v
