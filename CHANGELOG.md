@@ -1,5 +1,8 @@
 # Change log
 
+## [v2.1.3](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.3) - 2026-09-28
+* Fix versions of dependencies to fix cell centered mesh bug
+
 ## [v2.1.2](https://github.com/simvue-io/connectors-fds/releases/tag/v2.1.2) - 2026-07-08
 * Add slice colorbar metadata
 * Upload OBSTs as NaN values so that they appear blank in UI
