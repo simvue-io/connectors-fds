@@ -30,15 +30,24 @@ from simvue_fds.connector import FDSRun
 # Use the FDSRun class as a context manager
 with FDSRun() as run:
     # Initialize the run with a name, and optional other parameters
-    run.init(name="Apartment Fire Simulation", folder="/examples/fds")
+    run.init(name="fds_simulation_no_vents", folder="/examples/fds")
 
     # Call any other simvue Run() methods, such as adding tags or alerts
-    run.update_tags(["fds", "apartment"])
+    run.update_tags(["fds", "no-vents"])
 
-    # Create alert based on DEVC device
     run.create_metric_threshold_alert(
-        name="Bathroom Temperature Above 100C.",
-        metric="bathroom_temperature",
+        name="visibility_below_three_metres",
+        metric="eye_level_visibility",
+        frequency=1,
+        window=1,
+        rule="is below",
+        threshold=3,
+        trigger_abort=True,
+    )
+
+    run.create_metric_threshold_alert(
+        name="average_temperature_above_100_degrees",
+        metric="temperature.y.2_0.avg",
         frequency=1,
         window=1,
         rule="is above",
@@ -54,5 +63,6 @@ with FDSRun() as run:
         workdir_path=str(pathlib.Path(__file__).parent.joinpath("results_no_vents")),
         clean_workdir=True,
         slice_parse_enabled=True,
+        slice_parse_quantities=["TEMPERATURE"],
         slice_parse_interval=10,
     )

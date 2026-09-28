@@ -168,7 +168,7 @@ def test_fds_supply_exhaust(folder_setup, offline_cache_setup, load, offline, pa
     )
     # Visibility should use Rainbow (Inverse)
     assert (
-        run_data.metadata["simvue"]["plots"]["soot_visibility.z.2_0"]["colourscale"]
+        run_data.metadata["simvue"]["plots"]["soot_visibility.z.2_1"]["colourscale"]
         == "Rainbow (inverse)"
     )
     # Check events from log, check negative time upladed
